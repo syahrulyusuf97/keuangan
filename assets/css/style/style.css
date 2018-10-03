@@ -1,0 +1,56 @@
+.preview {
+  margin-right: 10px;
+  text-align: center;
+}
+.thumbnail {
+  min-height: 220px;
+  line-height: 220px;
+  font-size: 28px;
+}
+.preview .thumbnail > img {
+  overflow: hidden;
+  display: inline-block;
+  margin-bottom: 5px;
+  vertical-align: middle;
+  text-align: center;
+  max-height: 190px;
+  padding: 10px 0px 0px 10px;
+}
+
+.reset{
+  background: linear-gradient(white, #EAEAEA);
+  background-repeat: no-repeat;
+  -webkit-font-smoothing: antialiased;
+  height: 25px;
+  width: 100px;
+  line-height: 25px;
+  border-radius: 5px;
+}
+
+.reset:hover{
+  background: linear-gradient(white, #EAEAEA);
+  background-repeat: no-repeat;
+  -webkit-font-smoothing: antialiased;
+  height: 25px;
+  line-height: 25px;
+  border-radius: 5px;
+  box-shadow: 0 1px 1px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.image-table{
+  width: 10px;
+  height: 10px;
+}
+
+@media screen and (min-width: 601px) {
+  div.preview {
+    font-size: 30px;
+  }
+}
+
+/* If the screen size is 600px wide or less, set the font-size of <div> to 30px */
+@media screen and (max-width: 600px) {
+  div.preview {
+    font-size: 15px;
+  }
+}
