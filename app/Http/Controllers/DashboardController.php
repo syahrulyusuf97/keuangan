@@ -10,17 +10,36 @@ class DashboardController extends Controller
 {
     public function dashboard()
     {
-    	$deposito 			= Deposito::sum('jumlah');
-    	$credit 			= Credit::sum('jumlah');
-    	$saldo				= $deposito - $credit;
-    	$month 				= date('m');
-	  	$year 				= date('Y');
-	  	$last_month 		= $month-1%12;
-	 	// echo ($last_month==0?($year-1):$year)."-".($last_month==0?'12':$last_month);
-    	// $credit_last_month 	= ($last_month==0?($year-1):$year)."-".($last_month==0?'12':$last_month);
-    	$credit_last_month 	= Credit::whereYear('tanggal', '=', ($last_month==0?($year-1):$year))->whereMonth('tanggal', '=', ($last_month==0?'12':$last_month))->sum('jumlah');
-    	$percentase_pendapatan = round($deposito/$credit*100);
-        $percentase_pengeluaran = round($credit/$deposito*100);
-        return view('admin.dashboard.dashboard')->with(compact('saldo', 'deposito', 'credit', 'credit_last_month', 'percentase_pendapatan', 'percentase_pengeluaran'));
+    	$deposito = '';
+        $credit = '';
+        $saldo = '';
+        $credit_last_month = '';
+        $check_deposito         = Deposito::sum('jumlah');
+        $check_credit           = Credit::sum('jumlah');
+        $month              = date('m');
+        $year               = date('Y');
+        $last_month         = $month-1%12;
+        if($check_deposito == NULL && $check_credit == NULL){
+            $deposito = 0;
+            $credit = 0;
+            $saldo = 0;
+            $credit_last_month = 0;
+        } elseif($check_deposito != NULL && $check_credit == NULL){
+            $deposito = Deposito::sum('jumlah');
+            $credit = 0;
+            $saldo = $deposito - $credit;
+            $credit_last_month = Credit::whereYear('tanggal', '=', ($last_month==0?($year-1):$year))->whereMonth('tanggal', '=', ($last_month==0?'12':$last_month))->sum('jumlah');
+        } elseif($check_deposito == NULL && $check_credit != NULL){
+            $deposito = 0;
+            $credit = Credit::sum('jumlah');
+            $saldo = $deposito - $credit;
+            $credit_last_month = Credit::whereYear('tanggal', '=', ($last_month==0?($year-1):$year))->whereMonth('tanggal', '=', ($last_month==0?'12':$last_month))->sum('jumlah');
+        } else {
+            $deposito = Deposito::sum('jumlah');
+            $credit = Credit::sum('jumlah');
+            $saldo = $deposito - $credit;
+            $credit_last_month = Credit::whereYear('tanggal', '=', ($last_month==0?($year-1):$year))->whereMonth('tanggal', '=', ($last_month==0?'12':$last_month))->sum('jumlah');
+        }
+        return view('admin.dashboard.dashboard')->with(compact('saldo', 'deposito', 'credit', 'credit_last_month'));
     }
 }
