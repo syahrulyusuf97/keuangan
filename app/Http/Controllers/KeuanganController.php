@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Deposito;
 use App\Credit;
+use Carbon\Carbon;
 
 class KeuanganController extends Controller
 {
@@ -313,5 +314,61 @@ class KeuanganController extends Controller
         $result_array = array('result_credit'=>$result_credit, 'result_deposito'=>$result_deposito);
 
         echo json_encode($result_array);
+    }
+
+    public function grafikDeposito()
+    {
+        $data = Deposito::select(\DB::raw('SUM(jumlah) as jumlah'),
+                \DB::raw("DATE_FORMAT(tanggal, '%M %Y') as month"))
+                ->whereYear('tanggal', Carbon::now('Asia/Jakarta')->format('Y'))
+                ->groupBy('month')
+                ->orderBy('month', 'asc')
+                ->get();
+        echo json_encode($data);
+    }
+
+    public function grafikKredit()
+    {
+        $data = Credit::select(\DB::raw('SUM(jumlah) as jumlah'),
+                \DB::raw("DATE_FORMAT(tanggal, '%M %Y') as month"))
+                ->whereYear('tanggal', Carbon::now('Asia/Jakarta')->format('Y'))
+                ->groupBy('month')
+                ->orderBy('month', 'asc')
+                ->get();
+        echo json_encode($data);
+    }
+
+    public function grafik()
+    {
+        $data_deposito = Deposito::select(\DB::raw('SUM(jumlah) as jumlah_deposito'),
+                \DB::raw("DATE_FORMAT(tanggal, '%M %Y') as month"))
+                ->whereYear('tanggal', date('Y', strtotime("-1 year")))
+                ->groupBy('month')
+                ->orderBy('month', 'desc')
+                ->get();
+
+        $data_kredit = Credit::select(\DB::raw('SUM(jumlah) as jumlah_kredit'),
+                \DB::raw("DATE_FORMAT(tanggal, '%M %Y') as month"))
+                ->whereYear('tanggal', date('Y', strtotime("-1 year")))
+                ->groupBy('month')
+                ->orderBy('month', 'desc')
+                ->get();
+
+        // $data = $data_deposito->union($data_kredit)->get();
+        $deposito = [];
+        $kredit = [];
+        $data = [];
+
+        foreach ($data_deposito as $key => $value) {
+            $deposito[] = array("jumlah_deposito"=>$value->jumlah_deposito, "bulan"=>$value->month);
+        }
+        array_push($data, $deposito);
+
+        foreach ($data_kredit as $key => $value) {
+            $kredit[] = array("jumlah_kredit"=>$value->jumlah_kredit, "bulan"=>$value->month);
+        }
+        array_push($data, $kredit);
+
+        echo json_encode($data);
     }
 }

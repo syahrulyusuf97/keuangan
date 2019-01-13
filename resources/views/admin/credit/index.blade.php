@@ -55,7 +55,7 @@
 									<label for="title" class="col-sm-2 control-label">Jumlah</label>
 
 									<div class="col-sm-10">
-										<input type="text" class="form-control" id="jumlah" name="jumlah" placeholder="Jumlah Credit...">
+										<input type="text" class="form-control" id="jumlah" name="jumlah" onkeypress="return isNumberKey(event)" placeholder="Jumlah Credit...">
 									</div>
 								</div>
 								<div class="form-group">
@@ -216,7 +216,7 @@
 								<label class="col-sm-2" style="padding-top: 5px;">Jumlah</label>
 								<div class="col-sm-10">
 									<label class="input col-sm-12">
-										<input type="text" class="form-control jml" name="jumlah_edit" id="jumlah_edit" />
+										<input type="text" class="form-control jml" name="jumlah_edit" onkeypress="return isNumberKey(event)" id="jumlah_edit" />
 									</label>
 								</div>
 							</div>
@@ -288,6 +288,13 @@
 <script src="{{ asset('public/js/bootstrap/bootstrap-datepicker.min.js') }}"></script>
 
 <script>
+	function isNumberKey(evt) {
+	    var charCode = (evt.which) ? evt.which : evt.keyCode;
+	    if (charCode > 31 && (charCode < 48 || charCode > 57))
+	        return false;
+	    return true;
+	}
+
 	function number_format(number, decimals, dec_point, thousands_sep) {
 	    // http://kevin.vanzonneveld.net
 	    // +   original by: Jonas Raoni Soares Silva (http://www.jsfromhell.com)

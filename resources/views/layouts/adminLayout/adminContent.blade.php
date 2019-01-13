@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Keuangan Admin</title>
+<title>KeuanganKu</title>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <!-- Bootstrap 3.3.7 -->
@@ -64,6 +64,8 @@
 <script src="{{ asset('public/js/adminLTE/dashboard.js') }}"></script>
 <!-- AdminLTE for demo purposes -->
 <script src="{{ asset('public/js/adminLTE/demo.js') }}"></script>
+
+<script src="{{ asset('public/js/chart/Chart.js') }}"></script>
 
 </body>
 </html>

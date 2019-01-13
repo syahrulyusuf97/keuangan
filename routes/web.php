@@ -30,6 +30,7 @@ Route::group(['middleware'=>['auth']], function(){
 	Route::match(['get', 'post'], '/admin/update-pwd', 'AdminController@updatePassword');
 	Route::get('/admin/profil', 'AdminController@profil');
 	Route::get('/dashboard/riwayat/{parameter}', 'KeuanganController@riwayat');
+	Route::get('/dashboard/grafik', 'KeuanganController@grafik');
 
 	// Deposito
 	Route::match(['get', 'post'], '/deposito', 'KeuanganController@deposito');
@@ -37,6 +38,7 @@ Route::group(['middleware'=>['auth']], function(){
 	Route::match(['get', 'post'], '/deposito/update', 'KeuanganController@update_deposito');
 	Route::get('/deposito/akumulasi/{parameter}', 'KeuanganController@akumulasi_total_deposito');
 	Route::get('/deposito/get-current/{id}', 'KeuanganController@get_current_deposito');
+	Route::get('/deposito/get-deposito', 'KeuanganController@grafikDeposito');
 
 	// Credit
 	Route::match(['get', 'post'], '/credit', 'KeuanganController@credit');
@@ -44,5 +46,6 @@ Route::group(['middleware'=>['auth']], function(){
 	Route::match(['get', 'post'], '/credit/update', 'KeuanganController@update_credit');
 	Route::get('/credit/akumulasi/{parameter}', 'KeuanganController@akumulasi_total_credit');
 	Route::get('/credit/get-current/{id}', 'KeuanganController@get_current_credit');
+	Route::get('/credit/get-kredit', 'KeuanganController@grafikKredit');
 	
 });
