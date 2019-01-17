@@ -406,7 +406,10 @@
 		$('#jumlah').val('');
 		$('#datepicker').val('');
 		$('#option_view').val('Keseluruhan');
-		$('#example1').dataTable()
+		$('#example1').dataTable({
+			"orderable": false,
+			"order": [],
+		})
 		//Date picker
 	    $('#datepicker').datepicker({
 	      autoclose: true,

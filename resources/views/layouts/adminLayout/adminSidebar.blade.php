@@ -42,7 +42,7 @@
       </li>
       <li <?php if(preg_match("/credit/i", $url)) { ?> class="active" <?php } ?>>
         <a href="{{ url('/credit') }}">
-          <i class="fa fa-money"></i> <span>Credit</span>
+          <i class="fa fa-money"></i> <span>Kredit</span>
         </a>
       </li>
     </ul>

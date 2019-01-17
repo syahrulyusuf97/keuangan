@@ -8,6 +8,7 @@
 	}
 ?>
 
+
 <section class="content-header">
 	<h1>
 		Dashboard
@@ -29,7 +30,7 @@
 				<div class="inner">
 					<h3>{{ rupiah($saldo) }}</h3>
 
-					<p>Saldo Anda</p>
+					<p>Sisa Saldo</p>
 				</div>
 				<div class="icon">
 					<i class="ion ion-bag"></i>
@@ -59,7 +60,7 @@
 				<div class="inner">
 					<h3>{{ rupiah($credit_last_month) }}</h3>
 
-					<p>Total Credit Last Month</p>
+					<p>Total Kredit Bulan Lalu</p>
 				</div>
 				<div class="icon">
 					<i class="ion ion-person-add"></i>
@@ -74,7 +75,7 @@
 				<div class="inner">
 					<h3>{{ rupiah($credit) }}</h3>
 
-					<p>Total Credit</p>
+					<p>Total Kredit</p>
 				</div>
 				<div class="icon">
 					<i class="ion ion-pie-graph"></i>
@@ -86,6 +87,30 @@
 	</div>
 	<!-- /.row -->
 	<!-- Main row -->
+	<div class="row">
+        <!-- Left col -->
+        <section class="col-lg-12 connectedSortable">
+          <!-- BAR CHART -->
+	      	<div class="box box-success">
+		        <div class="box-header with-border">
+		          <h3 class="box-title analisa">Analisa Keuangan Tahun {{ date('Y', strtotime('-1 year')) }}</h3>
+
+		          <div class="box-tools pull-right">
+		            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+		            </button>
+		          </div>
+		        </div>
+		        <div class="box-body">
+		        	<div class="chart">
+		            	<canvas id="barChart" style="height:230px"></canvas>
+		          	</div>
+		        </div>
+		        <!-- /.box-body -->
+	      	</div>
+          <!-- /.box -->
+        </section>  
+    </div>
+
 	<div class="row">
 		<!-- /.Left col -->
 		<!-- right col (We are only adding the ID to make the widgets sortable)-->
@@ -167,30 +192,6 @@
 		</section>
 			<!-- right col -->
 	</div>
-
-	<div class="row">
-        <!-- Left col -->
-        <section class="col-lg-12 connectedSortable">
-          <!-- BAR CHART -->
-	      	<div class="box box-success">
-		        <div class="box-header with-border">
-		          <h3 class="box-title analisa">Analisa Keuangan Tahun {{ date('Y', strtotime('-1 year')) }}</h3>
-
-		          <div class="box-tools pull-right">
-		            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-		            </button>
-		          </div>
-		        </div>
-		        <div class="box-body">
-		          <div class="chart">
-		            <canvas id="barChart" style="height:230px"></canvas>
-		          </div>
-		        </div>
-		        <!-- /.box-body -->
-	      	</div>
-          <!-- /.box -->
-        </section>  
-    </div>
 		<!-- /.row (main row) -->
 </section>
 <!-- /.content -->

@@ -5,6 +5,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <!-- Bootstrap 3.3.7 -->
+  <link rel="icon" type="image/png" href="{{ asset('public/images/icon/keuanganku.png') }}" />
   <link rel="stylesheet" href="{{ asset('public/css/bootstrap/bootstrap.min.css') }}">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="{{ asset('public/css/font-awesome/css/font-awesome.min.css') }}">

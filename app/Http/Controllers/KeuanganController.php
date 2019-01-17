@@ -35,7 +35,7 @@ class KeuanganController extends Controller
     		return redirect('/deposito')->with('flash_message_success', 'Deposito has been added successfully!');
     	}
 
-    	$data_deposito = Deposito::orderBy('tanggal', 'desc')->get();
+    	$data_deposito = Deposito::orderBy('created_at', 'desc')->get();
         $total_deposito  = Deposito::sum('jumlah');
     	return view('admin.deposito.index')->with(compact('data_deposito', 'total_deposito'));
     }
@@ -83,7 +83,7 @@ class KeuanganController extends Controller
 
     		return redirect('/credit')->with('flash_message_success', 'Credit has been added successfully!');
     	}
-    	$data_credit = Credit::orderBy('tanggal', 'desc')->get();
+    	$data_credit = Credit::orderBy('created_at', 'desc')->get();
         $total_credit = Credit::sum('jumlah');
     	return view('admin.credit.index')->with(compact('data_credit', 'total_credit'));
     }
