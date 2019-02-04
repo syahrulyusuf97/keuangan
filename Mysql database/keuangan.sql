@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.8.0
+-- version 4.8.4
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Waktu pembuatan: 03 Okt 2018 pada 10.37
--- Versi server: 10.1.31-MariaDB
--- Versi PHP: 7.1.16
+-- Host: localhost
+-- Generation Time: Feb 02, 2019 at 06:38 PM
+-- Server version: 10.1.37-MariaDB
+-- PHP Version: 7.3.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -25,51 +25,23 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `credits`
+-- Table structure for table `cash`
 --
 
-CREATE TABLE `credits` (
-  `credit_id` int(10) UNSIGNED NOT NULL,
-  `keperluan` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `jumlah` double NOT NULL,
-  `tanggal` date NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data untuk tabel `credits`
---
-
-INSERT INTO `credits` (`credit_id`, `keperluan`, `jumlah`, `tanggal`, `created_at`, `updated_at`) VALUES
-(1, 'Beli sabun mandi', 1700, '2018-09-24', '2018-09-24 02:21:18', '2018-09-24 02:21:18');
+CREATE TABLE `cash` (
+  `c_id` int(11) NOT NULL,
+  `c_transaksi` varchar(255) NOT NULL,
+  `c_jumlah` decimal(20,2) NOT NULL,
+  `c_jenis` enum('D','K') NOT NULL,
+  `c_tanggal` date NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `depositos`
---
-
-CREATE TABLE `depositos` (
-  `deposito_id` int(10) UNSIGNED NOT NULL,
-  `keterangan` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `jumlah` double NOT NULL,
-  `tanggal` date NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data untuk tabel `depositos`
---
-
-INSERT INTO `depositos` (`deposito_id`, `keterangan`, `jumlah`, `tanggal`, `created_at`, `updated_at`) VALUES
-(1, 'Uang saku', 150000, '2018-09-23', '2018-09-23 12:58:26', '2018-09-23 12:58:26');
-
--- --------------------------------------------------------
-
---
--- Struktur dari tabel `migrations`
+-- Table structure for table `migrations`
 --
 
 CREATE TABLE `migrations` (
@@ -79,7 +51,7 @@ CREATE TABLE `migrations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data untuk tabel `migrations`
+-- Dumping data for table `migrations`
 --
 
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
@@ -91,7 +63,7 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `password_resets`
+-- Table structure for table `password_resets`
 --
 
 CREATE TABLE `password_resets` (
@@ -101,7 +73,7 @@ CREATE TABLE `password_resets` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data untuk tabel `password_resets`
+-- Dumping data for table `password_resets`
 --
 
 INSERT INTO `password_resets` (`email`, `token`, `created_at`) VALUES
@@ -110,7 +82,7 @@ INSERT INTO `password_resets` (`email`, `token`, `created_at`) VALUES
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -124,7 +96,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data untuk tabel `users`
+-- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
@@ -135,60 +107,48 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `remember_token`, `creat
 --
 
 --
--- Indeks untuk tabel `credits`
+-- Indexes for table `cash`
 --
-ALTER TABLE `credits`
-  ADD PRIMARY KEY (`credit_id`);
+ALTER TABLE `cash`
+  ADD PRIMARY KEY (`c_id`);
 
 --
--- Indeks untuk tabel `depositos`
---
-ALTER TABLE `depositos`
-  ADD PRIMARY KEY (`deposito_id`);
-
---
--- Indeks untuk tabel `migrations`
+-- Indexes for table `migrations`
 --
 ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indeks untuk tabel `password_resets`
+-- Indexes for table `password_resets`
 --
 ALTER TABLE `password_resets`
   ADD KEY `password_resets_email_index` (`email`);
 
 --
--- Indeks untuk tabel `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `users_email_unique` (`email`);
 
 --
--- AUTO_INCREMENT untuk tabel yang dibuang
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT untuk tabel `credits`
+-- AUTO_INCREMENT for table `cash`
 --
-ALTER TABLE `credits`
-  MODIFY `credit_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+ALTER TABLE `cash`
+  MODIFY `c_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT untuk tabel `depositos`
---
-ALTER TABLE `depositos`
-  MODIFY `deposito_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT untuk tabel `migrations`
+-- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT untuk tabel `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;

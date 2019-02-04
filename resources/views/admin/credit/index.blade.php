@@ -11,11 +11,11 @@
 <section class="content-header">
 	<h1>
 		Dashboard
-		<small>Credit</small>
+		<small>Kas Keluar</small>
 	</h1>
 	<ol class="breadcrumb">
-		<li><a href="#"><i class="fa fa-dashboard"></i> Credit</a></li>
-		<li class="active">Tambah Credit</li>
+		<li><a href="#"><i class="fa fa-dashboard"></i> Kas Keluar</a></li>
+		<li class="active">Tambah Kas Keluar</li>
 	</ol>
 </section>
 
@@ -38,17 +38,17 @@
 				<div class="col-md-6" style="margin-top: 30px;">
 					<div class="box">
 						<div class="box-header with-border">
-							<h3 class="box-title">Form Tambah Credit</h3>
+							<h3 class="box-title">Form Tambah Kas Keluar</h3>
 						</div>
 						<!-- /.box-header -->
 						<!-- form start -->
-						<form class="form-horizontal" method="post" action="{{ url('/credit') }}">{{ csrf_field() }}
+						<form class="form-horizontal" method="post" action="{{ url('/kas/keluar') }}">{{ csrf_field() }}
 							<div class="box-body">
 								<div class="form-group">
 									<label for="title" class="col-sm-2 control-label">Keperluan</label>
 
 									<div class="col-sm-10">
-										<input type="text" class="form-control" id="kep" name="kep" placeholder="Keperluan Credit...">
+										<input type="text" class="form-control" id="kep" name="kep" placeholder="Keperluan Kas Keluar...">
 									</div>
 								</div>
 								<div class="form-group">
@@ -66,7 +66,7 @@
 						                  <div class="input-group-addon">
 						                    <i class="fa fa-calendar"></i>
 						                  </div>
-						                  <input type="text" class="form-control pull-right" id="datepicker" name="tanggal">
+						                  <input type="text" class="form-control pull-right" id="datepicker" name="tanggal" autocomplete="off">
 						                </div>
 									</div>
 								</div>
@@ -82,7 +82,7 @@
 				<div class="col-md-6" style="margin-top: 30px;">
 					<div class="box">
 						<div class="box-header with-border">
-							<h3 class="box-title">Akumulasi Total Credit</h3>
+							<h3 class="box-title">Akumulasi Total Kas Keluar</h3>
 							<a style="cursor: pointer;" class="pull-right" id="rincian" data-toggle="modal" data-target="#modal_rincian">Rincian</a>
 						</div>
 						<!-- /.box-header -->
@@ -140,7 +140,7 @@
 							</div>
 							<!-- /.box-body -->
 							<div class="box-footer">
-								<h3 class="pull-left">Total Credit</h3>
+								<h3 class="pull-left">Total Kas Keluar</h3>
 								<h3 class="pull-right" id="txt_total_credit">{{ rupiah($total_credit) }}</h3>
 							</div>
 							<!-- /.box-footer -->
@@ -155,27 +155,17 @@
 					<table id="example1" class="table table-bordered table-striped table-responsive">
 						<thead>
 							<tr>
-								<th>Nomor</th>
+								<th>Tanggal</th>
 								<th>Keperluan</th>
 								<th>Jumlah</th>
-								<th>Tanggal</th>
 								<th>Aksi</th>
 							</tr>
 						</thead>
 						<tbody>
-							@foreach($data_credit as $key => $credit)
-							<tr>
-								<td>{{ $key+1 }}</td>
-								<td>{{ $credit->keperluan }}</td>
-								<td>{{ rupiah($credit->jumlah) }}</td>
-								<td>{{ $credit->tanggal }}</td>
-								<td><a href="{{ url('/credit/delete/'.$credit->credit_id) }}" onclick="return confirm('Apakah anda yakin akan menghapus data ini?\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(')" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a>&nbsp;<a href="#" class="btn btn-sm btn-info edit" data-id="{{ $credit->credit_id }}"><i class="fa fa-pencil"></i></a></td>
-							</tr>
-							@endforeach
 						</tbody>
 						<tfoot>
 							<tr>
-								<th>Nomor</th>
+								<th>Tanggal</th>
 								<th>Keperluan</th>
 								<th>Jumlah</th>
 								<th>Aksi</th>
@@ -194,9 +184,9 @@
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title">Edit Credit</h4>
+				<h4 class="modal-title">Edit Kas Keluar</h4>
 			</div>
-			<form class="form-horizontal" method="post" action="{{ url('/credit/update') }}">
+			<form class="form-horizontal" method="post" action="{{ url('/kas/keluar/edit') }}">
 				{{ csrf_field() }}
 				<div class="modal-body">
 					<input type="hidden" name="id" id="id">
@@ -255,7 +245,7 @@
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Rincian Credit</h4>
+        <h4 class="modal-title">Rincian Kas Keluar</h4>
       </div>
       <div class="modal-body">
         <div class="table-responsive">
@@ -273,7 +263,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <h3 class="pull-left">Total Credit</h3>
+        <h3 class="pull-left">Total Kas Keluar</h3>
 		<h3 class="pull-right" id="rincian_total_credit"></h3>
       </div>
     </div>
@@ -288,6 +278,7 @@
 <script src="{{ asset('public/js/bootstrap/bootstrap-datepicker.min.js') }}"></script>
 
 <script>
+	var baseUrl = '{{ url('/') }}';
 	function isNumberKey(evt) {
 	    var charCode = (evt.which) ? evt.which : evt.keyCode;
 	    if (charCode > 31 && (charCode < 48 || charCode > 57))
@@ -401,14 +392,21 @@
 	}
 
 	$(function () {
-		var baseUrl = '{{ url('/') }}';
+
 		$('#kep').val('');
 		$('#jumlah').val('');
 		$('#datepicker').val('');
 		$('#option_view').val('Keseluruhan');
 		$('#example1').dataTable({
-			"orderable": false,
-			"order": [],
+			"processing": true,
+			"serverSide": true,
+			"ajax": "{{ route('credit') }}",
+			"columns":[
+				{"data": "tanggal"},
+				{"data": "c_transaksi"},
+				{"data": "jumlah"},
+				{"data": "aksi"}
+			]
 		})
 		//Date picker
 	    $('#datepicker').datepicker({
@@ -453,7 +451,7 @@
 	    	var nilai = $('#option_view').val();
 	    	$('#table_rincian').dataTable().fnClearTable();
 	    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-	    	$.getJSON(baseUrl+'/credit/akumulasi/'+nilai+'_null', function(resp){
+	    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_null', function(resp){
 		        // console.log(resp.total);
 		        var array_data = [];
              	var temp_array = [];
@@ -481,7 +479,7 @@
 			if ($('#option_view').val() == "Keseluruhan") {
 				$('#table_rincian').dataTable().fnClearTable();
 				$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-				$.getJSON(baseUrl+'/credit/akumulasi/'+nilai+'_null', function(resp){
+				$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_null', function(resp){
 			        $('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
 			        // console.log(resp.total);
 			        var array_data = [];
@@ -541,7 +539,7 @@
 	    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
 	    	var nilai = $('#option_view').val();
 	    	var tgl = getFormattedDate($('#pertanggal').val());
-	    	$.getJSON(baseUrl+'/credit/akumulasi/'+nilai+'_'+tgl, function(resp){
+	    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_'+tgl, function(resp){
 		        $('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
 		        // console.log(resp.total);
 		        var array_data = [];
@@ -570,7 +568,7 @@
 	    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
 	    	var nilai = $('#option_view').val();
 	    	var tgl = $('#perbulan').val();
-	    	$.getJSON(baseUrl+'/credit/akumulasi/'+nilai+'_'+tgl, function(resp){
+	    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_'+tgl, function(resp){
 		        $('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
 		        // console.log(resp);
 		        var array_data = [];
@@ -599,7 +597,7 @@
 	    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
 	    	var nilai = $('#option_view').val();
 	    	var tahun = $('#pertahun').val();
-	    	$.getJSON(baseUrl+'/credit/akumulasi/'+nilai+'_'+tahun, function(resp){
+	    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_'+tahun, function(resp){
 		        $('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
 		        // console.log(resp);
 		        var array_data = [];
@@ -622,38 +620,7 @@
 		    });
 	    })
 
-	    $('.edit').on('click', function(){
-	    	$('#kep_edit').val('');
-	        $('#jumlah_edit').val('');
-	        $('#datepicker_edit').val('');
-	    	var id = $(this).data('id');
-	    	$.getJSON(baseUrl+'/credit/get-current/'+id, function(resp){
-		        // console.log(resp.jumlah);
-		        $('#id').val(resp.credit_id);
-		        $('#kep_edit').val(resp.keperluan);
-		        $('#jumlah_edit').val(rupiah(resp.jumlah, 'Rp'));
-		        $('#datepicker_edit').val(formatDate(resp.tanggal));
-		        $('#modal_edit').modal('show');
-		    });
-	    	
-	    })
 
-	    function rupiah(angka, prefix)
-		{
-			var number_string = angka.toString(),
-			split	= number_string.split(','),
-			sisa 	= split[0].length % 3,
-			rupiah 	= split[0].substr(0, sisa),
-			ribuan 	= split[0].substr(sisa).match(/\d{3}/gi);
-
-			if (ribuan) {
-				separator = sisa ? '.' : '';
-				rupiah += separator + ribuan.join('.');
-			}
-
-			rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
-			return prefix == undefined ? rupiah : (rupiah ? 'Rp' + rupiah : '');
-		}
 	})
 
 	var i_jumlah = document.getElementById('jumlah');
@@ -671,6 +638,20 @@
 	// 	i_jumlah_edit.value 		= formatRupiah(i_jumlah_edit.value, 'Rp');
 	// });
 
+	function edit(id) {
+		$('#kep_edit').val('');
+		$('#jumlah_edit').val('');
+		$('#datepicker_edit').val('');
+		$.getJSON(baseUrl+'/kas/keluar/detail/'+id, function(resp){
+			// console.log(resp.jumlah);
+			$('#id').val(resp.id);
+			$('#kep_edit').val(resp.keperluan);
+			$('#jumlah_edit').val(rupiah(resp.jumlah, 'Rp'));
+			$('#datepicker_edit').val(formatDate(resp.tanggal));
+			$('#modal_edit').modal('show');
+		});
+	}
+
 	function formatRupiah(angka, prefix)
 	{
 		var number_string = angka.replace(/[^,\d]/g, '').toString(),
@@ -684,6 +665,23 @@
 			rupiah += separator + ribuan.join('.');
 		}
 		
+		rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+		return prefix == undefined ? rupiah : (rupiah ? 'Rp' + rupiah : '');
+	}
+
+	function rupiah(angka, prefix)
+	{
+		var number_string = angka.toString(),
+				split	= number_string.split(','),
+				sisa 	= split[0].length % 3,
+				rupiah 	= split[0].substr(0, sisa),
+				ribuan 	= split[0].substr(sisa).match(/\d{3}/gi);
+
+		if (ribuan) {
+			separator = sisa ? '.' : '';
+			rupiah += separator + ribuan.join('.');
+		}
+
 		rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
 		return prefix == undefined ? rupiah : (rupiah ? 'Rp' + rupiah : '');
 	}

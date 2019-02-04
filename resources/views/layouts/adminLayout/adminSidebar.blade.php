@@ -35,14 +35,14 @@
           <i class="fa fa-dashboard"></i> <span>Dashboard</span>
         </a>
       </li>
-      <li <?php if(preg_match("/deposito/i", $url)) { ?> class="active" <?php } ?>>
-        <a href="{{ url('/deposito') }}">
-          <i class="fa fa-money"></i> <span>Deposito</span>
+      <li <?php if(preg_match("/masuk/i", $url)) { ?> class="active" <?php } ?>>
+        <a href="{{ url('/kas/masuk') }}">
+          <i class="fa fa-money"></i> <span>Kas Masuk</span>
         </a>
       </li>
-      <li <?php if(preg_match("/credit/i", $url)) { ?> class="active" <?php } ?>>
-        <a href="{{ url('/credit') }}">
-          <i class="fa fa-money"></i> <span>Kredit</span>
+      <li <?php if(preg_match("/keluar/i", $url)) { ?> class="active" <?php } ?>>
+        <a href="{{ url('/kas/keluar') }}">
+          <i class="fa fa-money"></i> <span>Kas Keluar</span>
         </a>
       </li>
     </ul>

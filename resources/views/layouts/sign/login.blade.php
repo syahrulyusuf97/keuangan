@@ -18,7 +18,7 @@
     <!-- Ionicons -->
     <link rel="stylesheet" href="{{ asset('public/css/Ionicons/css/ionicons.min.css') }}">
     <!-- Theme style -->
-    <link rel="stylesheet" href="{{ asset('public/css/AdminLTE/AdminLTE.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/css/adminLTE/AdminLTE.min.css') }}">
     <!-- iCheck -->
     <link rel="stylesheet" href="{{ asset('public/css/iCheck/square/blue.css') }}">
     <!-- Google Font -->

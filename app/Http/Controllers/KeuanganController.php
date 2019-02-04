@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Deposito;
-use App\Credit;
+use App\Cash;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+use DataTables;
+use DB;
+use Response;
 
 class KeuanganController extends Controller
 {
@@ -16,7 +20,7 @@ class KeuanganController extends Controller
         return implode("", explode(".", $explode_rp));
     }
 
-    public function deposito(Request $request)
+    public function debit(Request $request)
     {
     	if ($request->isMethod('post')) {
     		# code...
@@ -26,44 +30,124 @@ class KeuanganController extends Controller
             // echo($tanggal); die;
     		$jumlah = $this->formatPrice($data['jumlah']);
 
-    		$deposito = new Deposito;
-    		$deposito->keterangan 	= $data['ket'];
-    		$deposito->jumlah		= $jumlah;
-            $deposito->tanggal      = $tanggal;
-    		$deposito->save();
+    		DB::beginTransaction();
+    		try{
+                $debit = new Cash;
+                $debit->c_transaksi 	= $data['ket'];
+                $debit->c_jumlah		= $jumlah;
+                $debit->c_jenis         = "D";
+                $debit->c_tanggal       = $tanggal;
+                $debit->save();
 
-    		return redirect('/deposito')->with('flash_message_success', 'Deposito has been added successfully!');
+                DB::commit();
+                return redirect('/kas/masuk')->with('flash_message_success', 'Kas masuk berhasil disimpan!');
+            }catch (\Exception $e){
+                DB::rollback();
+                return redirect('/kas/masuk')->with('flash_message_error', 'Kas masuk gagal disimpan!');
+            }
     	}
 
-    	$data_deposito = Deposito::orderBy('created_at', 'desc')->get();
-        $total_deposito  = Deposito::sum('jumlah');
-    	return view('admin.deposito.index')->with(compact('data_deposito', 'total_deposito'));
+        $total_debit  = Cash::where('c_jenis', 'D')->sum('c_jumlah');
+    	return view('admin.debit.index')->with(compact('total_debit'));
     }
 
-    public function delete_deposito($id = null)
+    public function getDebit()
     {
-    	Deposito::where(['deposito_id'=> $id])->delete();
-    	return redirect('/deposito')->with('flash_message_success', 'Deposito has been deleted successfully!');
+        $data = Cash::where('c_jenis', 'D')->orderBy('created_at', 'desc');
+
+        return DataTables::of($data)
+
+            ->addColumn('tanggal', function ($data) {
+
+                return date('d-m-Y', strtotime($data->c_tanggal));
+
+            })
+
+            ->addColumn('jumlah', function ($data) {
+
+                return '<p class="text-right">'.number_format($data->c_jumlah, '2', ',', '.').'</p>';
+
+            })
+
+            ->addColumn('aksi', function ($data) {
+
+                return '<p class="text-center"><a href="'.url('/kas/masuk/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i></a>&nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i></a></p>';
+
+            })
+
+            ->rawColumns(['tanggal', 'jumlah', 'aksi'])
+
+            ->make(true);
     }
 
-    public function get_current_deposito($id = null)
+    public function deleteDebit($id = null)
     {
-        $data = Deposito::where('deposito_id', '=', $id)->first();
-        echo json_encode($data);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            return view('errors/404');
+        }
+
+        DB::beginTransaction();
+        try{
+            Cash::where(['c_id'=> $id])->delete();
+            DB::commit();
+            return redirect('/kas/masuk')->with('flash_message_success', 'Berhasil menghapus kas masuk!');
+        }catch (\Exception $e){
+            DB::rollback();
+            return redirect('/kas/masuk')->with('flash_message_error', 'Gagal menghapus kas masuk!');
+        }
     }
 
-    public function update_deposito(Request $request)
+    public function getCurrentDebit($id = null)
+    {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            return view('errors/404');
+        }
+
+        $data = Cash::where('c_id', '=', $id)->first();
+        $results = array(
+            'id' => Crypt::encrypt($data->c_id),
+            'keterangan' => $data->c_transaksi,
+            'jumlah' => $data->c_jumlah,
+            'tanggal' => $data->c_tanggal
+        );
+
+        echo json_encode($results);
+
+    }
+
+    public function updateDebit(Request $request)
     {
     	$data = $request->all();
     	// print_r($data); die;
         $tanggal = date('Y-m-d', strtotime($data['tanggal_edit']));
     	$jumlah = $this->formatPrice($data['jumlah_edit']);
-    	Deposito::where(['deposito_id'=>$data['id']])->update([
-    		'keterangan'=>$data['ket_edit'],
-    		'jumlah'=>$jumlah,
-            'tanggal'=>$tanggal
-    	]);
-    	return redirect('/deposito')->with('flash_message_success', 'Deposito has been updated successfully!');
+
+    	$id = $data['id'];
+
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            return view('errors/404');
+        }
+
+    	DB::beginTransaction();
+    	try{
+            Cash::where(['c_id'=>$id])->update([
+                'c_transaksi'   => $data['ket_edit'],
+                'c_jumlah'      => $jumlah,
+                'c_tanggal'     => $tanggal
+            ]);
+            DB::commit();
+            return redirect('/kas/masuk')->with('flash_message_success', 'Berhasil mengubah kas masuk!');
+        }catch (\Exception $e){
+    	    DB::rollback();
+            return redirect('/kas/masuk')->with('flash_message_error', 'Gagal mengubah kas masuk!');
+        }
+
     }
 
     public function credit(Request $request)
@@ -75,46 +159,127 @@ class KeuanganController extends Controller
     		$jumlah = $this->formatPrice($data['jumlah']);
             $tanggal = date('Y-m-d', strtotime($data['tanggal']));
 
-    		$credit = new Credit;
-    		$credit->keperluan 	= $data['kep'];
-    		$credit->jumlah		= $jumlah;
-            $credit->tanggal    = $tanggal;
-    		$credit->save();
+            DB::beginTransaction();
+            try{
+                $credit = new Cash;
+                $credit->c_transaksi 	= $data['kep'];
+                $credit->c_jumlah		= $jumlah;
+                $credit->c_jenis		= "K";
+                $credit->c_tanggal      = $tanggal;
+                $credit->save();
 
-    		return redirect('/credit')->with('flash_message_success', 'Credit has been added successfully!');
+                DB::commit();
+                return redirect('/kas/keluar')->with('flash_message_success', 'Kas keluar berhasil disimpan!');
+            }catch (\Exception $e){
+                DB::rollback();
+                return redirect('/kas/keluar')->with('flash_message_error', 'Kas keluar gagal disimpan!');
+            }
+
     	}
-    	$data_credit = Credit::orderBy('created_at', 'desc')->get();
-        $total_credit = Credit::sum('jumlah');
+    	$data_credit = Cash::where('c_jenis', 'K')->orderBy('created_at', 'desc')->get();
+        $total_credit = Cash::where('c_jenis', 'K')->sum('c_jumlah');
     	return view('admin.credit.index')->with(compact('data_credit', 'total_credit'));
     }
 
-    public function delete_credit($id = null)
+    public function getCredit()
     {
-    	Credit::where(['credit_id'=> $id])->delete();
-    	return redirect('/credit')->with('flash_message_success', 'Credit has been deleted successfully!');
+        $data = Cash::where('c_jenis', 'K')->orderBy('created_at', 'desc');
+
+        return DataTables::of($data)
+
+            ->addColumn('tanggal', function ($data) {
+
+                return date('d-m-Y', strtotime($data->c_tanggal));
+
+            })
+
+            ->addColumn('jumlah', function ($data) {
+
+                return '<p class="text-right">'.number_format($data->c_jumlah, '2', ',', '.').'</p>';
+
+            })
+
+            ->addColumn('aksi', function ($data) {
+
+                return '<p class="text-center"><a href="'.url('/kas/keluar/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i></a>&nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i></a></p>';
+
+            })
+
+            ->rawColumns(['tanggal', 'jumlah', 'aksi'])
+
+            ->make(true);
     }
 
-    public function get_current_credit($id = null)
+    public function deleteCredit($id = null)
     {
-        $data = Credit::where('credit_id', '=', $id)->first();
-        echo json_encode($data);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            return view('errors/404');
+        }
+
+        DB::beginTransaction();
+        try{
+            Cash::where(['c_id'=> $id])->delete();
+            DB::commit();
+            return redirect('/kas/keluar')->with('flash_message_success', 'kas keluar berhasil dihapus!');
+        }catch (\Exception $e){
+            DB::rollback();
+            return redirect('/kas/keluar')->with('flash_message_error', 'kas keluar gagal dihapus!');
+        }
+
     }
 
-    public function update_credit(Request $request)
+    public function getCurrentCredit($id = null)
+    {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            return view('errors/404');
+        }
+
+        $data = Cash::where('c_id', '=', $id)->first();
+        $results = array(
+            'id' => Crypt::encrypt($data->c_id),
+            'keperluan' => $data->c_transaksi,
+            'jumlah' => $data->c_jumlah,
+            'tanggal' => $data->c_tanggal
+        );
+        echo json_encode($results);
+    }
+
+    public function updateCredit(Request $request)
     {
     	$data = $request->all();
     	// print_r($data); die;
     	$jumlah = $this->formatPrice($data['jumlah_edit']);
         $tanggal = date('Y-m-d', strtotime($data['tanggal_edit']));
-    	Credit::where(['credit_id'=>$data['id']])->update([
-    		'keperluan'=>$data['kep_edit'],
-    		'jumlah'=>$jumlah,
-            'tanggal'=>$tanggal
-    	]);
-    	return redirect('/credit')->with('flash_message_success', 'Credit has been updated successfully!');
+
+        $id = $data['id'];
+
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            return view('errors/404');
+        }
+
+        DB::beginTransaction();
+        try{
+            Cash::where(['c_id'=>$id])->update([
+                'c_transaksi'   => $data['kep_edit'],
+                'c_jumlah'      => $jumlah,
+                'c_tanggal'     => $tanggal
+            ]);
+            DB::commit();
+            return redirect('/kas/keluar')->with('flash_message_success', 'Berhasil mengubah kas keluar!');
+        }catch (\Exception $e){
+            DB::rollback();
+            return redirect('/kas/keluar')->with('flash_message_error', 'Gagal mengubah kas keluar!');
+        }
+
     }
 
-    public function akumulasi_total_credit($parameter = null)
+    public function akumulasiTotalCredit($parameter = null)
     {
         $param      = explode("_", $parameter);
         $tampil     = $param[0];
@@ -124,14 +289,14 @@ class KeuanganController extends Controller
 
         if ($tampil == "Keseluruhan") {
             // echo json_encode($tampil);
-            $total_credit   = Credit::sum('jumlah');
-            $data           = Credit::get();
+            $total_credit   = Cash::where('c_jenis', 'K')->sum('c_jumlah');
+            $data           = Cash::where('c_jenis', 'K')->get();
 
             foreach ($data as $value) {
                 $row = array(
-                    'tanggal' => $value->tanggal,
-                    'keperluan' => $value->keperluan,
-                    'jumlah' => $value->jumlah
+                    'tanggal' => $value->c_tanggal,
+                    'keperluan' => $value->c_transaksi,
+                    'jumlah' => $value->c_jumlah
                 );
 
                 $result[] = $row;
@@ -141,14 +306,14 @@ class KeuanganController extends Controller
 
             echo json_encode($result_array);
         } elseif ($tampil == "Pertanggal") {
-            $total_credit = Credit::where(['tanggal'=>$tanggal])->sum('jumlah');
-            $data         = Credit::where('tanggal', '=', $tanggal)->get();
+            $total_credit = Cash::where('c_jenis', 'K')->where(['c_tanggal'=>$tanggal])->sum('c_jumlah');
+            $data         = Cash::where('c_jenis', 'K')->where('c_tanggal', '=', $tanggal)->get();
 
             foreach ($data as $value) {
                 $row = array(
-                    'tanggal' => $value->tanggal,
-                    'keperluan' => $value->keperluan,
-                    'jumlah' => $value->jumlah
+                    'tanggal' => $value->c_tanggal,
+                    'keperluan' => $value->c_transaksi,
+                    'jumlah' => $value->c_jumlah
                 );
 
                 $result[] = $row;
@@ -162,14 +327,14 @@ class KeuanganController extends Controller
             $ex_params = explode("-", $params);
             $bulan = $ex_params[0];
             $tahun = $ex_params[1];
-            $total_credit = Credit::whereYear('tanggal', '=', $tahun)->whereMonth('tanggal', '=', $bulan)->sum('jumlah');
-            $data         = Credit::whereYear('tanggal', '=', $tahun)->whereMonth('tanggal', '=', $bulan)->get();
+            $total_credit = Cash::where('c_jenis', 'K')->whereYear('c_tanggal', '=', $tahun)->whereMonth('c_tanggal', '=', $bulan)->sum('c_jumlah');
+            $data         = Cash::where('c_jenis', 'K')->whereYear('c_tanggal', '=', $tahun)->whereMonth('c_tanggal', '=', $bulan)->get();
 
             foreach ($data as $value) {
                 $row = array(
-                    'tanggal' => $value->tanggal,
-                    'keperluan' => $value->keperluan,
-                    'jumlah' => $value->jumlah
+                    'tanggal' => $value->c_tanggal,
+                    'keperluan' => $value->c_transaksi,
+                    'jumlah' => $value->c_jumlah
                 );
 
                 $result[] = $row;
@@ -179,14 +344,14 @@ class KeuanganController extends Controller
 
             echo json_encode($result_array);
         } elseif ($tampil == "Pertahun") {
-            $total_credit = Credit::whereYear('tanggal', '=', $tanggal)->sum('jumlah');
-            $data         = Credit::whereYear('tanggal', '=', $tanggal)->get();
+            $total_credit = Cash::where('c_jenis', 'K')->whereYear('c_tanggal', '=', $tanggal)->sum('c_jumlah');
+            $data         = Cash::where('c_jenis', 'K')->whereYear('c_tanggal', '=', $tanggal)->get();
 
             foreach ($data as $value) {
                 $row = array(
-                    'tanggal' => $value->tanggal,
-                    'keperluan' => $value->keperluan,
-                    'jumlah' => $value->jumlah
+                    'tanggal' => $value->c_tanggal,
+                    'keperluan' => $value->c_transaksi,
+                    'jumlah' => $value->c_jumlah
                 );
 
                 $result[] = $row;
@@ -198,7 +363,7 @@ class KeuanganController extends Controller
         }
     }
 
-    public function akumulasi_total_deposito($parameter = null)
+    public function akumulasiTotalDebit($parameter = null)
     {
         $param      = explode("_", $parameter);
         $tampil     = $param[0];
@@ -208,37 +373,37 @@ class KeuanganController extends Controller
 
         if ($tampil == "Keseluruhan") {
             // echo json_encode($tampil);
-            $total_deposito = Deposito::sum('jumlah');
-            $data           = Deposito::get();
+            $total_debit = Cash::where('c_jenis', 'D')->sum('c_jumlah');
+            $data           = Cash::where('c_jenis', 'D')->get();
 
             foreach ($data as $value) {
                 $row = array(
-                    'tanggal' => $value->tanggal,
-                    'keterangan' => $value->keterangan,
-                    'jumlah' => $value->jumlah
+                    'tanggal' => $value->c_tanggal,
+                    'keterangan' => $value->c_transaksi,
+                    'jumlah' => $value->c_jumlah
                 );
 
                 $result[] = $row;
             }
 
-            $result_array = array('total'=>$total_deposito, 'result'=>$result);
+            $result_array = array('total'=>$total_debit, 'result'=>$result);
 
             echo json_encode($result_array);
         } elseif ($tampil == "Pertanggal") {
-            $total_deposito = Deposito::where(['tanggal'=>$tanggal])->sum('jumlah');
-            $data           = Deposito::where('tanggal', '=', $tanggal)->get();
+            $total_debit = Cash::where('c_jenis', 'D')->where(['c_tanggal'=>$tanggal])->sum('c_jumlah');
+            $data        = Cash::where('c_jenis', 'D')->where('c_tanggal', '=', $tanggal)->get();
 
             foreach ($data as $value) {
                 $row = array(
-                    'tanggal' => $value->tanggal,
-                    'keterangan' => $value->keterangan,
-                    'jumlah' => $value->jumlah
+                    'tanggal' => $value->c_tanggal,
+                    'keterangan' => $value->c_transaksi,
+                    'jumlah' => $value->c_jumlah
                 );
 
                 $result[] = $row;
             }
 
-            $result_array = array('total'=>$total_deposito, 'result'=>$result);
+            $result_array = array('total'=>$total_debit, 'result'=>$result);
 
             echo json_encode($result_array);
         } elseif ($tampil == "Perbulan") {
@@ -246,92 +411,60 @@ class KeuanganController extends Controller
             $ex_params = explode("-", $params);
             $bulan = $ex_params[0];
             $tahun = $ex_params[1];
-            $total_deposito = Deposito::whereYear('tanggal', '=', $tahun)->whereMonth('tanggal', '=', $bulan)->sum('jumlah');
-            $data         = Deposito::whereYear('tanggal', '=', $tahun)->whereMonth('tanggal', '=', $bulan)->get();
+            $total_debit = Cash::where('c_jenis', 'D')->whereYear('c_tanggal', '=', $tahun)->whereMonth('c_tanggal', '=', $bulan)->sum('c_jumlah');
+            $data        = Cash::where('c_jenis', 'D')->whereYear('c_tanggal', '=', $tahun)->whereMonth('c_tanggal', '=', $bulan)->get();
 
             foreach ($data as $value) {
                 $row = array(
-                    'tanggal' => $value->tanggal,
-                    'keterangan' => $value->keterangan,
-                    'jumlah' => $value->jumlah
+                    'tanggal' => $value->c_tanggal,
+                    'keterangan' => $value->c_transaksi,
+                    'jumlah' => $value->c_jumlah
                 );
 
                 $result[] = $row;
             }
 
-            $result_array = array('total'=>$total_deposito, 'result'=>$result);
+            $result_array = array('total'=>$total_debit, 'result'=>$result);
 
             echo json_encode($result_array);
         } elseif ($tampil == "Pertahun") {
-            $total_deposito = Deposito::whereYear('tanggal', '=', $tanggal)->sum('jumlah');
-            $data         = Deposito::whereYear('tanggal', '=', $tanggal)->get();
+            $total_debit = Cash::where('c_jenis', 'D')->whereYear('c_tanggal', '=', $tanggal)->sum('c_jumlah');
+            $data        = Cash::where('c_jenis', 'D')->whereYear('c_tanggal', '=', $tanggal)->get();
 
             foreach ($data as $value) {
                 $row = array(
-                    'tanggal' => $value->tanggal,
-                    'keterangan' => $value->keterangan,
-                    'jumlah' => $value->jumlah
+                    'tanggal' => $value->c_tanggal,
+                    'keterangan' => $value->c_transaksi,
+                    'jumlah' => $value->c_jumlah
                 );
 
                 $result[] = $row;
             }
 
-            $result_array = array('total'=>$total_deposito, 'result'=>$result);
+            $result_array = array('total'=>$total_debit, 'result'=>$result);
 
             echo json_encode($result_array);
         }
     }
 
-    public function riwayat($parameter = null)
+    public function grafikDebit()
     {
-        $result_deposito = array();
-        $result_credit = array();
-
-        $tanggal        = date('Y-m-d', strtotime($parameter));
-        $data_deposito  = Deposito::where('tanggal', '=', $tanggal)->get();
-        $data_credit    = Credit::where('tanggal', '=', $tanggal)->get();
-
-        foreach ($data_deposito as $value) {
-            $row = array(
-                'tanggal' => $value->tanggal,
-                'keterangan' => $value->keterangan,
-                'jumlah' => $value->jumlah
-            );
-
-            $result_deposito[] = $row;
-        }
-
-        foreach ($data_credit as $value) {
-            $row = array(
-                'tanggal' => $value->tanggal,
-                'keperluan' => $value->keperluan,
-                'jumlah' => $value->jumlah
-            );
-
-            $result_credit[] = $row;
-        }
-
-        $result_array = array('result_credit'=>$result_credit, 'result_deposito'=>$result_deposito);
-
-        echo json_encode($result_array);
-    }
-
-    public function grafikDeposito()
-    {
-        $data = Deposito::select(\DB::raw('SUM(jumlah) as jumlah'),
-                \DB::raw("DATE_FORMAT(tanggal, '%M %Y') as month"))
-                ->whereYear('tanggal', Carbon::now('Asia/Jakarta')->format('Y'))
+        $data = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah'),
+                \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"))
+                ->where('c_jenis', 'D')
+                ->whereYear('c_tanggal', Carbon::now('Asia/Jakarta')->format('Y'))
                 ->groupBy('month')
                 ->orderBy('month', 'asc')
                 ->get();
         echo json_encode($data);
     }
 
-    public function grafikKredit()
+    public function grafikCredit()
     {
-        $data = Credit::select(\DB::raw('SUM(jumlah) as jumlah'),
-                \DB::raw("DATE_FORMAT(tanggal, '%M %Y') as month"))
-                ->whereYear('tanggal', Carbon::now('Asia/Jakarta')->format('Y'))
+        $data = Credit::select(\DB::raw('SUM(c_jumlah) as jumlah'),
+                \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"))
+                ->where('c_jenis', 'K')
+                ->whereYear('c_tanggal', Carbon::now('Asia/Jakarta')->format('Y'))
                 ->groupBy('month')
                 ->orderBy('month', 'asc')
                 ->get();
@@ -340,35 +473,37 @@ class KeuanganController extends Controller
 
     public function grafik()
     {
-        $data_deposito = Deposito::select(\DB::raw('SUM(jumlah) as jumlah_deposito'),
-                \DB::raw("DATE_FORMAT(tanggal, '%M %Y') as month"))
-                ->whereYear('tanggal', date('Y', strtotime("-1 year")))
+        $data_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah'),
+                \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
+                ->where('c_jenis', 'D')
+                ->whereYear('c_tanggal', date('Y', strtotime("-1 year")))
+                ->groupBy(['month', 'c_jenis'])
+                ->orderBy('month', 'desc');
+
+        $data_credit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah'),
+                \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
+                ->where('c_jenis', 'K')
+                ->whereYear('c_tanggal', date('Y', strtotime("-1 year")))
+                ->groupBy(['month', 'c_jenis'])
+                ->orderBy('month', 'desc');
+
+        $sql = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit where c_jenis = "D"'),
+                \DB::raw('SUM(c_jumlah) as jumlah_kredit where c_jenis = "K"'),
+                \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"))
+                ->whereYear('c_tanggal', date('Y', strtotime("-1 year")))
                 ->groupBy('month')
                 ->orderBy('month', 'desc')
                 ->get();
 
-        $data_kredit = Credit::select(\DB::raw('SUM(jumlah) as jumlah_kredit'),
-                \DB::raw("DATE_FORMAT(tanggal, '%M %Y') as month"))
-                ->whereYear('tanggal', date('Y', strtotime("-1 year")))
-                ->groupBy('month')
-                ->orderBy('month', 'desc')
-                ->get();
+        $datas = [];
+//
+        $data = $data_debit->union($data_credit)->get();
+//
+        foreach ($data_debit as $key => $value) {
 
-        // $data = $data_deposito->union($data_kredit)->get();
-        $deposito = [];
-        $kredit = [];
-        $data = [];
-
-        foreach ($data_deposito as $key => $value) {
-            $deposito[] = array("jumlah_deposito"=>$value->jumlah_deposito, "bulan"=>$value->month);
+            $datas[] = array('y' => $value->month, 'a' => $value->jumlah_debit, 'b' => $value->jumlah_credit);
         }
-        array_push($data, $deposito);
 
-        foreach ($data_kredit as $key => $value) {
-            $kredit[] = array("jumlah_kredit"=>$value->jumlah_kredit, "bulan"=>$value->month);
-        }
-        array_push($data, $kredit);
-
-        echo json_encode($data);
+        echo json_encode($sql);
     }
 }

@@ -29,23 +29,25 @@ Route::group(['middleware'=>['auth']], function(){
 	Route::get('/admin/check-pwd', 'AdminController@checkPassword');
 	Route::match(['get', 'post'], '/admin/update-pwd', 'AdminController@updatePassword');
 	Route::get('/admin/profil', 'AdminController@profil');
-	Route::get('/dashboard/riwayat/{parameter}', 'KeuanganController@riwayat');
+	Route::get('/dashboard/riwayat/{parameter}', 'DashboardController@riwayat');
 	Route::get('/dashboard/grafik', 'KeuanganController@grafik');
 
-	// Deposito
-	Route::match(['get', 'post'], '/deposito', 'KeuanganController@deposito');
-	Route::get('/deposito/delete/{id}', 'KeuanganController@delete_deposito');
-	Route::match(['get', 'post'], '/deposito/update', 'KeuanganController@update_deposito');
-	Route::get('/deposito/akumulasi/{parameter}', 'KeuanganController@akumulasi_total_deposito');
-	Route::get('/deposito/get-current/{id}', 'KeuanganController@get_current_deposito');
-	Route::get('/deposito/get-deposito', 'KeuanganController@grafikDeposito');
+	// kas masuk
+	Route::match(['get', 'post'], '/kas/masuk', 'KeuanganController@debit');
+	Route::get('/kas/masuk/data', 'KeuanganController@getDebit')->name('debit');
+	Route::get('/kas/masuk/hapus/{id}', 'KeuanganController@deleteDebit');
+	Route::match(['get', 'post'], '/kas/masuk/edit', 'KeuanganController@updateDebit');
+	Route::get('/kas/masuk/akumulasi/{parameter}', 'KeuanganController@akumulasiTotalDebit');
+	Route::get('/kas/masuk/detail/{id}', 'KeuanganController@getCurrentDebit');
+	Route::get('/kas/masuk/grafik', 'KeuanganController@grafikDebit');
 
-	// Credit
-	Route::match(['get', 'post'], '/credit', 'KeuanganController@credit');
-	Route::get('/credit/delete/{id}', 'KeuanganController@delete_credit');
-	Route::match(['get', 'post'], '/credit/update', 'KeuanganController@update_credit');
-	Route::get('/credit/akumulasi/{parameter}', 'KeuanganController@akumulasi_total_credit');
-	Route::get('/credit/get-current/{id}', 'KeuanganController@get_current_credit');
-	Route::get('/credit/get-kredit', 'KeuanganController@grafikKredit');
+	// kas keluar
+	Route::match(['get', 'post'], '/kas/keluar', 'KeuanganController@credit');
+    Route::get('/kas/keluar/data', 'KeuanganController@getCredit')->name('credit');
+	Route::get('/kas/keluar/hapus/{id}', 'KeuanganController@deleteCredit');
+	Route::match(['get', 'post'], '/kas/keluar/edit', 'KeuanganController@updateCredit');
+	Route::get('/kas/keluar/akumulasi/{parameter}', 'KeuanganController@akumulasiTotalCredit');
+	Route::get('/kas/keluar/detail/{id}', 'KeuanganController@getCurrentCredit');
+	Route::get('/kas/keluar/grafik', 'KeuanganController@grafikCredit');
 	
 });

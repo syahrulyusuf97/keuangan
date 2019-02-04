@@ -13,6 +13,8 @@
   <link rel="stylesheet" href="{{ asset('public/css/Ionicons/css/ionicons.min.css') }}">
   <!-- DataTables -->
   <link rel="stylesheet" href="{{ asset('public/css/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+  {{--Chart morris--}}
+  <link rel="stylesheet" href="{{ asset('public/css/morris/morris.css') }}">
   <!-- Theme style -->
   <link rel="stylesheet" href="{{ asset('public/css/adminLTE/AdminLTE.min.css') }}">
   <link rel="stylesheet" href="{{ asset('public/css/skins/_all-skins.min.css') }}">
@@ -67,6 +69,8 @@
 <script src="{{ asset('public/js/adminLTE/demo.js') }}"></script>
 
 <script src="{{ asset('public/js/chart/Chart.js') }}"></script>
+  <script src="{{ asset('public/js/morris/morris.min.js') }}"></script>
+  <script src="{{ asset('public/js/raphael/raphael.min.js') }}"></script>
 
 </body>
 </html>
