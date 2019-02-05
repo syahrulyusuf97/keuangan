@@ -354,8 +354,8 @@
 					resize: true,
 					data: results,
 					barColors: ['#00a65a', '#f56954'],
-					xkey: 'y',
-					ykeys: ['a', 'b'],
+					xkey: 'month',
+					ykeys: ['debit', 'kredit'],
 					labels: ['DEBIT', 'KREDIT'],
 					hideHover: 'auto'
 				});

@@ -473,37 +473,26 @@ class KeuanganController extends Controller
 
     public function grafik()
     {
-        $data_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah'),
+        $data_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit'),
                 \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
                 ->where('c_jenis', 'D')
                 ->whereYear('c_tanggal', date('Y', strtotime("-1 year")))
                 ->groupBy(['month', 'c_jenis'])
-                ->orderBy('month', 'desc');
+                ->orderBy('month', 'desc')
+                ->get();
 
-        $data_credit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah'),
+        $data_credit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_kredit'),
                 \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
                 ->where('c_jenis', 'K')
                 ->whereYear('c_tanggal', date('Y', strtotime("-1 year")))
                 ->groupBy(['month', 'c_jenis'])
-                ->orderBy('month', 'desc');
-
-        $sql = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit where c_jenis = "D"'),
-                \DB::raw('SUM(c_jumlah) as jumlah_kredit where c_jenis = "K"'),
-                \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"))
-                ->whereYear('c_tanggal', date('Y', strtotime("-1 year")))
-                ->groupBy('month')
                 ->orderBy('month', 'desc')
                 ->get();
 
-        $datas = [];
-//
-        $data = $data_debit->union($data_credit)->get();
-//
-        foreach ($data_debit as $key => $value) {
-
-            $datas[] = array('y' => $value->month, 'a' => $value->jumlah_debit, 'b' => $value->jumlah_credit);
+        foreach ($data_debit as $key => $debit) {
+            $row[] = array('month' => $debit->month, 'debit' => $debit->jumlah_debit, 'kredit' => $data_credit[$key]->jumlah_kredit);
         }
 
-        echo json_encode($sql);
+        echo json_encode($row);
     }
 }
