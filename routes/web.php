@@ -30,7 +30,7 @@ Route::group(['middleware'=>['auth']], function(){
 	Route::match(['get', 'post'], '/admin/update-pwd', 'AdminController@updatePassword');
 	Route::get('/admin/profil', 'AdminController@profil');
 	Route::get('/dashboard/riwayat/{parameter}', 'DashboardController@riwayat');
-	Route::get('/dashboard/grafik', 'KeuanganController@grafik');
+	Route::get('/dashboard/grafik', 'DashboardController@grafik');
 
 	// kas masuk
 	Route::match(['get', 'post'], '/kas/masuk', 'KeuanganController@debit');
@@ -49,5 +49,14 @@ Route::group(['middleware'=>['auth']], function(){
 	Route::get('/kas/keluar/akumulasi/{parameter}', 'KeuanganController@akumulasiTotalCredit');
 	Route::get('/kas/keluar/detail/{id}', 'KeuanganController@getCurrentCredit');
 	Route::get('/kas/keluar/grafik', 'KeuanganController@grafikCredit');
+
+	// Laporan
+    // Chart
+    Route::get('/laporan/chart', 'LaporanController@chart');
+    Route::get('/laporan/chart/bulan/debit/{bulan}', 'LaporanController@chartBulanDebit');
+    Route::get('/laporan/chart/bulan/kredit/{bulan}', 'LaporanController@chartBulanKredit');
+    Route::get('/laporan/chart/tahun/{tahun}', 'LaporanController@chartTahun');
+    //Cashflow
+    Route::get('/laporan/cashflow', 'LaporanController@cashflow');
 	
 });

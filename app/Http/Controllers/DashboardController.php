@@ -42,6 +42,31 @@ class DashboardController extends Controller
         return view('admin.dashboard.dashboard')->with(compact('saldo', 'debit', 'credit', 'credit_last_month'));
     }
 
+    public function grafik()
+    {
+        $data_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit'),
+            \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
+            ->where('c_jenis', 'D')
+            ->whereYear('c_tanggal', date('Y', strtotime("-1 year")))
+            ->groupBy(['month', 'c_jenis'])
+            ->orderBy('month', 'desc')
+            ->get();
+
+        $data_credit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_kredit'),
+            \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
+            ->where('c_jenis', 'K')
+            ->whereYear('c_tanggal', date('Y', strtotime("-1 year")))
+            ->groupBy(['month', 'c_jenis'])
+            ->orderBy('month', 'desc')
+            ->get();
+
+        foreach ($data_debit as $key => $debit) {
+            $row[] = array('month' => $debit->month, 'debit' => $debit->jumlah_debit, 'kredit' => $data_credit[$key]->jumlah_kredit);
+        }
+
+        echo json_encode($row);
+    }
+
     public function riwayat($parameter = null)
     {
         $result_debit   = array();

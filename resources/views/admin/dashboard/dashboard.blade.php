@@ -293,9 +293,6 @@
 <script type="text/javascript">
 	$(function(){
 		var baseUrl = '{{ url('/') }}';
-		var debit, kredit;
-		var labels, data;
-		var label = Array();
 		$('#table_deposito').dataTable();
 		$('#table_credit').dataTable();
 		$('#calendar').datepicker({format: 'yyyy-mm-dd',todayHighlight: true});
@@ -338,12 +335,10 @@
          	}
 	    });
 
-	    var jsonData = $.ajax({
+	    var grafik = $.ajax({
 	    	url: baseUrl+'/dashboard/grafik',
 	    	dataType: 'json',
 	    }).done(function (results){
-	    	var label = [], dataDebit = [], dataKredit = [];
-	    	console.log(results);
 			if (results.length == 0) {
 				$("#bar-chart").html('<span>Tidak ada transaksi</span>');
 			} else {
@@ -362,18 +357,5 @@
 			}
 
 	    })
-
-
-
-
-	    function cekIsiArray(array, data){
-	        var hitung = array.length;
-	        for (var i = 0; i <= hitung; i++) {
-	            if (array[i] == data) {
-	               return 'sudah';
-	            }
-	        }
-	        return 'lanjut';
-	    }
 	})
 </script>

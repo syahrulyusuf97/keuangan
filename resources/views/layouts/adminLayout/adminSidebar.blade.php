@@ -45,7 +45,7 @@
           <i class="fa fa-money"></i> <span>Kas Keluar</span>
         </a>
       </li>
-      <li class="treeview">
+      <li class="treeview  <?php if(preg_match("/chart/i", $url) || preg_match("/cashflow/i", $url)) { ?> active <?php } ?>">
         <a href="#">
           <i class="fa fa-pie-chart"></i>
           <span>Laporan</span>
@@ -54,7 +54,7 @@
             </span>
         </a>
         <ul class="treeview-menu">
-          <li><a href="#"><i class="fa fa fa-bar-chart"></i> Chart</a></li>
+          <li <?php if(preg_match("/chart/i", $url)) { ?> class="active" <?php } ?>><a href="{{ url('/laporan/chart') }}"><i class="fa fa fa-bar-chart"></i> Chart</a></li>
           <li><a href="#"><i class="fa fa-list"></i> Arus Kas/<i>Cashflow</i></a></li>
         </ul>
       </li>
