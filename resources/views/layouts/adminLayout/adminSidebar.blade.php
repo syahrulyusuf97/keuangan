@@ -55,7 +55,7 @@
         </a>
         <ul class="treeview-menu">
           <li <?php if(preg_match("/chart/i", $url)) { ?> class="active" <?php } ?>><a href="{{ url('/laporan/chart') }}"><i class="fa fa fa-bar-chart"></i> Chart</a></li>
-          <li><a href="#"><i class="fa fa-list"></i> Arus Kas/<i>Cashflow</i></a></li>
+          <li <?php if(preg_match("/cashflow/i", $url)) { ?> class="active" <?php } ?>><a href="{{ url('/laporan/cashflow') }}"><i class="fa fa-list"></i> Arus Kas/<i>Cashflow</i></a></li>
         </ul>
       </li>
     </ul>

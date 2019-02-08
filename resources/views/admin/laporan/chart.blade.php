@@ -85,14 +85,14 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xs-12">
+            <div class="col-xs-12" id="per_tahun" style="display: none">
                 <div class="col-md-12 box box-danger">
                     <div class="box-body chart-responsive">
                         <div class="chart" id="bar-chart" style="height: 340px;"></div>
                     </div>
                 </div>
             </div>
-            <div class="col-xs-12">
+            <div class="col-xs-12" id="per_bulan" style="display: none">
                 <div class="col-md-12 box box-danger">
                     <div class="box-body chart-responsive">
                         <div class="chart" id="line-chart-debit" style="height: 300px;"></div>
@@ -128,16 +128,20 @@
             })
 
             $('#perbulan').on('change', function(e){
+                $("#pertahun").val('');
+                $("#per_bulan").show();
+                $("#per_tahun").hide();
                 var grafikdebit = $.ajax({
                     url: baseUrl+'/laporan/chart/bulan/debit/'+$(this).val(),
                     dataType: 'json',
                 }).done(function (results){
-                    if (results.length == 0) {
-                       alert("Tidak ada transaksi pada bulan "+$(this).val());
+                    console.log(results.length);
+                    if (results.length == "0") {
+                       alert("Tidak ada transaksi debit pada bulan "+$("#perbulan").val());
                     } else {
 
                         //BAR CHART
-                        var line = new Morris.Line({
+                        var linedebit = new Morris.Line({
                             element: 'line-chart-debit',
                             resize: true,
                             data: results,
@@ -147,6 +151,7 @@
                             lineColors: ['#3c8dbc'],
                             hideHover: 'auto'
                         });
+
                     }
 
                 })
@@ -156,11 +161,11 @@
                     dataType: 'json',
                 }).done(function (results){
                     if (results.length == 0) {
-                        alert("Tidak ada transaksi pada bulan "+$(this).val());
+                        alert("Tidak ada transaksi kredit pada bulan "+$("#perbulan").val());
                     } else {
 
                         //BAR CHART
-                        var line = new Morris.Line({
+                        var linekredit = new Morris.Line({
                             element: 'line-chart-kredit',
                             resize: true,
                             data: results,
@@ -176,15 +181,19 @@
             })
 
             $('#pertahun').on('change', function(e){
+                $("#perbulan").val('');
+                $("#per_tahun").show();
+                $("#per_bulan").hide();
                 var grafik = $.ajax({
                     url: baseUrl+'/laporan/chart/tahun/'+$(this).val(),
                     dataType: 'json',
                 }).done(function (results){
                     if (results.length == 0) {
-                        alert("Tidak ada transaksi pada tahun "+$(this).val());
+                        alert("Tidak ada transaksi pada tahun "+$("#pertahun").val());
                     } else {
 
                         //BAR CHART
+
                         var bar = new Morris.Bar({
                             element: 'bar-chart',
                             resize: true,
@@ -195,6 +204,7 @@
                             labels: ['DEBIT', 'KREDIT'],
                             hideHover: 'auto'
                         });
+
                     }
 
                 })

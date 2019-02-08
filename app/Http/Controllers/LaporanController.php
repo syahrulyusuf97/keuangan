@@ -19,6 +19,7 @@ class LaporanController extends Controller
 
     public function chartBulanDebit($bulan = null)
     {
+        $row = array();
         $month = explode(" ", $bulan);
         $date = date('m', strtotime($month[0]));
         $t = $month[1].'-'.$date.'-'.'1';
@@ -42,6 +43,7 @@ class LaporanController extends Controller
 
     public function chartBulanKredit($bulan = null)
     {
+        $row = array();
         $month = explode(" ", $bulan);
         $date = date('m', strtotime($month[0]));
         $t = $month[1].'-'.$date.'-'.'1';
@@ -65,6 +67,7 @@ class LaporanController extends Controller
 
     public function chartTahun($tahun = null)
     {
+        $row = array();
         $data_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit'),
             \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
             ->where('c_jenis', 'D')
@@ -90,6 +93,26 @@ class LaporanController extends Controller
 
     public function cashflow()
     {
-        //
+        return view('admin.laporan.cashflow');
+    }
+
+    public function cashflowBulan($bulan = null)
+    {
+        $month = explode(" ", $bulan);
+
+        $data = Cash::whereMonth('c_tanggal', date('m', strtotime($month[0])))
+            ->whereYear('c_tanggal', $month[1])
+            ->get();
+
+        return json_encode($data);
+    }
+
+    public function cashflowTahun($tahun = null)
+    {
+
+        $data = Cash::whereYear('c_tanggal', $tahun)
+            ->get();
+
+        return json_encode($data);
     }
 }
