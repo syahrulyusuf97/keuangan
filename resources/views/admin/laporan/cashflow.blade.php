@@ -146,7 +146,7 @@
                     console.log(results);
                     if (results.length == 0) {
                         $("#periode").html('');
-                        alert("Tidak ada transaksi debit pada bulan "+$("#perbulan").val());
+                        alert("Tidak ada transaksi pada bulan "+$("#perbulan").val());
                     } else {
                         row += '<table class="table table-bordered" id="tbl_report"><tr>\n' +
                             '<td colspan="3"><strong>Arus Kas Masuk</strong></td>\n' +
@@ -243,7 +243,7 @@
                 }).done(function (results){
                     if (results.length == 0) {
                         $("#periode").html('');
-                        alert("Tidak ada transaksi debit pada tahun "+$("#pertahun").val());
+                        alert("Tidak ada transaksi pada tahun "+$("#pertahun").val());
                     } else {
                         row += '<table class="table table-bordered" id="tbl_report"><tr>\n' +
                             '<td colspan="3"><strong>Arus Kas Masuk</strong></td>\n' +
