@@ -1,4 +1,5 @@
 @extends('layouts.adminLayout.adminContent')
+@section('title', 'Kas Keluar')
 @section('content')
 
 <?php 

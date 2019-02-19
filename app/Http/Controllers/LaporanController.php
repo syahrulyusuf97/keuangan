@@ -102,6 +102,7 @@ class LaporanController extends Controller
 
         $data = Cash::whereMonth('c_tanggal', date('m', strtotime($month[0])))
             ->whereYear('c_tanggal', $month[1])
+            ->select(DB::raw("DATE_FORMAT(c_tanggal, '%d-%m-%Y') as c_tanggal"), 'c_transaksi', 'c_jumlah', 'c_jenis')
             ->get();
 
         return json_encode($data);
@@ -111,6 +112,7 @@ class LaporanController extends Controller
     {
 
         $data = Cash::whereYear('c_tanggal', $tahun)
+            ->select(DB::raw("DATE_FORMAT(c_tanggal, '%d-%m-%Y') as c_tanggal"), 'c_transaksi', 'c_jumlah', 'c_jenis')
             ->get();
 
         return json_encode($data);

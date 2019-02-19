@@ -18,9 +18,10 @@
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/createuser', 'CreateUser@store');
 
 Route::get('/', 'SignController@login');
-Route::post('/login', 'SignController@login');
+Route::match(['get', 'post'], '/login', 'SignController@login')->name('login');
 Route::get('/logout', 'SignController@logout');
 
 Route::group(['middleware'=>['auth']], function(){
@@ -31,6 +32,19 @@ Route::group(['middleware'=>['auth']], function(){
 	Route::get('/admin/profil', 'AdminController@profil');
 	Route::get('/dashboard/riwayat/{parameter}', 'DashboardController@riwayat');
 	Route::get('/dashboard/grafik', 'DashboardController@grafik');
+
+    //Profile
+    Route::get('/profil', 'DashboardController@profil');
+    Route::post('/profil/update-nama', 'DashboardController@updateNama');
+    Route::post('/profil/update-email', 'DashboardController@updateEmail');
+    Route::post('/profil/update-username', 'DashboardController@updateUsername');
+    Route::post('/profil/update-password', 'DashboardController@updatePassword');
+    Route::post('/profil/update-ttl', 'DashboardController@updateTtl');
+    Route::post('/profil/update-alamat', 'DashboardController@updateAlamat');
+    Route::post('/profil/update-foto', 'DashboardController@updateFoto');
+
+    //Log Kegiatan
+    Route::get('/log-kegiatan', 'DashboardController@history');
 
 	// kas masuk
 	Route::match(['get', 'post'], '/kas/masuk', 'KeuanganController@debit');
@@ -56,6 +70,7 @@ Route::group(['middleware'=>['auth']], function(){
     Route::get('/laporan/chart/bulan/debit/{bulan}', 'LaporanController@chartBulanDebit');
     Route::get('/laporan/chart/bulan/kredit/{bulan}', 'LaporanController@chartBulanKredit');
     Route::get('/laporan/chart/tahun/{tahun}', 'LaporanController@chartTahun');
+
     //Cashflow
     Route::get('/laporan/cashflow', 'LaporanController@cashflow');
     Route::get('/laporan/cashflow/bulan/{bulan}', 'LaporanController@cashflowBulan');

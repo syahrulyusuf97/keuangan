@@ -1,4 +1,6 @@
 @extends('layouts.adminLayout.adminContent')
+@section('title', 'Dashboard')
+
 @section('content')
 
 <?php 

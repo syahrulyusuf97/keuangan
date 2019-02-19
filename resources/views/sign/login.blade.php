@@ -3,27 +3,27 @@
 
 <div class="login-box">
 	<div class="login-logo">
-		<a href="#"><b>Keuangan</b>LTE</a>
+		<a href="#"><b>Keuangan</b>KU</a>
 	</div>
 	<!-- /.login-logo -->
 	<div class="login-box-body">
-		<p class="login-box-msg">Sign in to start your session</p>
+		<p class="login-box-msg">Silahkan <i>login</i> untuk memulai sesi Anda</p>
 		@if(Session::has('flash_message_error'))
 		<div class="alert alert-error alert-block">
-			<button type="button" class="close" data-dismiss="alert">x</button>
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
 			<strong>{!! session('flash_message_error') !!}</strong>
 		</div>
 		@endif
 		@if(Session::has('flash_message_success'))
 		<div class="alert alert-success alert-block">
-			<button type="button" class="close" data-dismiss="alert">x</button>
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
 			<strong>{!! session('flash_message_success') !!}</strong>
 		</div>
 		@endif 
 		<form action="{{ url('/login') }}" method="post">
 			{{ csrf_field() }}
 			<div class="form-group has-feedback">
-				<input type="email" name="email" id="email" class="form-control" autofocus placeholder="Email"">
+				<input type="text" name="username" id="email" class="form-control" autofocus placeholder="Username">
 				<span class="glyphicon glyphicon-envelope form-control-feedback"></span>
 			</div>
 			<div class="form-group has-feedback">

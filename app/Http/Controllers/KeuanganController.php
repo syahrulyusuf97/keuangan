@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Cash;
+use App\Http\Controllers\ActivityController as Activity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 use DataTables;
 use DB;
 use Response;
+use Auth;
 
 class KeuanganController extends Controller
 {
@@ -38,6 +40,8 @@ class KeuanganController extends Controller
                 $debit->c_jenis         = "D";
                 $debit->c_tanggal       = $tanggal;
                 $debit->save();
+
+                Activity::log(Auth::user()->id, 'Create', 'membuat kas masuk', $data['ket'] . ' "' .number_format($jumlah, 0, ',', '.') . '"', null, Carbon::now('Asia/Jakarta'));
 
                 DB::commit();
                 return redirect('/kas/masuk')->with('flash_message_success', 'Kas masuk berhasil disimpan!');
@@ -90,6 +94,8 @@ class KeuanganController extends Controller
 
         DB::beginTransaction();
         try{
+            $cash = Cash::where(['c_id'=> $id])->first();
+            Activity::log(Auth::user()->id, 'Delete', 'menghapus kas masuk', $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '"', null, Carbon::now('Asia/Jakarta'));
             Cash::where(['c_id'=> $id])->delete();
             DB::commit();
             return redirect('/kas/masuk')->with('flash_message_success', 'Berhasil menghapus kas masuk!');
@@ -136,6 +142,8 @@ class KeuanganController extends Controller
 
     	DB::beginTransaction();
     	try{
+            $cash = Cash::where(['c_id'=> $id])->first();
+            Activity::log(Auth::user()->id, 'Update', 'merubah kas masuk', $data['ket_edit'] . ' "' .number_format($jumlah, 0, ',', '.') . ' "', $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '"', Carbon::now('Asia/Jakarta'));
             Cash::where(['c_id'=>$id])->update([
                 'c_transaksi'   => $data['ket_edit'],
                 'c_jumlah'      => $jumlah,
@@ -167,6 +175,8 @@ class KeuanganController extends Controller
                 $credit->c_jenis		= "K";
                 $credit->c_tanggal      = $tanggal;
                 $credit->save();
+
+                Activity::log(Auth::user()->id, 'Create', 'membuat kas keluar', $data['kep'] . ' "' .number_format($jumlah, 0, ',', '.') . '"', null, Carbon::now('Asia/Jakarta'));
 
                 DB::commit();
                 return redirect('/kas/keluar')->with('flash_message_success', 'Kas keluar berhasil disimpan!');
@@ -220,6 +230,8 @@ class KeuanganController extends Controller
 
         DB::beginTransaction();
         try{
+            $cash = Cash::where(['c_id'=> $id])->first();
+            Activity::log(Auth::user()->id, 'Delete', 'menghapus kas keluar', $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '"', null, Carbon::now('Asia/Jakarta'));
             Cash::where(['c_id'=> $id])->delete();
             DB::commit();
             return redirect('/kas/keluar')->with('flash_message_success', 'kas keluar berhasil dihapus!');
@@ -265,6 +277,8 @@ class KeuanganController extends Controller
 
         DB::beginTransaction();
         try{
+            $cash = Cash::where(['c_id'=> $id])->first();
+            Activity::log(Auth::user()->id, 'Update', 'merubah kas keluar', $data['kep_edit'] . ' "' .number_format($jumlah, 0, ',', '.') . ' "', $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '"', Carbon::now('Asia/Jakarta'));
             Cash::where(['c_id'=>$id])->update([
                 'c_transaksi'   => $data['kep_edit'],
                 'c_jumlah'      => $jumlah,

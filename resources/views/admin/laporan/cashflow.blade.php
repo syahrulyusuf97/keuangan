@@ -1,4 +1,5 @@
 @extends('layouts.adminLayout.adminContent')
+@section('title', 'Cashflow')
 @section('content')
 
     <section class="content-header">
@@ -143,7 +144,6 @@
                     url: baseUrl+'/laporan/cashflow/bulan/'+$(this).val(),
                     dataType: 'json',
                 }).done(function (results){
-                    console.log(results);
                     if (results.length == 0) {
                         $("#periode").html('');
                         alert("Tidak ada transaksi pada bulan "+$("#perbulan").val());

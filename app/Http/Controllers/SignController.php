@@ -7,6 +7,7 @@ use Auth;
 use Session;
 use App\User;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class SignController extends Controller
 {
@@ -17,27 +18,34 @@ class SignController extends Controller
         }
     	if ($request->isMethod('post')) {
     		# code...
-            // print_r($request->all()); die;
     		$data = $request->input();
-    		if (Auth::attempt(['email'=>$data['email'], 'password'=>$data['password']])) {
+    		if (Auth::attempt(['username'=>$data['username'], 'password'=>$data['password']])) {
     			# code...
-    			$data = User::where('email', $data['email'])->first();
+    			$data = User::where('username', $data['username'])->first();
     				
     			Session::put('adminSession', $data->email);
 				Session::put('adminName', $data->name);
+
+				User::where('id', $data->id)->update([
+				    'login' => Carbon::now('Asia/Jakarta')
+                ]);
                 
                 // print_r($data);
     			return redirect('/dashboard');
     		} else {
-    			return redirect('/')->with('flash_message_error', 'Invalid username or password');
+    			return redirect('/')->with('flash_message_error', 'Username atau password salah');
     		}
     	}
     	return view('sign.login');
     }
 
     public function logout() {
+        User::where('id', Auth::user()->id)->update([
+            'logout' => Carbon::now('Asia/Jakarta')
+        ]);
         Session::flush();
-        return redirect('/')->with('flash_message_success', 'Logged out successfully');
+        Auth::logout();
+        return redirect('/')->with('flash_message_success', 'Logged out berhasil');
     }
 
     public function checkPassword(Request $request) {

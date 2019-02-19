@@ -20,7 +20,7 @@ class RedirectIfAuthenticated
         if (Auth::guard($guard)->check()) {
             return redirect('/home');
         }else {
-            return redirect()->action('SignController@login')->with('flash_message_error', 'Please login to access');
+            return redirect()->action('SignController@login')->with('flash_message_error', 'Silahkan login untuk mengakses');
         }
 
         return $next($request);

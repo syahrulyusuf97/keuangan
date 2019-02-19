@@ -1,4 +1,5 @@
 @extends('layouts.adminLayout.adminContent')
+@section('title', 'Chart')
 @section('content')
 
     <section class="content-header">

@@ -2,7 +2,7 @@
 	<!-- Logo -->
 	<a href="index2.html" class="logo">
 		<!-- mini logo for sidebar mini 50x50 pixels -->
-		<span class="logo-mini"><b>A</b>LT</span>
+		<span class="logo-mini"><b>K</b>KU</span>
 		<!-- logo for regular state and mobile devices -->
 		<span class="logo-lg"><b>Keuangan</b>KU</span>
 	</a>
@@ -18,30 +18,30 @@
 				<!-- User Account: style can be found in dropdown.less -->
 				<li class="dropdown user user-menu">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-						<img src="{{ asset('public/images/user2-160x160.jpg') }}" class="user-image" alt="User Image">
+						<img src="{{ asset('public/images/'.auth()->user()->img) }}" class="user-image" alt="User Image">
 						<span class="hidden-xs">
 							@if(Session::has('adminName'))
-					        	{!! session('adminName') !!}
+								{!! auth()->user()->name !!}
 					        @endif
 						</span>
 					</a>
 					<ul class="dropdown-menu">
 						<!-- User image -->
 						<li class="user-header">
-							<img src="{{ asset('public/images/user2-160x160.jpg') }}" class="img-circle" alt="User Image">
+							<img src="{{ asset('public/images/'. auth()->user()->img) }}" class="img-circle" alt="User Image">
 
 							<p>
-								@if(Session::has('adminName')){!! session('adminName') !!}@endif - @if(Session::has('adminType')){!! session('adminType') !!}@endif
-								<small>Admin Laundry</small>
+								@if(Session::has('adminName')){!! auth()->user()->name !!}@endif
+								<small>Admin KeuanganKu</small>
 							</p>
 						</li>
 						<!-- Menu Footer-->
 						<li class="user-footer">
 							<div class="pull-left">
-								<a href="{{ url('/admin/profil') }}" class="btn btn-default btn-flat">Profile</a>
+								<a href="{{ url('/profil') }}" class="btn btn-default btn-flat">Profile</a>
 							</div>
 							<div class="pull-right">
-								<a href="{{ url('/logout') }}" class="btn btn-default btn-flat">Sign out</a>
+								<a href="{{ url('/logout') }}" class="btn btn-default btn-flat">Keluar</a>
 							</div>
 						</li>
 					</ul>

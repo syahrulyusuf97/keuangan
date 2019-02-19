@@ -18,6 +18,7 @@ class CreateCashTable extends Migration
             $table->string('c_transaksi');
             $table->decimal('c_jumlah', 20, 2);
             $table->enum('c_jenis', ['D', 'K']);
+            $table->date('c_tanggal');
             $table->timestamps();
         });
     }
