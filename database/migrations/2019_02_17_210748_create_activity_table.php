@@ -16,7 +16,7 @@ class CreateActivityTable extends Migration
         Schema::create('activity', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('iduser');
-            $table->enum('action', ['Create', 'Update', 'Delete']);
+            $table->enum('action', ['Create', 'Update', 'Delete', 'Login', 'Logout']);
             $table->string('title', 25);
             $table->text('note');
             $table->text('oldnote');

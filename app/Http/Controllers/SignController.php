@@ -7,6 +7,7 @@ use Auth;
 use Session;
 use App\User;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\ActivityController as Activity;
 use Carbon\Carbon;
 
 class SignController extends Controller
@@ -29,7 +30,9 @@ class SignController extends Controller
 				User::where('id', $data->id)->update([
 				    'login' => Carbon::now('Asia/Jakarta')
                 ]);
-                
+
+                Activity::log($data->id, 'Login', 'Login', 'IP Address: '. $request->ip() . ' Device: '. $request->header('User-Agent'), null, Carbon::now('Asia/Jakarta'));
+
                 // print_r($data);
     			return redirect('/dashboard');
     		} else {
@@ -43,6 +46,7 @@ class SignController extends Controller
         User::where('id', Auth::user()->id)->update([
             'logout' => Carbon::now('Asia/Jakarta')
         ]);
+        Activity::log(Auth::user()->id, 'Logout', 'Logout', 'IP Address: '. \Request::ip() . ' Device: '. \Request::header('User-Agent'), null, Carbon::now('Asia/Jakarta'));
         Session::flush();
         Auth::logout();
         return redirect('/')->with('flash_message_success', 'Logged out berhasil');

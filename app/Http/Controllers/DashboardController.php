@@ -11,6 +11,7 @@ use App\Activity;
 use File;
 use Auth;
 use DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -302,6 +303,7 @@ class DashboardController extends Controller
                 'activity.title',
                 'activity.note',
                 'activity.oldnote',
+                'activity.created_at',
                 DB::raw("DATE_FORMAT(date, '%d %M %Y %H:%m:%s') as tgl"))
             ->join('users', 'activity.iduser', '=', 'users.id')
             ->orderBy('activity.date', 'desc')

@@ -1,5 +1,8 @@
 @extends('layouts.adminLayout.adminContent')
 @section('title', 'Log Kegiatan')
+<?php
+\Carbon\Carbon::setLocale('id');
+?>
 @section('content')
 
     <section class="content-header">
@@ -39,7 +42,7 @@
                                             <i class="fa fa-money bg-green"></i>
 
                                             <div class="timeline-item">
-                                                <span class="time"><i class="fa fa-clock-o"></i> 27 mins ago</span>
+                                                <span class="time"><i class="fa fa-clock-o"></i> {{Carbon\Carbon::parse($data[$index]->created_at)->diffForHumans()}}</span>
 
                                                 <h3 class="timeline-header"><a href="#">{{$data[$index]->user}}</a> {{$data[$index]->title}}</h3>
 
@@ -56,7 +59,7 @@
                                             <i class="fa fa-money bg-yellow"></i>
 
                                             <div class="timeline-item">
-                                                <span class="time"><i class="fa fa-clock-o"></i> 27 mins ago</span>
+                                                <span class="time"><i class="fa fa-clock-o"></i> {{Carbon\Carbon::parse($data[$index]->created_at)->diffForHumans()}}</span>
 
                                                 <h3 class="timeline-header"><a href="#">{{$data[$index]->user}}</a> {{$data[$index]->title}}</h3>
 
@@ -74,7 +77,41 @@
                                             <i class="fa fa-money bg-red"></i>
 
                                             <div class="timeline-item">
-                                                <span class="time"><i class="fa fa-clock-o"></i> 27 mins ago</span>
+                                                <span class="time"><i class="fa fa-clock-o"></i> {{Carbon\Carbon::parse($data[$index]->created_at)->diffForHumans()}}</span>
+
+                                                <h3 class="timeline-header"><a href="#">{{$data[$index]->user}}</a> {{$data[$index]->title}}</h3>
+
+                                                <div class="timeline-body">
+                                                    {{$data[$index]->note}}
+                                                </div>
+                                                <div class="timeline-footer">
+                                                    <span class="time text-light-blue"><i class="fa fa-clock-o"></i> {{$data[$index]->tgl}}</span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    @elseif ($data[$index]->action == "Login")
+                                        <li>
+                                            <i class="fa fa-sign-in bg-green"></i>
+
+                                            <div class="timeline-item">
+                                                <span class="time"><i class="fa fa-clock-o"></i> {{Carbon\Carbon::parse($data[$index]->created_at)->diffForHumans()}}</span>
+
+                                                <h3 class="timeline-header"><a href="#">{{$data[$index]->user}}</a> {{$data[$index]->title}}</h3>
+
+                                                <div class="timeline-body">
+                                                    {{$data[$index]->note}}
+                                                </div>
+                                                <div class="timeline-footer">
+                                                    <span class="time text-light-blue"><i class="fa fa-clock-o"></i> {{$data[$index]->tgl}}</span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    @elseif ($data[$index]->action == "Logout")
+                                        <li>
+                                            <i class="fa fa-sign-out bg-red"></i>
+
+                                            <div class="timeline-item">
+                                                <span class="time"><i class="fa fa-clock-o"></i> {{Carbon\Carbon::parse($data[$index]->created_at)->diffForHumans()}}</span>
 
                                                 <h3 class="timeline-header"><a href="#">{{$data[$index]->user}}</a> {{$data[$index]->title}}</h3>
 
