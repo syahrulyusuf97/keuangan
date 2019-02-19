@@ -51,33 +51,4 @@ class SignController extends Controller
         Auth::logout();
         return redirect('/')->with('flash_message_success', 'Logged out berhasil');
     }
-
-    public function checkPassword(Request $request) {
-        $data = $request->all();
-        $current_password = $data['current_pwd'];
-        $check_password = User::where(['admin'=>'1'])->first();
-        if (Hash::check($current_password, $check_password->password)) {
-            # code...
-            echo("true"); die;
-        } else {
-            echo("false"); die;
-        }
-    }
-
-    public function updatePassword(Request $request) {
-        if ($request->isMethod('post')) {
-            # code...
-            $data = $request->all();
-            $check_password = User::where(['email' => Auth::user()->email])->first();
-            $current_password = $data['current_pwd'];
-            if (Hash::check($current_password, $check_password->password)) {
-                # code...
-                $password = bcrypt($data['new_pwd']);
-                User::where('id', '1')->update(['password'=>$password]);
-                return redirect('/admin/settings')->with('flash_message_success', 'Password update successfully!');
-            } else {
-                return redirect('/admin/settings')->with('flash_message_error', 'Incorrect current password!');
-            }
-        }
-    }
 }

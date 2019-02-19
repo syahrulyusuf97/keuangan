@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\ActivityController as Activity;
 use App\Cash;
 use App\User;
-use App\Activity;
 use File;
 use Auth;
 use DB;
@@ -125,6 +125,8 @@ class DashboardController extends Controller
     {
         DB::beginTransaction();
         try{
+            $user = User::where('id', Auth::user()->id)->first();
+            Activity::log(Auth::user()->id, 'Update', 'merubah nama pengguna', $request->nama, $user->name, Carbon::now('Asia/Jakarta'));
             User::where('id', Auth::user()->id)->update([
                 'name' => $request->nama
             ]);
@@ -140,6 +142,8 @@ class DashboardController extends Controller
     {
         DB::beginTransaction();
         try{
+            $user = User::where('id', Auth::user()->id)->first();
+            Activity::log(Auth::user()->id, 'Update', 'merubah email', $request->email, $user->email, Carbon::now('Asia/Jakarta'));
             User::where('id', Auth::user()->id)->update([
                 'email' => $request->email
             ]);
@@ -155,6 +159,8 @@ class DashboardController extends Controller
     {
         DB::beginTransaction();
         try{
+            $user = User::where('id', Auth::user()->id)->first();
+            Activity::log(Auth::user()->id, 'Update', 'merubah username', $request->username, $user->username, Carbon::now('Asia/Jakarta'));
             User::where('id', Auth::user()->id)->update([
                 'username' => $request->username
             ]);
@@ -182,6 +188,7 @@ class DashboardController extends Controller
             }else if ($request->vernewPassword != $request->newPassword){
                 return redirect('/profil')->with('flash_message_error', 'Verifikasi kata sandi baru salah!');
             } else if ($check_pwd == true && $request->vernewPassword == $request->newPassword){
+                Activity::log(Auth::user()->id, 'Update', 'merubah kata sandi', 'Kata sandi telah diubah', null, Carbon::now('Asia/Jakarta'));
                 User::where('id', Auth::user()->id)->update([
                     'password' => bcrypt($request->newPassword)
                 ]);
@@ -203,6 +210,9 @@ class DashboardController extends Controller
             try{
                 $tempat = $request->tempat;
                 $tgllahir = $request->tahun . '-' . $request->bulan . '-' . $request->tanggal;
+                $tgl = $request->tanggal . '-' . $request->bulan . '-' . $request->tahun;
+                $user = User::where('id', Auth::user()->id)->first();
+                Activity::log(Auth::user()->id, 'Update', 'merubah tempat, tanggal lahir', 'Tempat Lahir: '.$tempat.', Tanggal Lahir: '. $tgl, 'Tempat Lahir: '.$user->tempat_lahir.', Tanggal Lahir: '. date('d-m-Y', strtotime($user->tgl_lahir)), Carbon::now('Asia/Jakarta'));
                 User::where('id', Auth::user()->id)->update([
                     'tempat_lahir' => $tempat,
                     'tgl_lahir' => $tgllahir
@@ -223,6 +233,8 @@ class DashboardController extends Controller
         } else {
             DB::beginTransaction();
             try{
+                $user = User::where('id', Auth::user()->id)->first();
+                Activity::log(Auth::user()->id, 'Update', 'merubah alamat', $request->alamat, $user->address, Carbon::now('Asia/Jakarta'));
                 User::where('id', Auth::user()->id)->update([
                     'address' => $request->alamat
                 ]);
@@ -273,6 +285,7 @@ class DashboardController extends Controller
                         ini_set('memory_limit', '256M');
                         $file->move($image_path, $filename);
                         User::where('id', Auth::user()->id)->update(['img' => $filename]);
+                        Activity::log(Auth::user()->id, 'Update', 'merubah foto profil', 'Merubah foto profil', null, Carbon::now('Asia/Jakarta'));
                         DB::commit();
                         return redirect('/profil')->with('flash_message_success', 'Foto profil Anda berhasil diperbarui!');
                     }
