@@ -12,14 +12,16 @@ class CreateUser extends Controller
     {
         try{
             DB::table('users')->insert([
-                'name' => 'Your Name',
-                'tempat_lahir' => 'Place of Birth',
-                'tgl_lahir' => Carbon::now('Asia/Jakarta')->format('Y-m-d'),
-                'address' => 'Your Address',
-                'email' => 'your@email.com',
-                'username' => 'admin',
-                'password' => bcrypt('123456'),
-                'img' => null,
+                'name'          => 'Your Name',
+                'tempat_lahir'  => 'Place of Birth',
+                'tgl_lahir'     => Carbon::now('Asia/Jakarta')->format('Y-m-d'),
+                'address'       => 'Your Address',
+                'email'         => 'your@email.com',
+                'username'      => 'admin',
+                'password'      => bcrypt('123456'),
+                'img'           => null,
+                'login'         => null,
+                'logout'        => null
             ]);
             DB::commit();
             echo 'Successfully created user admin';
