@@ -45,6 +45,7 @@ Route::group(['middleware'=>['auth']], function(){
 
     //Log Kegiatan
     Route::get('/log-kegiatan', 'DashboardController@history');
+    Route::get('/log-kegiatan/filter/{tanggal}', 'DashboardController@filterHistory');
 
 	// kas masuk
 	Route::match(['get', 'post'], '/kas/masuk', 'KeuanganController@debit');

@@ -12,6 +12,7 @@ use File;
 use Auth;
 use DB;
 use Carbon\Carbon;
+\Carbon\Carbon::setLocale('id');
 
 class DashboardController extends Controller
 {
@@ -306,9 +307,11 @@ class DashboardController extends Controller
     {
         $date = DB::table('activity')
             ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"))
-            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
             ->distinct()
+            ->limit(10)
             ->get();
+//            ->paginate(10);
         $data = DB::table('activity')
             ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"),
                 'users.name as user',
@@ -319,8 +322,75 @@ class DashboardController extends Controller
                 'activity.created_at',
                 DB::raw("DATE_FORMAT(date, '%d %M %Y %H:%m:%s') as tgl"))
             ->join('users', 'activity.iduser', '=', 'users.id')
-            ->orderBy('activity.date', 'desc')
+            ->orderBy('activity.id', 'desc')
             ->get();
+//            ->paginate(10);
+//        dd($date);
         return view('admin.history.index')->with(compact('data', 'date'));
+    }
+
+    public function filterHistory($tanggal)
+    {
+        if ($tanggal != "null") {
+            $tanggal = date('Y-m-d', strtotime($tanggal));
+            $date = DB::table('activity')
+                ->where(DB::raw('substr(date, 1, 10)'), '=', $tanggal)
+                ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"))
+                ->orderBy('id', 'desc')
+                ->distinct()
+                ->get();
+
+            $data = DB::table('activity')
+                ->where(DB::raw('substr(date, 1, 10)'), '=', $tanggal)
+                ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"),
+                    'users.name as user',
+                    'activity.action',
+                    'activity.title',
+                    'activity.note',
+                    'activity.oldnote',
+                    'activity.created_at',
+                    DB::raw("DATE_FORMAT(date, '%d %M %Y %H:%m:%s') as tgl"))
+                ->join('users', 'activity.iduser', '=', 'users.id')
+                ->orderBy('activity.id', 'desc')
+                ->get();
+        } else {
+            $date = DB::table('activity')
+                ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"))
+                ->orderBy('id', 'desc')
+                ->distinct()
+                ->limit(10)
+                ->get();
+//            ->paginate(10);
+            $data = DB::table('activity')
+                ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"),
+                    'users.name as user',
+                    'activity.action',
+                    'activity.title',
+                    'activity.note',
+                    'activity.oldnote',
+                    'activity.created_at',
+                    DB::raw("DATE_FORMAT(date, '%d %M %Y %H:%m:%s') as tgl"))
+                ->join('users', 'activity.iduser', '=', 'users.id')
+                ->orderBy('activity.id', 'desc')
+                ->get();
+        }
+
+
+        $result = array();
+        foreach ($data as $key => $dt){
+            $result[] = [
+                'date' => $dt->date,
+                'user' => $dt->user,
+                'action' => $dt->action,
+                'title' => $dt->title,
+                'note' => $dt->note,
+                'oldnote' => $dt->oldnote,
+                'created_at' => $dt->created_at,
+                'tgl' => $dt->tgl,
+                'times' => Carbon::parse($dt->created_at)->diffForHumans()
+            ];
+        }
+
+        return response()->json(['tanggal' => $date, 'data' => $result]);
     }
 }
