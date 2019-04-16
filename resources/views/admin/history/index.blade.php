@@ -56,22 +56,41 @@
 
                                 @if ($date[$key]->date == $data[$index]->date)
                                     @if ($data[$index]->action == "Create")
-                                        <li>
-                                            <i class="fa fa-money bg-green"></i>
+                                        @if($data[$index]->title == "membuat kas masuk")
+                                            <li>
+                                                <i class="fa fa-money bg-green"></i>
 
-                                            <div class="timeline-item">
-                                                <span class="time"><i class="fa fa-clock-o"></i> {{Carbon\Carbon::parse($data[$index]->created_at)->diffForHumans()}}</span>
+                                                <div class="timeline-item">
+                                                    <span class="time"><i class="fa fa-clock-o"></i> {{Carbon\Carbon::parse($data[$index]->created_at)->diffForHumans()}}</span>
 
-                                                <h3 class="timeline-header"><a href="#">{{$data[$index]->user}}</a> {{$data[$index]->title}}</h3>
+                                                    <h3 class="timeline-header"><a href="#">{{$data[$index]->user}}</a> {{$data[$index]->title}}</h3>
 
-                                                <div class="timeline-body">
-                                                    {{$data[$index]->note}}
+                                                    <div class="timeline-body">
+                                                        {{$data[$index]->note}}
+                                                    </div>
+                                                    <div class="timeline-footer">
+                                                        <span class="time text-light-blue"><i class="fa fa-clock-o"></i> {{$data[$index]->tgl}}</span>
+                                                    </div>
                                                 </div>
-                                                <div class="timeline-footer">
-                                                    <span class="time text-light-blue"><i class="fa fa-clock-o"></i> {{$data[$index]->tgl}}</span>
+                                            </li>
+                                        @elseif($data[$index]->title == "membuat kas keluar")
+                                            <li>
+                                                <i class="fa fa-money bg-red"></i>
+
+                                                <div class="timeline-item">
+                                                    <span class="time"><i class="fa fa-clock-o"></i> {{Carbon\Carbon::parse($data[$index]->created_at)->diffForHumans()}}</span>
+
+                                                    <h3 class="timeline-header"><a href="#">{{$data[$index]->user}}</a> {{$data[$index]->title}}</h3>
+
+                                                    <div class="timeline-body">
+                                                        {{$data[$index]->note}}
+                                                    </div>
+                                                    <div class="timeline-footer">
+                                                        <span class="time text-light-blue"><i class="fa fa-clock-o"></i> {{$data[$index]->tgl}}</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </li>
+                                            </li>
+                                        @endif
                                     @elseif ($data[$index]->action == "Update")
                                         <li>
                                             <i class="fa fa-money bg-yellow"></i>
@@ -150,14 +169,6 @@
                             <i class="fa fa-clock-o bg-gray"></i>
                         </li>
                     </ul>
-
-                    {{--<br/>--}}
-                    {{--Halaman : {{ $data->currentPage() }} <br/>--}}
-                    {{--Jumlah Data : {{ $data->total() }} <br/>--}}
-                    {{--Data Per Halaman : {{ $data->perPage() }} <br/>--}}
-
-
-                    {{--{{ $data->links() }}--}}
                 @endif
             </div>
             <!-- /.col -->
@@ -189,7 +200,7 @@
                     date = "null"
                 }
                 $.ajax({
-                    url: baseUrl+'/log-kegiatan/filter/'+date,
+                    url: baseUrl+'/log-aktivitas/filter/'+date,
                     dataType: 'json',
                 }).done(function (results){
                     if (results.tanggal.length == 0) {
@@ -206,22 +217,41 @@
                             results.data.forEach(function(dt){
                                 if (element.date == dt.date) {
                                     if (dt.action == "Create") {
-                                        row += '<li>\n' +
-                                            '<i class="fa fa-money bg-green"></i>\n' +
-                                            '\n' +
-                                            '<div class="timeline-item">\n' +
-                                            '<span class="time"><i class="fa fa-clock-o"></i>'+dt.times+'</span>\n' +
-                                            '\n' +
-                                            '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
-                                            '\n' +
-                                            '<div class="timeline-body">\n' +
-                                            ''+dt.note+'\n' +
-                                            '</div>\n' +
-                                            '<div class="timeline-footer">\n' +
-                                            '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
-                                            '</div>\n' +
-                                            '</div>\n' +
-                                            '</li>';
+                                        if(dt.title == "membuat kas masuk") {
+                                            row += '<li>\n' +
+                                                '<i class="fa fa-money bg-green"></i>\n' +
+                                                '\n' +
+                                                '<div class="timeline-item">\n' +
+                                                '<span class="time"><i class="fa fa-clock-o"></i>'+dt.times+'</span>\n' +
+                                                '\n' +
+                                                '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
+                                                '\n' +
+                                                '<div class="timeline-body">\n' +
+                                                ''+dt.note+'\n' +
+                                                '</div>\n' +
+                                                '<div class="timeline-footer">\n' +
+                                                '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
+                                                '</div>\n' +
+                                                '</div>\n' +
+                                                '</li>';
+                                        } else if (dt.title == "membuat kas keluar") {
+                                            row += '<li>\n' +
+                                                '<i class="fa fa-money bg-red"></i>\n' +
+                                                '\n' +
+                                                '<div class="timeline-item">\n' +
+                                                '<span class="time"><i class="fa fa-clock-o"></i>'+dt.times+'</span>\n' +
+                                                '\n' +
+                                                '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
+                                                '\n' +
+                                                '<div class="timeline-body">\n' +
+                                                ''+dt.note+'\n' +
+                                                '</div>\n' +
+                                                '<div class="timeline-footer">\n' +
+                                                '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
+                                                '</div>\n' +
+                                                '</div>\n' +
+                                                '</li>';
+                                        }
                                     } else if (dt.action == "Update") {
                                         row += '<li>\n' +
                                             '<i class="fa fa-money bg-yellow"></i>\n' +

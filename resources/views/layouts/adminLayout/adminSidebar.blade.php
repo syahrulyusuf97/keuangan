@@ -58,9 +58,9 @@
           <li <?php if(preg_match("/cashflow/i", $url)) { ?> class="active" <?php } ?>><a href="{{ url('/laporan/cashflow') }}"><i class="fa fa-list"></i> Arus Kas/<i>Cashflow</i></a></li>
         </ul>
       </li>
-      <li <?php if(preg_match("/log-kegiatan/i", $url)) { ?> class="active" <?php } ?>>
-        <a href="{{ url('/log-kegiatan') }}">
-          <i class="fa fa-clock-o"></i> <span>Log Kegiatan</span>
+      <li <?php if(preg_match("/log-aktivitas/i", $url)) { ?> class="active" <?php } ?>>
+        <a href="{{ url('/log-aktivitas') }}">
+          <i class="fa fa-clock-o"></i> <span>Log Aktivitas</span>
         </a>
       </li>
     </ul>

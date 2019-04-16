@@ -44,8 +44,8 @@ Route::group(['middleware'=>['auth']], function(){
     Route::post('/profil/update-foto', 'DashboardController@updateFoto');
 
     //Log Kegiatan
-    Route::get('/log-kegiatan', 'DashboardController@history');
-    Route::get('/log-kegiatan/filter/{tanggal}', 'DashboardController@filterHistory');
+    Route::get('/log-aktivitas', 'DashboardController@history');
+    Route::get('/log-aktivitas/filter/{tanggal}', 'DashboardController@filterHistory');
 
 	// kas masuk
 	Route::match(['get', 'post'], '/kas/masuk', 'KeuanganController@debit');
