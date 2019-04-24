@@ -10,6 +10,7 @@
 
     <title>{{ config('app.name', 'Keuangan') }}</title>
     <link href="{{ asset('public/css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('public/css/yeti.css') }}" rel="stylesheet">
 
     <!-- New -->
     <link rel="stylesheet" href="{{ asset('public/css/bootstrap/bootstrap.min.css') }}">
