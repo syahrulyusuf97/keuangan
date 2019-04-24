@@ -149,7 +149,9 @@
 <script src="{{ asset('assets/js/bootstrap/bootstrap.min.js') }}"></script>
 <!-- iCheck -->
 <script src="{{ asset('assets/js/iCheck/icheck.min.js') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.20.3/TweenMax.min.js"></script>
+<script src="{{ asset('assets/js/tweenMax/TweenMax.min.js') }}"></script>
+<script src="{{ asset('assets/js/tweenMax/MorphSVGPlugin.min.js') }}"></script>
+{{--<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.20.3/TweenMax.min.js"></script>--}}
 {{--<script src="//s3-us-west-2.amazonaws.com/s.cdpn.io/16327/MorphSVGPlugin.min.js?r=182"></script>--}}
 <script>
 	$(function () {
