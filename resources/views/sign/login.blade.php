@@ -1,4 +1,5 @@
 @extends('layouts.sign.login')
+@section('title', 'Login')
 @section('content')
 
 <div class="login-box">
