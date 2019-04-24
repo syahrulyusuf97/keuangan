@@ -2,6 +2,13 @@
 @section('title', 'Cashflow')
 @section('content')
 
+    <style type="text/css" media="print">
+        @page { size: portrait; }
+        body * #non-printable {
+            display: none;
+        }
+    </style>
+
     <section class="content-header">
         <h1>
             Dashboard
@@ -96,6 +103,11 @@
             <div class="col-xs-12" id="per_bulan" style="display: block">
                 <div class="col-md-12 box box-danger">
                     <div class="box-header with-border">
+                        <div class="pull-right box-tools non-printable" id="non-printable">
+                            <button type="button" class="btn btn-warning btn-sm" title="Print" id="print" onclick="printDiv('per_bulan')"><i class="fa fa-print"></i></button>
+                            <button type="button" class="btn btn-warning btn-sm" title="PDF"><i class="fa fa-file-pdf-o"></i></button>
+                            <button type="button" class="btn btn-warning btn-sm" title="Excel"><i class="fa fa-file-excel-o"></i></button>
+                        </div>
                         <h4 class="text-center">Laporan Arus Kas/<i>Cashflow</i></h4>
                         <h4 class="text-center" id="periode"></h4>
                     </div>
@@ -336,5 +348,41 @@
 
             }
         });
+
+        function printDiv(divName) {
+            $("#non-printable").hide();
+            var printContents = document.getElementById(divName).innerHTML;
+            var originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+
+            window.print();
+
+            document.body.innerHTML = originalContents;
+
+        }
+
+        var beforePrint = function() {
+            console.log('Functionality to run before printing.');
+        };
+
+        var afterPrint = function() {
+            console.log('Functionality to run after printing');
+            $("#non-printable").show();
+        };
+
+        if (window.matchMedia) {
+            var mediaQueryList = window.matchMedia('print');
+            mediaQueryList.addListener(function(mql) {
+                if (mql.matches) {
+                    beforePrint();
+                } else {
+                    afterPrint();
+                }
+            });
+        }
+
+        window.onbeforeprint = beforePrint;
+        window.onafterprint = afterPrint;
     </script>
 @endsection
