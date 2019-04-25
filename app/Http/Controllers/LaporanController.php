@@ -122,9 +122,11 @@ class LaporanController extends Controller
 
     public function excel($month, $year)
     {
-//        return Excel::download(new CashflowExcel, 'users.xlsx');
-//        return Excel::download(new CashflowExcel($month, $year), 'Cashflow.xlsx');
-//        return (new CashflowExcel($month, $year))->download('Cashflow.pdf');
         return (new CashflowExcel($month, $year))->download('Cashflow.xlsx');
+    }
+
+    public function pdf($month, $year)
+    {
+        return (new CashflowExcel($month, $year))->download('Cashflow.pdf');
     }
 }
