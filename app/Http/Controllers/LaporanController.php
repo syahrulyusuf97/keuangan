@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 use DB;
 use Response;
+use Excel;
+use App\Exports\CashflowExcel;
 
 class LaporanController extends Controller
 {
@@ -116,5 +118,13 @@ class LaporanController extends Controller
             ->get();
 
         return json_encode($data);
+    }
+
+    public function excel($month, $year)
+    {
+//        return Excel::download(new CashflowExcel, 'users.xlsx');
+//        return Excel::download(new CashflowExcel($month, $year), 'Cashflow.xlsx');
+//        return (new CashflowExcel($month, $year))->download('Cashflow.pdf');
+        return (new CashflowExcel($month, $year))->download('Cashflow.xlsx');
     }
 }

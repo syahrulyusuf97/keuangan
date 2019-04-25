@@ -76,5 +76,6 @@ Route::group(['middleware'=>['auth']], function(){
     Route::get('/laporan/cashflow', 'LaporanController@cashflow');
     Route::get('/laporan/cashflow/bulan/{bulan}', 'LaporanController@cashflowBulan');
     Route::get('/laporan/cashflow/tahun/{tahun}', 'LaporanController@cashflowTahun');
+    Route::get('/laporan/cashflow/excel/{bulan}/{tahun}', 'LaporanController@excel');
 
 });

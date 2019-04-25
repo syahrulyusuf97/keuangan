@@ -106,7 +106,7 @@
                         <div class="pull-right box-tools non-printable" id="non-printable">
                             <button type="button" class="btn btn-warning btn-sm" title="Print" id="print" onclick="printDiv('per_bulan')"><i class="fa fa-print"></i></button>
                             <button type="button" class="btn btn-warning btn-sm" title="PDF"><i class="fa fa-file-pdf-o"></i></button>
-                            <button type="button" class="btn btn-warning btn-sm" title="Excel"><i class="fa fa-file-excel-o"></i></button>
+                            <button type="button" class="btn btn-warning btn-sm" title="Excel" onclick="exportExcel()"><i class="fa fa-file-excel-o"></i></button>
                         </div>
                         <h4 class="text-center">Laporan Arus Kas/<i>Cashflow</i></h4>
                         <h4 class="text-center" id="periode"></h4>
@@ -348,6 +348,17 @@
 
             }
         });
+
+        function exportExcel() {
+            var bulan = null, tahun = null
+            if ($("#perbulan").val() != "") {
+                bulan = $("#perbulan").val();
+            } else if ($("#pertahun").val() != "") {
+                tahun = $("#pertahun").val();
+            }
+
+            window.open(baseUrl+'/laporan/cashflow/excel/'+bulan+'/'+tahun);
+        }
 
         function printDiv(divName) {
             $("#non-printable").hide();
