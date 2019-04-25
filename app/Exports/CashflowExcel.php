@@ -5,8 +5,9 @@ use DB;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
-class CashflowExcel implements FromView
+class CashflowExcel implements FromView, ShouldAutoSize
 {
     use Exportable;
 

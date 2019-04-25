@@ -104,9 +104,9 @@
                 <div class="col-md-12 box box-danger">
                     <div class="box-header with-border">
                         <div class="pull-right box-tools non-printable" id="non-printable">
-                            <button type="button" class="btn btn-warning btn-sm" title="Print" id="print" onclick="printDiv('per_bulan')"><i class="fa fa-print"></i></button>
-                            <button type="button" class="btn btn-warning btn-sm" title="PDF" onclick="exportPDF()"><i class="fa fa-file-pdf-o"></i></button>
-                            <button type="button" class="btn btn-warning btn-sm" title="Excel" onclick="exportExcel()"><i class="fa fa-file-excel-o"></i></button>
+                            <button type="button" class="btn btn-warning btn-sm" title="Print" id="print" onclick="printDiv('per_bulan')"><i class="fa fa-print" style="color: #000; font-size: 14px;"></i></button>
+                            <button type="button" class="btn btn-warning btn-sm" title="PDF" onclick="exportPDF()"><i class="fa fa-file-pdf-o" style="color: #000; font-size: 14px;"></i></button>
+                            <button type="button" class="btn btn-warning btn-sm" title="Excel" onclick="exportExcel()"><i class="fa fa-file-excel-o" style="color: #000; font-size: 14px;"></i></button>
                         </div>
                         <h4 class="text-center">Laporan Arus Kas/<i>Cashflow</i></h4>
                         <h4 class="text-center" id="periode"></h4>
