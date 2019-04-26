@@ -104,10 +104,12 @@ class LaporanController extends Controller
     {
         $month = explode(" ", $bulan);
 
-        $data = Cash::whereMonth('c_tanggal', date('m', strtotime($month[0])))
+        $data['data'] = Cash::whereMonth('c_tanggal', date('m', strtotime($month[0])))
             ->whereYear('c_tanggal', $month[1])
             ->select(DB::raw("DATE_FORMAT(c_tanggal, '%d-%m-%Y') as c_tanggal"), 'c_transaksi', 'c_jumlah', 'c_jenis')
             ->get();
+
+        $data['periode'] = $this->bulan_periode(date('m-Y', strtotime($bulan)));
 
         return json_encode($data);
     }
@@ -156,5 +158,28 @@ class LaporanController extends Controller
         $data['param'] = $param;
         $pdf = PDF::loadView('admin.laporan.pdf', $data);
         return $pdf->download('Cashflow.pdf');
+    }
+
+    function bulan_periode($tanggal){
+        $bulan = array (
+            1 =>   'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        );
+        $pecahkan = explode('-', $tanggal);
+
+        // variabel pecahkan 0 = bulan
+        // variabel pecahkan 1 = tahun
+
+        return $bulan[ (int)$pecahkan[0] ] . ' ' . $pecahkan[1];
     }
 }

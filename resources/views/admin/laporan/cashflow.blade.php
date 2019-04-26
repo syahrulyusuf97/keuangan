@@ -179,7 +179,7 @@
                         row += '<table class="table table-bordered" id="tbl_report"><tr>\n' +
                             '<td colspan="3"><strong>Arus Kas Masuk</strong></td>\n' +
                             '</tr>';
-                        results.forEach(function(element) {
+                        results.data.forEach(function(element) {
                             // console.log(element.c_id);
                             if (element.c_jenis == "D") {
                                 row += '<tr>\n' +
@@ -201,7 +201,7 @@
                         row += '<tr>\n' +
                             '<td colspan="3"><strong>Arus Kas Keluar</strong></td>\n' +
                             '</tr>';
-                        results.forEach(function(element) {
+                        results.data.forEach(function(element) {
                             // console.log(element.c_id);
                             if (element.c_jenis == "K") {
                                 row += '<tr>\n' +
@@ -251,7 +251,7 @@
                         var totNet = parseInt(totalDebit) - parseInt(totalKredit);
                         $("#totNet").html('<strong>'+new Intl.NumberFormat('de-DE').format(totNet)+'</strong>');
 
-                        $("#periode").html('Periode '+ $("#perbulan").val().toString());
+                        $("#periode").html('Periode '+ results.periode);
                     }
 
                 })
