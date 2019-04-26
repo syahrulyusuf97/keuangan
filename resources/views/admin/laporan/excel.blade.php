@@ -1,10 +1,34 @@
+@php
+    function bulan_periode($tanggal){
+        $bulan = array (
+            1 =>   'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        );
+        $pecahkan = explode('-', $tanggal);
+
+        // variabel pecahkan 0 = bulan
+        // variabel pecahkan 1 = tahun
+
+        return $bulan[ (int)$pecahkan[0] ] . ' ' . $pecahkan[1];
+    }
+@endphp
 <table>
     <thead>
     <tr>
-        <th colspan="3" style="text-align: center">Laporan Arus Kas/Cashflow</th>
+        <th colspan="3"><center>Laporan Arus Kas/Cashflow</center></th>
     </tr>
     <tr>
-        <th colspan="3" style="text-align: center">Periode {{ $periode }}</th>
+        <th colspan="3"><center>Periode {{ bulan_periode(date('m-Y', strtotime($periode))) }}</center></th>
     </tr>
     <tr>
         <th>Tanggal</th>

@@ -10,7 +10,9 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use DB;
 use Response;
 use Excel;
+use PDF;
 use App\Exports\CashflowExcel;
+use App\Exports\CashflowPDF;
 
 class LaporanController extends Controller
 {
@@ -127,6 +129,32 @@ class LaporanController extends Controller
 
     public function pdf($month, $year)
     {
-        return (new CashflowExcel($month, $year))->download('Cashflow.pdf');
+//        return (new CashflowPDF($month, $year))->download('Cashflow.pdf');
+        if ($year == "null") {
+            $bulan = explode(" ", $month);
+
+            $cash =  Cash::query()
+                ->whereMonth('c_tanggal', date('m', strtotime($bulan[0])))
+                ->whereYear('c_tanggal', $bulan[1])
+                ->select(DB::raw("DATE_FORMAT(c_tanggal, '%d-%m-%Y') as c_tanggal"),
+                    'c_transaksi', 'c_jumlah', 'c_jenis')
+                ->get();
+            $periode = $month;
+            $param = 'bulan';
+        } else if ($month == "null") {
+
+            $cash =  Cash::query()
+                ->whereYear('c_tanggal', $year)
+                ->select(DB::raw("DATE_FORMAT(c_tanggal, '%d-%m-%Y') as c_tanggal"),
+                    'c_transaksi', 'c_jumlah', 'c_jenis')
+                ->get();
+            $periode = $year;
+            $param = 'tahun';
+        }
+        $data['data'] = $cash;
+        $data['periode'] = $periode;
+        $data['param'] = $param;
+        $pdf = PDF::loadView('admin.laporan.pdf', $data);
+        return $pdf->download('Cashflow.pdf');
     }
 }
