@@ -111,7 +111,7 @@
                     <td class="text-right text-bold">{{ rupiah($tot_debit) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="3">Arus Kas Keluar</td>
+                    <td colspan="3"><strong>Arus Kas Keluar</strong></td>
                 </tr>
                 @foreach($data as $cash)
                     @if($cash->c_jenis == "K")
