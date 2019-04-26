@@ -144,6 +144,22 @@
                 minViewMode: 'years'
             })
 
+            changeBulan();
+            changeTahun();
+
+        });
+
+        function toRupiah(angka) {
+            parseInt(angka);
+            var rupiah = '';
+            var angkarev = angka.toString().split('').reverse().join('');
+            for(var i = 0; i < angkarev.length; i++) if(i%3 == 0) rupiah += angkarev.substr(i,3)+'.';
+            var hasil = rupiah.split('',rupiah.length-1).reverse().join('');
+            return hasil;
+
+        }
+
+        function changeBulan() {
             $('#perbulan').on('change', function(e){
                 var row = '';
                 var totalDebit = 0;
@@ -240,7 +256,9 @@
 
                 })
             })
+        }
 
+        function changeTahun() {
             $('#pertahun').on('change', function(e){
                 var row = '';
                 var totalDebit = 0;
@@ -337,17 +355,7 @@
 
                 })
             })
-
-            function toRupiah(angka) {
-                parseInt(angka);
-                var rupiah = '';
-                var angkarev = angka.toString().split('').reverse().join('');
-                for(var i = 0; i < angkarev.length; i++) if(i%3 == 0) rupiah += angkarev.substr(i,3)+'.';
-                var hasil = rupiah.split('',rupiah.length-1).reverse().join('');
-                return hasil;
-
-            }
-        });
+        }
 
         function exportExcel() {
             var bulan = null, tahun = null
@@ -380,7 +388,8 @@
         }
 
         function printDiv(divName) {
-            if ($("#perbulan").val() == "" && $("#pertahun").val() == "") {
+            var report = document.getElementById('tbl_report');
+            if (report == null) {
                 return alert("Masukkan bulan atau tahun transaksi");
             }
             $("#non-printable").hide();
@@ -402,6 +411,23 @@
         var afterPrint = function() {
             console.log('Functionality to run after printing');
             $("#non-printable").show();
+
+            $('#perbulan').datepicker({
+                autoclose: true,
+                format: 'MM yyyy',
+                viewMode: 'months',
+                minViewMode: 'months'
+            })
+
+            $('#pertahun').datepicker({
+                autoclose: true,
+                format: 'yyyy',
+                viewMode: 'years',
+                minViewMode: 'years'
+            })
+
+            changeBulan();
+            changeTahun();
         };
 
         if (window.matchMedia) {

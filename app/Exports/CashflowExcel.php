@@ -44,7 +44,7 @@ class CashflowExcel implements FromView, ShouldAutoSize
 
     public function view(): View
     {
-        if ($this->bulan != "" || $this->bulan != null) {
+        if ($this->tahun == "null") {
             $month = explode(" ", $this->bulan);
 
             $cash =  Cash::query()
@@ -54,7 +54,7 @@ class CashflowExcel implements FromView, ShouldAutoSize
                     'c_transaksi', 'c_jumlah', 'c_jenis')
                 ->get();
             $periode = $this->bulan;
-        } else if ($this->tahun != "" || $this->tahun != null) {
+        } else if ($this->bulan == "null") {
             $year = $this->tahun;
 
             $cash =  Cash::query()
