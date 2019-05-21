@@ -1,16 +1,16 @@
 # KeuanganKu
 
-![GitHub issues](https://img.shields.io/github/issues/swamsid/keuangan.svg)
+![GitHub issues](https://img.shields.io/github/issues/syahrulyusuf97/keuangan.svg)
 
-Aplikasi KeuanganKu adalah aplikasi untuk manajemen keuangan pribadi yang dibangun menggunakan framework Laravel.
+Aplikasi KeuanganKu adalah aplikasi untuk manajemen keuangan pribadi yang dibangun menggunakan framework Laravel v5.6
 
 ## Getting Started
 
 Sebelum menginstall aplikasi ini dianjurkan untuk berdoa terlebih dahulu.
 
-### Installing
+### Install
 
-- Clone project.
+- Clone/Download project.
 
 ```bash
 git clone https://github.com/syahrulyusuf97/keuangan.git

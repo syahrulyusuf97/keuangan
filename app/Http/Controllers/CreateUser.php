@@ -24,10 +24,10 @@ class CreateUser extends Controller
                 'logout'        => null
             ]);
             DB::commit();
-            echo 'Successfully created user admin';
+            return 'Successfully created user admin';
         }catch (\Exception $e){
             DB::rollback();
-            echo 'Failed creating user admin => ' . $e;
+            return 'Failed creating user admin => ' . $e;
         }
     }
 }
