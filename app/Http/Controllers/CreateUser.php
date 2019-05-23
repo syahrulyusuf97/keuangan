@@ -10,6 +10,7 @@ class CreateUser extends Controller
 {
     public static function store()
     {
+        DB::beginTransaction();
         try{
             DB::table('users')->insert([
                 'name'          => 'Your Name',

@@ -39,6 +39,6 @@ class makeUserAdmin extends Command
     public function handle()
     {
         $controller = new CreateUser(); // make sure to import the controller
-        $controller->store();
+        $this->info($controller->store());
     }
 }
