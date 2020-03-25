@@ -18,4 +18,15 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    #hide a Specifuc File
+
+    <Files index.php>
+        order allow,deny
+        Deny from all
+    </Files>
+    <Files robots.txt>
+        order allow,deny
+        Deny from all
+    </Files>
 </IfModule>

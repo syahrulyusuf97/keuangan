@@ -39,6 +39,13 @@ class makeUserAdmin extends Command
     public function handle()
     {
         $controller = new CreateUser(); // make sure to import the controller
-        $this->info($controller->store());
+        $store = $controller->store();
+        if ($store == "TRUE") {
+            $this->info("Successfully created user admin");
+            $this->info("Username : admin");
+            $this->info("Password : 123456");
+        } else {
+            $this->info($store);
+        }
     }
 }

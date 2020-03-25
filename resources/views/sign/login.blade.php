@@ -115,7 +115,7 @@
 				</div>
 			</div>
 			<div class="form-group has-feedback">
-				<input type="text" name="username" id="email" class="form-control" autofocus placeholder="Username">
+				<input type="text" name="username" id="email" class="form-control" autofocus placeholder="Username" autocomplete="off">
 				<span class="glyphicon glyphicon-envelope form-control-feedback"></span>
 			</div>
 			<div class="form-group has-feedback">
@@ -132,29 +132,28 @@
 				</div>
 				<!-- /.col -->
 				<div class="col-xs-4">
-					<button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
+					<button type="submit" class="btn btn-primary btn-block btn-flat">Masuk</button>
 				</div>
 				<!-- /.col -->
 			</div>
 		</form>
 		<!-- /.social-auth-links -->
 
-		{{--<a href="{{ route('password.request') }}">I forgot my password</a><br>--}}
+		Belum punya akun? <a href="{{ route('registrasi') }}">Registrasi Disini</a><br>
+		<div class="text-center" style="margin-top: 10px;">
+			<i class="fa fa-home"><a href="{{ url('/') }}">Beranda</a><br></i>
+		</div>
 
 	</div>
 	<!-- /.login-box-body -->
 </div>
 
-<script src="{{ asset('assets/js/jQuery/jquery.min.js') }}"></script>
-<!-- Bootstrap 3.3.7 -->
-<script src="{{ asset('assets/js/bootstrap/bootstrap.min.js') }}"></script>
-<!-- iCheck -->
-<script src="{{ asset('assets/js/iCheck/icheck.min.js') }}"></script>
-<script src="{{ asset('assets/js/tweenMax/TweenMax.min.js') }}"></script>
-<script src="{{ asset('assets/js/tweenMax/MorphSVGPlugin.min.js') }}"></script>
-{{--<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.20.3/TweenMax.min.js"></script>--}}
-{{--<script src="//s3-us-west-2.amazonaws.com/s.cdpn.io/16327/MorphSVGPlugin.min.js?r=182"></script>--}}
-<script>
+<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
+<script src="{{ asset('public/js/bootstrap/bootstrap.min.js') }}"></script>
+<script src="{{ asset('public/js/iCheck/icheck.min.js') }}"></script>
+<script src="{{ asset('public/js/tweenMax/TweenMax.min.js') }}"></script>
+<script src="{{ asset('public/js/tweenMax/MorphSVGPlugin.min.js') }}"></script>
+<script type="text/javascript">
 	$(function () {
 		$('input').iCheck({
 			checkboxClass: 'icheckbox_square-blue',

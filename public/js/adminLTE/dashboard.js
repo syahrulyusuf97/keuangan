@@ -126,6 +126,9 @@ $(function () {
   $('#chat-box').slimScroll({
     height: '250px'
   });
+  // $(".sidebar-menu-k").slimScroll({
+  //   height: '200px'
+  // });
 
   /* Morris.js Charts */
   // Sales chart

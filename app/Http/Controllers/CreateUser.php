@@ -20,12 +20,16 @@ class CreateUser extends Controller
                 'email'         => 'your@email.com',
                 'username'      => 'admin',
                 'password'      => bcrypt('123456'),
+                'level'         => 1,
+                'is_active'     => 1,
                 'img'           => null,
                 'login'         => null,
-                'logout'        => null
+                'logout'        => null,
+                'created_at'    => Carbon::now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                'updated_at'     => Carbon::now('Asia/Jakarta')->format('Y-m-d H:i:s')
             ]);
             DB::commit();
-            return 'Successfully created user admin';
+            return 'TRUE';
         }catch (\Exception $e){
             DB::rollback();
             return 'Failed creating user admin => ' . $e;
