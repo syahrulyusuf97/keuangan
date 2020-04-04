@@ -10,6 +10,7 @@ use App\Http\Controllers\ActivityController as Activity;
 use App\Cash;
 use App\User;
 use App\Kategori;
+use App\Akun;
 use File;
 use Auth;
 use DB;
@@ -28,6 +29,20 @@ class DashboardController extends Controller
     {
         $this->last_month = date('Y-m', strtotime('-1 months'));
         $this->last_year = date('Y', strtotime('-1 year'));
+    }
+
+    function saldo($id_akun)
+    {
+        $debit_kas  = Cash::where('c_iduser', Auth::user()->id)
+                        ->where('c_akun', $id_akun)
+                        ->where('c_jenis', 'D')
+                        ->sum('c_jumlah');
+        $credit_kas = Cash::where('c_iduser', Auth::user()->id)
+                        ->where('c_akun', $id_akun)
+                        ->where('c_jenis', 'K')
+                        ->sum('c_jumlah');
+        $saldo_kas  = $debit_kas - $credit_kas;
+        return $saldo_kas;
     }
 
     public function dashboard()
@@ -109,10 +124,32 @@ class DashboardController extends Controller
         return view('member.dashboard.dashboard')->with(compact('saldo_kas', 'debit_kas_last_month', 'credit_kas_last_month', 'debit_kas_last_year', 'credit_kas_last_year', 'saldo_bank', 'debit_bank_last_month', 'credit_bank_last_month', 'debit_bank_last_year', 'credit_bank_last_year'));
     }
 
+    public function detailSaldo($param)
+    {
+        if (Session::has('adminSession')) {
+            if (Auth::user()->level != 2) {
+                return redirect('/login');
+            }
+        }
+        $akun = Akun::where('jenis_akun', ucwords($param))->where('iduser', Auth::user()->id);
+        if ($akun->count() > 0) {
+            $data = array_reduce($akun->get()->toArray(), function($carry, $item){
+                $item['saldo'] = $this->saldo($item['id']);
+                $carry[] = (object)$item;
+                return $carry;
+            });
+        } else {
+            $data = [];
+            
+        return view('member.dashboard.detail_saldo')->with(compact('data', 'param'));
+        }
+    }
+
     public function chartKKDBL()
     {
         $ktg_kas_dbt_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Kas')
                         ->where('c.c_jenis', 'D')
                         ->whereYear('c.c_tanggal', '=', explode("-", $this->last_month)[0])
@@ -161,6 +198,7 @@ class DashboardController extends Controller
     {
         $ktg_kas_krd_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Kas')
                         ->where('c.c_jenis', 'K')
                         ->whereYear('c.c_tanggal', '=', explode("-", $this->last_month)[0])
@@ -209,6 +247,7 @@ class DashboardController extends Controller
     {
         $ktg_bank_dbt_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Bank')
                         ->where('c.c_jenis', 'D')
                         ->whereYear('c.c_tanggal', '=', explode("-", $this->last_month)[0])
@@ -255,6 +294,7 @@ class DashboardController extends Controller
     {
         $ktg_bank_krd_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Bank')
                         ->where('c.c_jenis', 'K')
                         ->whereYear('c.c_tanggal', '=', explode("-", $this->last_month)[0])
@@ -301,6 +341,7 @@ class DashboardController extends Controller
     {
         $ktg_kas_dbt_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Kas')
                         ->where('c.c_jenis', 'D')
                         ->whereYear('c.c_tanggal', '=', $this->last_year)
@@ -346,6 +387,7 @@ class DashboardController extends Controller
     {
         $ktg_kas_krd_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Kas')
                         ->where('c.c_jenis', 'K')
                         ->whereYear('c.c_tanggal', '=', $this->last_year)
@@ -391,6 +433,7 @@ class DashboardController extends Controller
     {
         $ktg_bank_dbt_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Bank')
                         ->where('c.c_jenis', 'D')
                         ->whereYear('c.c_tanggal', '=', $this->last_year)
@@ -436,6 +479,7 @@ class DashboardController extends Controller
     {
         $ktg_bank_krd_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Bank')
                         ->where('c.c_jenis', 'K')
                         ->whereYear('c.c_tanggal', '=', $this->last_year)
@@ -651,10 +695,16 @@ class DashboardController extends Controller
         $tgllahir = User::select('tgl_lahir')
             ->where('id', Auth::user()->id)->first();
         $date = [];
-        $date = explode('-', $tgllahir->tgl_lahir);
-        $day = $date[2];
-        $month = $date[1];
-        $year = $date[0];
+        if ($tgllahir->tgl_lahir != null) {
+            $date = explode('-', $tgllahir->tgl_lahir);
+            $day = $date[2];
+            $month = $date[1];
+            $year = $date[0];
+        } else {
+            $day = null;
+            $month = null;
+            $year = null;
+        }
         return view('member.profile.index')->with(compact('day', 'month', 'year'));
     }
 

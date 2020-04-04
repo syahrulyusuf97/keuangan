@@ -37,7 +37,7 @@
 						</div>
 						<!-- /.box-header -->
 						<!-- form start -->
-						<form class="form-horizontal" method="post" action="{{ url('/bank/bank-masuk') }}" onsubmit="{$('#btn_submit').attr('disabled', true)}">{{ csrf_field() }}
+						<form class="form-horizontal" method="post" action="{{ url('/bank/bank-masuk') }}" autocomplete="off" onsubmit="{$('#btn_submit').attr('disabled', true)}">{{ csrf_field() }}
 							<div class="box-body">
 								<div class="form-group">
 									<label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-12 control-label">Kategori</label>
@@ -82,7 +82,8 @@
 									<label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-12 control-label">Ke Akun</label>
 
 									<div class="col-lg-10 col-md-10 col-sm-10 col-xs-12">
-										<select class="form-control select2" name="keakun" id="keakun">
+										<select class="form-control select2" name="keakun" id="keakun" required>
+											<option value="">Pilih Akun</option>
 											@foreach($akun as $key => $value)
 											<option value="{{ Crypt::encrypt($value->id).'_'.$value->jenis_akun.'_'.'('.$value->kode_akun.') '.$value->nama_akun }}">{{ "(".$value->kode_akun.") ". $value->nama_akun }}</option>
 											@endforeach

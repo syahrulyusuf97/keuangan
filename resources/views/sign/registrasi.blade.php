@@ -4,21 +4,21 @@
 
 <div class="login-box">
 	<div class="login-logo">
-		<a href="#"><b>Keuangan</b>KU</a>
+		<a href="{{url('/')}}"><b>Keuangan</b>KU</a>
 	</div>
 	<!-- /.login-logo -->
 	<div class="login-box-body">
 		<p class="login-box-msg">Registrasi Akun</p>
 		@if(Session::has('flash_message_error'))
 		<div class="alert alert-error alert-block">
-			<button type="button" class="close" data-dismiss="alert">&times;</button>
 			<strong>{!! session('flash_message_error') !!}</strong>
+			@if(Session::has('resendmail')){!! session('resendmail') !!}@endif
 		</div>
 		@endif
 		@if(Session::has('flash_message_success'))
 		<div class="alert alert-success alert-block">
-			<!-- <button type="button" class="close" data-dismiss="alert">&times;</button> -->
 			<strong>{!! session('flash_message_success') !!}</strong>
+			@if(Session::has('resendmail')){!! session('resendmail') !!}@endif
 		</div>
 		@endif
 
@@ -39,7 +39,7 @@
 				</label>
 			</div>
 			<div class="form-group">
-				<input type="mail" name="email" id="email" class="form-control" placeholder="Email" autocomplete="off" required>
+				<input type="email" name="email" id="email" class="form-control" placeholder="Email" autocomplete="off" required>
 			</div>
 			<div class="form-group">
 				<input type="text" name="username" id="username" class="form-control" placeholder="Username" autocomplete="off" required>
@@ -83,6 +83,27 @@
 <script src="{{ asset('public/js/bootstrap/bootstrap.min.js') }}"></script>
 <script src="{{ asset('public/js/iCheck/icheck.min.js') }}"></script>
 <script type="text/javascript">
+	var resendButton = document.getElementById("btn_resendmail") || "";
+	var counter = 60; //Countdown dalam bentuk Seconds
+	var newElement = document.createElement("p");
+	newElement.innerHTML = "Kirim Ulang (60 detik)"; //Kata-katanya
+	var id;
+
+	if (resendButton != "") {
+		resendButton.parentNode.replaceChild(newElement, resendButton);
+
+		id = setInterval(function() {
+		    counter--;
+		    if(counter < 0) {
+		        newElement.parentNode.replaceChild(resendButton, newElement);
+		        clearInterval(id);
+		        id = 0;
+		    } else {
+		        newElement.innerHTML = "Kirim Ulang (" + counter.toString() + " detik)";
+		    }
+		}, 1000);
+	}
+
 	$(function () {
 		$('input').iCheck({
 			checkboxClass: 'icheckbox_square-blue',

@@ -405,6 +405,7 @@ class LaporanController extends Controller
 
         $ktg_kas_dbt_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Kas')
                         ->where('c.c_jenis', 'D')
                         ->whereYear('c.c_tanggal', '=', $thn)
@@ -457,6 +458,7 @@ class LaporanController extends Controller
 
         $ktg_kas_krd_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Kas')
                         ->where('c.c_jenis', 'K')
                         ->whereYear('c.c_tanggal', '=', $thn)
@@ -508,6 +510,7 @@ class LaporanController extends Controller
 
         $ktg_bank_dbt_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Bank')
                         ->where('c.c_jenis', 'D')
                         ->whereYear('c.c_tanggal', '=', $thn)
@@ -558,6 +561,7 @@ class LaporanController extends Controller
 
         $ktg_bank_krd_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Bank')
                         ->where('c.c_jenis', 'K')
                         ->whereYear('c.c_tanggal', '=', $thn)
@@ -604,6 +608,7 @@ class LaporanController extends Controller
     {
         $ktg_kas_dbt_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Kas')
                         ->where('c.c_jenis', 'D')
                         ->whereYear('c.c_tanggal', '=', $tahun)
@@ -648,6 +653,7 @@ class LaporanController extends Controller
     {
         $ktg_kas_krd_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Kas')
                         ->where('c.c_jenis', 'K')
                         ->whereYear('c.c_tanggal', '=', $tahun)
@@ -692,6 +698,7 @@ class LaporanController extends Controller
     {
         $ktg_bank_dbt_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Bank')
                         ->where('c.c_jenis', 'D')
                         ->whereYear('c.c_tanggal', '=', $tahun)
@@ -737,6 +744,7 @@ class LaporanController extends Controller
     {
         $ktg_bank_krd_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
+                        ->where('c.c_iduser', Auth::user()->id)
                         ->where('c.c_flagakun', 'Bank')
                         ->where('c.c_jenis', 'K')
                         ->whereYear('c.c_tanggal', '=', $tahun)

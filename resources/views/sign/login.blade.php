@@ -4,7 +4,7 @@
 
 <div class="login-box">
 	<div class="login-logo">
-		<a href="#"><b>Keuangan</b>KU</a>
+		<a href="{{url('/')}}"><b>Keuangan</b>KU</a>
 	</div>
 	<!-- /.login-logo -->
 	<div class="login-box-body">
@@ -13,12 +13,14 @@
 		<div class="alert alert-error alert-block">
 			<button type="button" class="close" data-dismiss="alert">&times;</button>
 			<strong>{!! session('flash_message_error') !!}</strong>
+			@if(Session::has('resendmail')){!! session('resendmail') !!}@endif
 		</div>
 		@endif
 		@if(Session::has('flash_message_success'))
 		<div class="alert alert-success alert-block">
 			<button type="button" class="close" data-dismiss="alert">&times;</button>
 			<strong>{!! session('flash_message_success') !!}</strong>
+			@if(Session::has('resendmail')){!! session('resendmail') !!}@endif
 		</div>
 		@endif
 
@@ -127,6 +129,7 @@
 					<div class="checkbox icheck">
 						<label>
 							{{--<input type="checkbox" name="remember" id="remember"> Remember Me--}}
+							<a href="#" data-toggle="modal" data-target="#modal_reset_password">Lupa Password?</a>
 						</label>
 					</div>
 				</div>
@@ -146,6 +149,31 @@
 
 	</div>
 	<!-- /.login-box-body -->
+</div>
+
+<div class="modal modal-default fade" id="modal_reset_password">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      	<h4 class="modal-title">Reset Password</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+      	<form method="POST" action="{{url('/reset_password')}}">
+      		{{csrf_field()}}
+	      	<div class="input-group">
+	        	<input type="email" class="form-control" name="email" placeholder="example@email.com">
+	            <span class="input-group-btn">
+	              <button type="submit" class="btn btn-info btn-flat">Kirim</button>
+	            </span>
+	     	</div>
+     	</form>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
 </div>
 
 <script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>

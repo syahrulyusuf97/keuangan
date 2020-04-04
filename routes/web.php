@@ -23,11 +23,16 @@
 Route::get('/', 'SignController@login');
 Route::match(['get', 'post'], '/login', 'SignController@login')->name('login');
 Route::match(['get', 'post'], '/registrasi', 'SignController@registrasi')->name('registrasi');
+Route::get('/resend_email/{id}/{email}', 'SignController@resendEmail');
 Route::get('/konfirmasi/{id}', 'SignController@konfirmasi');
+Route::match(['get', 'post'], '/reset_password', 'SignController@resetPassword');
+Route::post('/password_reset', 'SignController@passwordReset');
 Route::get('/logout', 'SignController@logout');
 
 Route::group(['namespace' => 'index'], function(){
     Route::get('/', 'IndexController@index');
+    Route::get('/article', 'IndexController@article');
+    Route::get('/article/{slug}', 'IndexController@articleSlug');
     Route::match(['get', 'post'], '/pesan', 'IndexController@message');
 });
 
@@ -36,6 +41,7 @@ Route::group(['middleware'=>['auth']], function(){
     Route::group(['namespace' => 'member'], function(){
         // Dashboard
         Route::get('/dashboard', 'DashboardController@dashboard');
+        Route::get('/dashboard/detail-saldo/{param}', 'DashboardController@detailSaldo');
         Route::get('/dashboard/riwayat/{parameter}', 'DashboardController@riwayat');
         Route::get('/dashboard/grafik-kas', 'DashboardController@grafikKas');
         Route::get('/dashboard/grafik-bank', 'DashboardController@grafikBank');
@@ -188,6 +194,22 @@ Route::group(['middleware'=>['auth']], function(){
         Route::get('/admin/pesan/read/{id}', 'MessageController@read');
         Route::get('/admin/pesan/bookmark/{id}', 'MessageController@bookmark');
         Route::get('/admin/pesan/unbookmark/{id}', 'MessageController@unBookmark');
+
+        // Index
+        Route::match(['get', 'post'], '/admin/index/identitas-app', 'IndexController@identitasApp');
+        Route::match(['get', 'post'], '/admin/index/layanan', 'IndexController@layanan');
+        Route::get('/admin/index/layanan/get-data', 'IndexController@getLayanan')->name('getLayanan');
+        Route::match(['get', 'post'], '/admin/index/layanan/create', 'IndexController@layananCreate');
+        Route::get('/admin/index/layanan/delete/{id}', 'IndexController@layananDelete');
+        Route::match(['get', 'post'], '/admin/index/syarat', 'IndexController@syarat');
+        Route::match(['get', 'post'], '/admin/index/kebijakan', 'IndexController@kebijakan');
+
+        // Article
+        Route::match(['get', 'post'], '/admin/article', 'ArticleController@index');
+        Route::get('/admin/article/get-data', 'ArticleController@getArticle')->name('getArticle');
+        Route::match(['get', 'post'], '/admin/article/create', 'ArticleController@articleCreate');
+        Route::get('/admin/article/status/{id}/{status}', 'ArticleController@status');
+        Route::get('/admin/article/delete/{id}', 'ArticleController@articleDelete');
     });
 
     //Riwayat

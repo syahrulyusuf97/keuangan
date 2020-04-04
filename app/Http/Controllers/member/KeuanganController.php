@@ -72,8 +72,8 @@ class KeuanganController extends Controller
             }
     	}
 
-        $akun = Akun::where('enabled', 1)->where('jenis_akun', 'Kas')->get();
-        $kategori = Kategori::where('enabled', 1)->where('jenis_transaksi', 'Pemasukan')->get();
+        $akun = Akun::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_akun', 'Kas')->get();
+        $kategori = Kategori::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_transaksi', 'Pemasukan')->get();
 
         // Kas
         $debit_kas  = Cash::where('c_iduser', Auth::user()->id)
@@ -280,8 +280,8 @@ class KeuanganController extends Controller
 
     	}
 
-        $akun = Akun::where('enabled', 1)->where('jenis_akun', 'Kas')->get();
-        $kategori = Kategori::where('enabled', 1)->where('jenis_transaksi', 'Pengeluaran')->get();
+        $akun = Akun::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_akun', 'Kas')->get();
+        $kategori = Kategori::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_transaksi', 'Pengeluaran')->get();
 
     	$debit_kas  = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Kas')
@@ -822,8 +822,8 @@ class KeuanganController extends Controller
             }
         }
 
-        $akun = Akun::where('enabled', 1)->where('jenis_akun', 'Bank')->get();
-        $kategori = Kategori::where('enabled', 1)->where('jenis_transaksi', 'Pemasukan')->get();
+        $akun = Akun::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_akun', 'Bank')->get();
+        $kategori = Kategori::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_transaksi', 'Pemasukan')->get();
 
         $debit_bank  = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Bank')
@@ -1029,8 +1029,8 @@ class KeuanganController extends Controller
 
         }
 
-        $akun = Akun::where('enabled', 1)->where('jenis_akun', 'bank')->get();
-        $kategori = Kategori::where('enabled', 1)->where('jenis_transaksi', 'Pengeluaran')->get();
+        $akun = Akun::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_akun', 'bank')->get();
+        $kategori = Kategori::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_transaksi', 'Pengeluaran')->get();
 
         $debit_bank  = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Bank')

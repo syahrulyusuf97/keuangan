@@ -1,6 +1,6 @@
 <header class="main-header">
 	<!-- Logo -->
-	<a href="index2.html" class="logo">
+	<a href="{{url('/')}}" class="logo">
 		<!-- mini logo for sidebar mini 50x50 pixels -->
 		<span class="logo-mini"><b>K</b>KU</span>
 		<!-- logo for regular state and mobile devices -->
@@ -28,7 +28,7 @@
 		                <!-- inner menu: contains the actual data -->
 		                <ul class="menu">
 		                  <li><!-- Task item -->
-		                    <a href="#">
+		                    <a href="{{url('/dashboard/detail-saldo/bank')}}">
 		                      <h3>
 		                        Bank
 		                        <span class="pull-right">{{ Helper::displayRupiah(Helper::saldoBank()) }}</span>
@@ -43,7 +43,7 @@
 		                  </li>
 		                  <!-- end task item -->
 		                  <li><!-- Task item -->
-		                    <a href="#">
+		                    <a href="{{url('/dashboard/detail-saldo/kas')}}">
 		                      <h3>
 		                        Kas
 		                        <span class="pull-right">{{ Helper::displayRupiah(Helper::saldoKas()) }}</span>
@@ -79,7 +79,11 @@
 					<ul class="dropdown-menu">
 						<!-- User image -->
 						<li class="user-header">
+							@if(auth()->user()->img == "")
+							<img src="{{ asset('public/images/default.jpg') }}" class="img-circle" alt="User Image">
+							@else
 							<img src="{{ asset('public/images/'. auth()->user()->img) }}" class="img-circle" alt="User Image">
+							@endif
 
 							<p>
 								@if(Session::has('adminName')){!! auth()->user()->name !!}@endif

@@ -44,8 +44,12 @@
                     
                     <h3 class="profile-username text-center text-capitalize">@if(Session::has('adminName')){!! auth()->user()->name !!}@endif</h3>
                     <p class="text-muted text-center text-capitalize">@if(auth()->user()->level == 1) Admin @elseif(auth()->user()->level == 2) Member @endif KeuanganKu</p>
+                    @if(auth()->user()->tempat_lahir != null && auth()->user()->tgl_lahir != null)
                     <p class="text-muted text-center text-capitalize">{!! auth()->user()->tempat_lahir !!}, {!! date('d F Y', strtotime(auth()->user()->tgl_lahir)) !!}</p>
+                    @endif
+                    @if(auth()->user()->address != null)
                     <p class="text-muted text-center text-capitalize">{!! auth()->user()->address !!}</p>
+                    @endif
                 </div>
                 <div class="col-md-6 box-body box-profile">
                     <ul class="list-group list-group-unbordered">
@@ -53,7 +57,9 @@
                         <li class="list-group-item"><b>Email</b> <a class="pull-right">{!! auth()->user()->email !!}</a></li>
                         <li class="list-group-item"><b>Username</b> <a class="pull-right">{!! auth()->user()->username !!}</a></li>
                         <li class="list-group-item"><b>Last Login</b> <a class="pull-right">{!! date('d F Y H:m:s', strtotime(auth()->user()->login)) !!}</a></li>
+                        @if(auth()->user()->logout != null)
                         <li class="list-group-item"><b>Last Logout</b> <a class="pull-right">{!! date('d F Y H:m:s', strtotime(auth()->user()->logout)) !!}</a></li>
+                        @endif
                     </ul>
                 </div>
             </div>

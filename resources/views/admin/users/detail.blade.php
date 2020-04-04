@@ -44,16 +44,25 @@
                     
                     <h3 class="profile-username text-center text-capitalize">{!! $member->name !!}</h3>
                     <p class="text-muted text-center text-capitalize">@if($member->level == 1) Admin @elseif($member->level == 2) Member @endif KeuanganKu</p>
+                    @if($member->tempat_lahir != null && $member->tgl_lahir != null)
                     <p class="text-muted text-center text-capitalize">{!! $member->tempat_lahir !!}, {!! date('d F Y', strtotime($member->tgl_lahir)) !!}</p>
+                    @endif
+                    @if($member->address != null)
                     <p class="text-muted text-center text-capitalize">{!! $member->address !!}</p>
+                    @endif
                 </div>
                 <div class="col-md-6 box-body box-profile">
                     <ul class="list-group list-group-unbordered">
                         <li class="list-group-item"><b>Nama</b> <a class="pull-right">{!! $member->name !!}</a></li>
                         <li class="list-group-item"><b>Email</b> <a class="pull-right">{!! $member->email !!}</a></li>
                         <li class="list-group-item"><b>Username</b> <a class="pull-right">{!! $member->username !!}</a></li>
+                        <li class="list-group-item"><b>Tanggal Daftar</b> <a class="pull-right">{!! date('d F Y H:m:s', strtotime($member->created_at)) !!}</a></li>
+                        @if($member->login != null)
                         <li class="list-group-item"><b>Last Login</b> <a class="pull-right">{!! date('d F Y H:m:s', strtotime($member->login)) !!}</a></li>
+                        @endif
+                        @if($member->logout != null)
                         <li class="list-group-item"><b>Last Logout</b> <a class="pull-right">{!! date('d F Y H:m:s', strtotime($member->logout)) !!}</a></li>
+                        @endif
                     </ul>
                 </div>
             </div>

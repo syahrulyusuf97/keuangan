@@ -391,6 +391,7 @@
             $("#per_tahun").hide();
 
             if ($("#akun_bulan").val() == "Kas") {
+                $("#line-chart-debit").empty();
                 $.ajax({
                     url: baseUrl+'/laporan/chart/bulan/debit/kas/'+$("#perbulan").val(),
                     dataType: 'json',
@@ -419,6 +420,7 @@
                     }
                 })
 
+                $("#line-chart-kredit").empty();
                 $.ajax({
                     url: baseUrl+'/laporan/chart/bulan/kredit/kas/'+$("#perbulan").val(),
                     dataType: 'json',
@@ -521,8 +523,6 @@
                                 tooltips: {
                                     callbacks: {
                                       label: function(tooltipItem, data) {
-                                        console.log(data);
-                                        console.log(tooltipItem);
 
                                         var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -594,8 +594,6 @@
                                 tooltips: {
                                     callbacks: {
                                       label: function(tooltipItem, data) {
-                                        console.log(data);
-                                        console.log(tooltipItem);
 
                                         var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -745,8 +743,6 @@
                                 tooltips: {
                                     callbacks: {
                                       label: function(tooltipItem, data) {
-                                        console.log(data);
-                                        console.log(tooltipItem);
 
                                         var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -818,8 +814,6 @@
                                 tooltips: {
                                     callbacks: {
                                       label: function(tooltipItem, data) {
-                                        console.log(data);
-                                        console.log(tooltipItem);
 
                                         var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -947,8 +941,6 @@
                                 tooltips: {
                                     callbacks: {
                                       label: function(tooltipItem, data) {
-                                        console.log(data);
-                                        console.log(tooltipItem);
 
                                         var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -1019,8 +1011,6 @@
                                 tooltips: {
                                     callbacks: {
                                       label: function(tooltipItem, data) {
-                                        console.log(data);
-                                        console.log(tooltipItem);
 
                                         var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -1140,8 +1130,6 @@
                                 tooltips: {
                                     callbacks: {
                                       label: function(tooltipItem, data) {
-                                        console.log(data);
-                                        console.log(tooltipItem);
 
                                         var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -1212,8 +1200,6 @@
                                 tooltips: {
                                     callbacks: {
                                       label: function(tooltipItem, data) {
-                                        console.log(data);
-                                        console.log(tooltipItem);
 
                                         var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 

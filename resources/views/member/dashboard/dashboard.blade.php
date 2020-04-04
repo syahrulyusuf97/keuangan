@@ -26,7 +26,7 @@
 				<div class="icon">
 					<i class="ion ion-cash"></i>
 				</div>
-				<a href="{{ url('/laporan/cashflow') }}" class="small-box-footer">Info lebih lanjut <i class="fa fa-arrow-circle-right"></i></a>
+				<a href="{{url('/dashboard/detail-saldo/kas')}}" class="small-box-footer">Info lebih lanjut <i class="fa fa-arrow-circle-right"></i></a>
 			</div>
 		</div>
 
@@ -40,7 +40,7 @@
 				<div class="icon">
 					<i class="ion ion-home"></i>
 				</div>
-				<a href="{{ url('/laporan/cashflow') }}" class="small-box-footer">Info lebih lanjut <i class="fa fa-arrow-circle-right"></i></a>
+				<a href="{{url('/dashboard/detail-saldo/bank')}}" class="small-box-footer">Info lebih lanjut <i class="fa fa-arrow-circle-right"></i></a>
 			</div>
 		</div>
 
@@ -637,8 +637,6 @@
 						tooltips: {
 						    callbacks: {
 						      label: function(tooltipItem, data) {
-						        console.log(data);
-						        console.log(tooltipItem);
 
 						        var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -703,8 +701,6 @@
 						tooltips: {
 						    callbacks: {
 						      label: function(tooltipItem, data) {
-						        console.log(data);
-						        console.log(tooltipItem);
 
 						        var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -769,8 +765,6 @@
 						tooltips: {
 						    callbacks: {
 						      label: function(tooltipItem, data) {
-						        console.log(data);
-						        console.log(tooltipItem);
 
 						        var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -835,8 +829,6 @@
 						tooltips: {
 						    callbacks: {
 						      label: function(tooltipItem, data) {
-						        console.log(data);
-						        console.log(tooltipItem);
 
 						        var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -901,8 +893,6 @@
 						tooltips: {
 						    callbacks: {
 						      label: function(tooltipItem, data) {
-						        console.log(data);
-						        console.log(tooltipItem);
 
 						        var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -967,8 +957,6 @@
 						tooltips: {
 						    callbacks: {
 						      label: function(tooltipItem, data) {
-						        console.log(data);
-						        console.log(tooltipItem);
 
 						        var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -1033,8 +1021,6 @@
 						tooltips: {
 						    callbacks: {
 						      label: function(tooltipItem, data) {
-						        console.log(data);
-						        console.log(tooltipItem);
 
 						        var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 
@@ -1099,8 +1085,6 @@
 						tooltips: {
 						    callbacks: {
 						      label: function(tooltipItem, data) {
-						        console.log(data);
-						        console.log(tooltipItem);
 
 						        var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
 

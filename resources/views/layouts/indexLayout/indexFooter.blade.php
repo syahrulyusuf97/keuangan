@@ -4,8 +4,8 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="footer-col">
-                    <h4>Tentang KeuanganKu</h4>
-                    <p><strong>KeuanganKu</strong> adalah aplikasi untuk pencatatan keuangan pribadi Anda. Pantau terus transaksi Anda dimanapun & kapanpun, agar lebih bijak dalam mengelola keuangan pribadi.</p>
+                    <h4>Tentang {{$identitas->title}}</h4>
+                    <p>{{$identitas->deskripsi}}</p>
                 </div>
             </div> 
             <div class="col-md-4">
@@ -14,11 +14,11 @@
                     <ul class="list-unstyled li-space-lg">
                         <li class="media">
                             <i class="fas fa-square"></i>
-                            <div class="media-body"><a class="turquoise" href="#about">Syarat & Ketentuan</a></div>
+                            <div class="media-body"><a class="turquoise" href="{{url('/')}}/#syarat">Syarat & Ketentuan</a></div>
                         </li>
                         <li class="media">
                             <i class="fas fa-square"></i>
-                            <div class="media-body"><a class="turquoise" href="#about">Kebijakan Privasi</a></div>
+                            <div class="media-body"><a class="turquoise" href="{{url('/')}}/#syarat">Kebijakan Privasi</a></div>
                         </li>
                     </ul>
                 </div>

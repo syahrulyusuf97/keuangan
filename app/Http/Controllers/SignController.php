@@ -49,7 +49,12 @@ class SignController extends Controller
                     return redirect('/logout');
                 }
     		} else if (Auth::attempt(['username'=>$data['username'], 'password'=>$data['password'], 'is_active'=>0])) {
-                return redirect()->back()->with('flash_message_error', 'Akun Anda belum diaktivasi!');
+                $data = User::where('username', $data['username'])->first();
+                $message = array(
+                    'flash_message_error' => 'Akun Anda belum diaktivasi!',
+                    'resendmail' => '<a href="'.url('/resend_email/'.Crypt::encrypt($data->id).'/'.$data->email).'" id="btn_resendmail" class="btn btn-info">Kirim Link Aktivasi</a>'
+                );
+                return redirect()->back()->with($message);
             } else {
     			return redirect()->back()->with('flash_message_error', 'Username atau password salah');
     		}
@@ -76,30 +81,25 @@ class SignController extends Controller
                         'email'         => $data['email'],
                         'username'      => $data['username'],
                         'password'      => bcrypt($data['password']),
-                        'is_active'     => 1,
+                        'is_active'     => 0,//0:nonactive|1:active
                         'level'         => 2,//member
-                        'created_at'    => Carbon::now('Asia/Jakarta')->format('Y-m-d H:m:s')
+                        'created_at'    => Carbon::now('Asia/Jakarta')->format('Y-m-d H:m:s'),
+                        'updated_at'    => Carbon::now('Asia/Jakarta')->format('Y-m-d H:m:s')
                     ]);
                     DB::commit();
-                    // $send_mail = $this->konfirmasiEmail(Crypt::encrypt($user), $data['email'], $data['name']);
-                    // if ($send_mail == TRUE) {
-                    //     $message = array(
-                    //         'flash_message_success' => 'Anda berhasil melakukan pendaftaran! Kami telah mengirimkan konfirmasi ke email Anda',
-                    //         'resendmail' => Crypt::encrypt($user)
-                    //     );
-                    //     return redirect('/registrasi')->with($message);
-                    // } else {
-                    //     $message = array(
-                    //         'flash_message_success' => 'Anda berhasil melakukan pendaftaran! Gagal mengirimkan konfirmasi ke email Anda',
-                    //         'resendmail' => Crypt::encrypt($user)
-                    //     );
-                    //     return redirect('/registrasi')->with($message);
-                    // }
-
-                    $message = array(
-                            'flash_message_success' => 'Anda berhasil melakukan pendaftaran! <i>Silahkan melakukan sesi login Anda.</i>'
+                    $send_mail = $this->konfirmasiEmail(Crypt::encrypt($user), $data['email']);
+                    if ($send_mail == TRUE) {
+                        $message = array(
+                            'flash_message_success' => 'Anda berhasil melakukan pendaftaran! Kami telah mengirimkan konfirmasi ke email Anda',
+                            'resendmail' => '<a href="'.url('/resend_email/'.Crypt::encrypt($user).'/'.$data['email']).'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
                         );
-                        return redirect('/registrasi')->with($message);                    
+                    } else {
+                        $message = array(
+                            'flash_message_success' => 'Anda berhasil melakukan pendaftaran! Gagal mengirimkan konfirmasi ke email Anda',
+                            'resendmail' => '<a href="'.url('/resend_email/'.Crypt::encrypt($user).'/'.$data['email']).'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
+                        );
+                    }
+                    return redirect('/registrasi')->with($message);                    
                 }catch (\Exception $e){
                     DB::rollback();
                     return redirect('/registrasi')->with('flash_message_error', 'Anda gagal melakukan pendaftaran! COBA LAGI...!');
@@ -109,17 +109,31 @@ class SignController extends Controller
         return view('sign.registrasi');
     }
 
-    public function konfirmasiEmail($id=null, $email=null, $name=null) {
-        try{
-            $data = array('userID'=>$id);
-            Mail::send('mail', $data, function($message) use ($email, $name) {
-                $message->to($email, $name)->subject('Konfirmasi email');
-                $message->from('syahrulyusuf52@gmail.com','KeuanganKu');
-            });
-            return TRUE;
-        }catch(Exception $e){
-            DB::rollback();
-            return FALSE;
+    public function resendEmail($id=null, $email=null) {
+        $link = url('/konfirmasi/'.$id);
+        try {
+            Mail::to($email)->send(new \App\Mail\KonfirmasiEmail($link));
+            $message = array(
+                'flash_message_success' => 'Kami telah mengirimkan konfirmasi ke email Anda',
+                'resendmail' => '<a href="'.url('/resend_email/'.$id.'/'.$email).'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
+            );
+            return redirect('/registrasi')->with($message);
+        } catch (\Exception $e) {
+            $message = array(
+                'flash_message_error' => 'Gagal mengirimkan konfirmasi ke email Anda',
+                'resendmail' => '<a href="'.url('/resend_email/'.$id.'/'.$email).'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
+            );
+            return redirect('/registrasi')->with($message);
+        }
+    }
+
+    private function konfirmasiEmail($id=null, $email=null) {
+        $link = url('/konfirmasi/'.$id);
+        try {
+            Mail::to($email)->send(new \App\Mail\KonfirmasiEmail($link));
+            return true;
+        } catch (\Exception $e) {
+            return false;
         }
     }
 
@@ -131,14 +145,126 @@ class SignController extends Controller
             return abort(404);
         }
 
-        DB::beginTransaction();
-        try{
-            User::where('id', $user)->update(['is_active'=>1]);
-            DB::commit();
-            return redirect('/')->with('flash_message_success', 'Konfirmasi email berhasil, silahkan login untuk memulai sesi Anda!');
-        }catch(Exception $e){
-            DB::rollback();
-            return redirect('/')->with('flash_message_error', 'Konfirmasi email gagal! Silahkan coba lagi.');
+        $user = User::where('id', $user);
+
+        if ($user->count() > 0) {
+            if ($user->first()->is_active == 1) {
+                return redirect('/login')->with('flash_message_success', 'Akun Anda sudah aktif, silahkan login untuk memulai sesi Anda!');
+            }
+            DB::beginTransaction();
+            try{
+                $user->update(['is_active'=>1]);
+                DB::commit();
+                return redirect('/login')->with('flash_message_success', 'Konfirmasi email berhasil, silahkan login untuk memulai sesi Anda!');
+            }catch(Exception $e){
+                DB::rollback();
+                return redirect('/login')->with('flash_message_error', 'Konfirmasi email gagal! Silahkan coba lagi.');
+            }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'User tidak ditemukan!');
+        }
+    }
+
+    public function resetPassword(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            $email = User::where('email', $request->email);
+            if ($email->count() > 0) {
+                DB::beginTransaction();
+                try{
+                    DB::table('password_resets')->insert([
+                        'email' => $request->email,
+                        'token' => str_random(60),
+                        'created_at' => Carbon::now('Asia/Jakarta')
+                    ]);
+
+                    $tokenData = DB::table('password_resets')
+                        ->where('email', $request->email)->first();
+                    Activity::log($email->first()->id, 'Login', 'permintaan reset password', 'IP Address: '. $request->ip() . ' Device: '. $request->header('User-Agent'), null, Carbon::now('Asia/Jakarta'));
+                    DB::commit();
+                    if ($this->sendResetEmail($request->email, $tokenData->token)) {
+                        return redirect()->back()->with('flash_message_success', 'Link konfirmasi telah kami kirim ke email "'.$request->email.'"');
+                    } else {
+                        return redirect()->back()->with('flash_message_error', 'A Network Error occurred. Please try again.');
+                    }
+                }catch(Exception $e){
+                    DB::rollback();
+                    return redirect()->back()->with('flash_message_error', 'A Network Error occurred. Please try again.');
+                }
+            } else {
+                return redirect('/login')->with('flash_message_error', 'Email belum terdaftar!');
+            }
+        } else {
+            $token = $request->get('token') ;
+            $email = $request->get('email');
+
+            if ($token == "" || $email == "") {
+                return abort(404);
+            }
+
+            $check_token = DB::table('password_resets')->where('email', $request->get('email'))->where('token', $request->get('token'));
+            if ($check_token->count() > 0) {
+                return view('sign.resetPassword')->with(compact('token', 'email'));
+            } else {
+                return redirect('/login')->with('flash_message_error', 'Tidak ada permintaan perubahan kata sandi!');
+            }
+        }
+    }
+
+    public function passwordReset(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            $check_token = DB::table('password_resets')->where('email', $request->email)->where('token', $request->token);
+            
+            if ($check_token->count() < 1) {
+                return redirect('/login')->with('flash_message_error', 'Tidak ada permintaan perubahan kata sandi!');
+            }
+
+            $email = User::where('email', $request->email);
+
+            if ($email->count() < 1) {
+                return redirect('/login')->with('flash_message_error', 'Email tidak ditemukan!');
+            }
+
+            DB::beginTransaction();
+            try{
+                $email->update(['password'=>bcrypt($request->password)]);
+                Activity::log($email->first()->id, 'Login', 'reset password', 'IP Address: '. $request->ip() . ' Device: '. $request->header('User-Agent'), null, Carbon::now('Asia/Jakarta'));
+                DB::commit();
+                if ($this->sendPWDEmail($email->first()->email, $email->first()->username, $request->password)) {
+                    DB::table('password_resets')->where('email', $request->email)->delete();
+                    return redirect('/login')->with('flash_message_success', 'Password berhasil diperbarui!');
+                } else {
+                    return redirect('/login')->with('flash_message_error', 'A Network Error occurred. Please try again.');
+                }
+            }catch(Exception $e){
+                DB::rollback();
+                return redirect('/login')->with('flash_message_error', 'A Network Error occurred. Please try again.');
+            }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Silahkan ligin untuk memulai sesi Anda');
+        }
+    }
+
+    private function sendResetEmail($email, $token)
+    {
+        $user = DB::table('users')->where('email', $email)->select('name', 'email')->first();
+        $link = url('/reset_password') . '?token=' . $token . '&email=' . urlencode($user->email);
+        try {
+            Mail::to($user->email)->send(new \App\Mail\LinkResetPWD($link));
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    private function sendPWDEmail($email, $username, $pwd)
+    {
+        try {
+            Mail::to($email)->send(new \App\Mail\InfoPWD($email, $username, $pwd));
+            return true;
+        } catch (\Exception $e) {
+            return false;
         }
     }
 
