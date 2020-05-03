@@ -38,7 +38,7 @@
                         			<div class="box-border">
 		                        		<a href="{{url('/article/'.$value->slug)}}">
 		                        			<h3>{{$value->title}}</h3>
-		                        		    <p>{!! str_limit(implode("", explode("</p>", implode("", explode("<p>", $value->description)))), 200, '...') !!}</p>
+		                        		    <p>{!! str_limit(implode("", explode("</p>", implode("", explode("<p>", strip_tags($value->description, '<p>'))))), 200, '...') !!}</p>
 		                        		    <span>Dibuat tanggal : {{$value->created_at}}</span>
 			                        	</a>
 		                        	</div>
@@ -62,7 +62,7 @@
 		                                	<div class="box-border">
 				                        		<a href="{{url('/article/'.$value->slug)}}">
 				                        			<h3>{{$value->title}}</h3>
-				                        		    <p>{!! str_limit(implode("", explode("</p>", implode("", explode("<p>", $value->description)))), 100, '...') !!}</p>
+				                        		    <p>{!! str_limit(implode("", explode("</p>", implode("", explode("<p>", strip_tags($value->description, '<p>'))))), 100, '...') !!}</p>
 				                        		    <span>Dibuat tanggal : {{$value->created_at}}</span>
 					                        	</a>
 				                        	</div>

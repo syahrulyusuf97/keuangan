@@ -4,7 +4,8 @@
 <title>KeuanganKu | @yield('title')</title>
 <meta charset="UTF-8" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <!-- Bootstrap 3.3.7 -->
   <link rel="icon" type="image/png" href="{{ asset('public/images/icon/keuanganku.png') }}" />
   <link rel="stylesheet" href="{{ asset('public/css/bootstrap/bootstrap.min.css') }}">

@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <!-- Bootstrap 3.3.7 -->
   <link rel="icon" type="image/png" href="{{ asset('public/images/icon/keuanganku.png') }}" />
   <link rel="stylesheet" href="{{ asset('public/css/bootstrap/bootstrap.min.css') }}">
@@ -32,7 +33,7 @@
   <script data-ad-client="ca-pub-5316550212400820" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 </head>
 <body class="hold-transition skin-blue fixed sidebar-mini">
-  <div class="cover-spin"></div>
+  <div class="loading">Loading&#8230;</div>
   <div class="wrapper">
 
     @include('layouts.memberLayout.memberHeader')
@@ -121,12 +122,12 @@ eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a
 
   $(document).ajaxSend(function(){
     // show loading
-    $(".cover-spin").fadeIn(200);
+    $(".loading").fadeIn(200);
   });
 
   $(document).ajaxComplete(function(){
     // close loading
-    $(".cover-spin").fadeOut(200);
+    $(".loading").fadeOut(200);
   });
 
   // configurasi datepicker

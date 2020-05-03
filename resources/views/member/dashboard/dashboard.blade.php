@@ -613,7 +613,7 @@
                 	tot_percent += parseFloat(element.persen);
                 })
 
-                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+Math.round(tot_percent)+'%</td></tr>';
 
                 $("#tb_km_b_l").append(row);
 
@@ -677,7 +677,7 @@
                 	tot_percent += parseFloat(element.persen);
                 })
 
-                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+Math.round(tot_percent)+'%</td></tr>';
 
                 $("#tb_kk_b_l").append(row);
 

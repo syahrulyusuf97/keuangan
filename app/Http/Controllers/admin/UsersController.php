@@ -57,7 +57,7 @@ class UsersController extends Controller
 
             })
 
-            ->addColumn('is_onlline', function ($data) {
+            ->addColumn('is_online', function ($data) {
 
                 return Helper::userOnlineStatus(Crypt::encrypt($data->id));
 
@@ -69,7 +69,7 @@ class UsersController extends Controller
 
             })
 
-            ->rawColumns(['nama', 'sex', 'email', 'tanggal', 'is_onlline', 'aksi'])
+            ->rawColumns(['nama', 'sex', 'email', 'tanggal', 'is_online', 'aksi'])
 
             ->make(true);
     }

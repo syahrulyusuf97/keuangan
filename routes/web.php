@@ -133,12 +133,8 @@ Route::group(['middleware'=>['auth']], function(){
         Route::get('/laporan/chart/bulan/debit/bank/{bulan}', 'LaporanController@chartBulanDebitBank');
         Route::get('/laporan/chart/bulan/kredit/kas/{bulan}', 'LaporanController@chartBulanKreditKas');
         Route::get('/laporan/chart/bulan/kredit/bank/{bulan}', 'LaporanController@chartBulanKreditBank');
-        Route::get('/laporan/chart/bulan/kas/average/{bulan}', 'LaporanController@averageMonthOfKas');
-        Route::get('/laporan/chart/bulan/bank/average/{bulan}', 'LaporanController@averageMonthOfBank');
         Route::get('/laporan/chart/tahun/kas/{tahun}', 'LaporanController@chartTahunKas');
-        Route::get('/laporan/chart/tahun/kas/average/{tahun}', 'LaporanController@averageYearOfKas');
         Route::get('/laporan/chart/tahun/bank/{tahun}', 'LaporanController@chartTahunBank');
-        Route::get('/laporan/chart/tahun/bank/average/{tahun}', 'LaporanController@averageYearOfBank');
         Route::get('/laporan/chart/kategori-kas-debit-bulan/{bulan}', 'LaporanController@chartKKDB');
         Route::get('/laporan/chart/kategori-kas-kredit-bulan/{bulan}', 'LaporanController@chartKKKB');
         Route::get('/laporan/chart/kategori-bank-debit-bulan/{bulan}', 'LaporanController@chartKBDB');
@@ -163,8 +159,8 @@ Route::group(['middleware'=>['auth']], function(){
 
         // Users
         Route::get('/admin/users', 'UsersController@index');
-        Route::get('/admin/users/get-active', 'UsersController@getMemberActive')->name('member.active');
-        Route::get('/admin/users/get-nonactive', 'UsersController@getMemberNonActive')->name('member.nonactive');
+        Route::get('/admin/users/get_member_active', 'UsersController@getMemberActive')->name('member_active');
+        Route::get('/admin/users/get_member_nonactive', 'UsersController@getMemberNonActive')->name('member_nonactive');
         Route::get('/admin/users/active/{id}', 'UsersController@active');
         Route::get('/admin/users/nonactive/{id}', 'UsersController@nonActive');
         Route::get('/admin/users/detail/{id}', 'UsersController@detail');

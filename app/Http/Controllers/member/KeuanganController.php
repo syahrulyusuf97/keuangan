@@ -119,7 +119,7 @@ class KeuanganController extends Controller
 
             ->addColumn('aksi', function ($data) {
 
-                return '<p class="text-center"><a href="'.url('/kas/masuk/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i></a>&nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i></a></p>';
+                return '<p class="text-center"><a href="'.url('/kas/masuk/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i> Hapus</a>&nbsp; || &nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i> Edit</a></p>';
 
             })
 
@@ -326,7 +326,7 @@ class KeuanganController extends Controller
 
             ->addColumn('aksi', function ($data) {
 
-                return '<p class="text-center"><a href="'.url('/kas/keluar/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i></a>&nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i></a></p>';
+                return '<p class="text-center"><a href="'.url('/kas/keluar/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i> Hapus</a>&nbsp; || &nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i> Edit</a></p>';
 
             })
 
@@ -868,7 +868,7 @@ class KeuanganController extends Controller
 
             ->addColumn('aksi', function ($data) {
 
-                return '<p class="text-center"><a href="'.url('/bank/masuk/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i></a>&nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i></a></p>';
+                return '<p class="text-center"><a href="'.url('/bank/masuk/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i> Hapus</a>&nbsp; || &nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i> Edit</a></p>';
 
             })
 
@@ -1075,7 +1075,7 @@ class KeuanganController extends Controller
 
             ->addColumn('aksi', function ($data) {
 
-                return '<p class="text-center"><a href="'.url('/bank/keluar/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i></a>&nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i></a></p>';
+                return '<p class="text-center"><a href="'.url('/bank/keluar/hapus/'.Crypt::encrypt($data->c_id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menghapus data ini?'.'\nJika Anda menghapus data ini, berarti Anda telah kehilangan satu kenangan...:(' .'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-trash"></i> Hapus</a>&nbsp; || &nbsp;<a href="javascript:void(0)" onclick="edit(\''. Crypt::encrypt($data->c_id) . '\'  )" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-pencil"></i> Edit</a></p>';
 
             })
 

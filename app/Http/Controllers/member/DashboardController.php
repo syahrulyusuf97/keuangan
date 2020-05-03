@@ -140,9 +140,8 @@ class DashboardController extends Controller
             });
         } else {
             $data = [];
-            
-        return view('member.dashboard.detail_saldo')->with(compact('data', 'param'));
         }
+        return view('member.dashboard.detail_saldo')->with(compact('data', 'param'));
     }
 
     public function chartKKDBL()

@@ -41,8 +41,8 @@
 							<div class="box-header with-border">
 								<h3 class="box-title">Daftar Member Aktif</h3>
 							</div>
-							<div class="box-body">
-								<table id="tb_member_active" class="table table-bordered table-striped table-responsive">
+							<div class="box-body table-responsive">
+								<table id="tb_member_active" class="table table-bordered table-striped">
 									<thead>
 										<tr>
 											<th>Nama</th>
@@ -73,8 +73,8 @@
 							<div class="box-header with-border">
 								<h3 class="box-title">Daftar Member Tidak Aktif</h3>
 							</div>
-							<div class="box-body">
-								<table id="tb_member_nonactive" class="table table-bordered table-striped table-responsive" style="width: 100%">
+							<div class="box-body table-responsive">
+								<table id="tb_member_nonactive" class="table table-bordered table-striped" style="width: 100%">
 									<thead>
 										<tr>
 											<th>Nama</th>
@@ -108,25 +108,26 @@
 
 <script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
 <script type="text/javascript">
+	var tb_member_active, tb_member_nonactive;
 	$(function(){
-		$('#tb_member_active').dataTable({
+		tb_member_active = $('#tb_member_active').dataTable({
 			"processing": true,
 			"serverSide": true,
-			"ajax": "{{ route('member.active') }}",
+			"ajax": "{{ route('member_active') }}",
 			"columns":[
 				{"data": "nama"},
 				{"data": "sex"},
 				{"data": "email"},
 				{"data": "tanggal"},
-				{"data": "is_onlline"},
+				{"data": "is_online"},
 				{"data": "aksi"}
 			]
 		})
 
-		$('#tb_member_nonactive').dataTable({
+		tb_member_nonactive = $('#tb_member_nonactive').dataTable({
 			"processing": true,
 			"serverSide": true,
-			"ajax": "{{ route('member.nonactive') }}",
+			"ajax": "{{ route('member_nonactive') }}",
 			"columns":[
 				{"data": "nama"},
 				{"data": "sex"},

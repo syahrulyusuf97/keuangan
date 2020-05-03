@@ -254,6 +254,19 @@ a.white {
 	transition: all 0.2s ease;
 }
 
+.article-content h1 {
+	font-size: 21px;
+	margin-bottom: 1rem;
+}
+
+.article-content h2 {
+	font-size: 16px;
+}
+
+.article-content h3 {
+	font-size: 14px;
+}
+
 /* IE10+ hack to solve lower label text position compared to the rest of the browsers */
 @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {  
 	.label-control {
@@ -1627,20 +1640,12 @@ a:hover.back-to-top {
 .other-article h1 {
 	color: #00bfd8;
 	text-align: center;
+	font-size: 16px;
 }
 
 .ex-basic-3 {
 	padding-top: 2.75rem;
 	padding-bottom: 1rem;
-}
-
-.ex-basic-3 h1 {
-	margin-bottom: 1rem;
-	font-size: 1rem;
-}
-
-.ex-basic-3 h3 {
-	margin-bottom: 1rem;
 }
 
 .ex-basic-3 .text-container {

@@ -541,10 +541,12 @@
         $.getJSON(baseUrl+'/kas/masuk/detail/'+id, function(resp){
             $('#id').val(resp.id);
             $('#kategori_edit option[data-cat="'+resp.kategori+'"]').prop("selected", true);
+            $("#kategori_edit").trigger('change');
             $('#ket_edit').val(resp.keterangan);
             $('#jumlah_edit').val(rupiah(resp.jumlah, 'Rp'));
             $('#datepicker_edit').val(dateFormat(resp.tanggal, "d M Y"));
             $('#keakun_edit option[data-kode="'+resp.keakun+'"]').prop("selected", true);
+            $("#keakun_edit").trigger('change');
             $('#modal_edit').modal('show');
         });
     }

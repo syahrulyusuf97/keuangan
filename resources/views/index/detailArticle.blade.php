@@ -23,7 +23,7 @@
             <div class="col-lg-12">
                 <div class="text-container">
                     <div class="row">
-                        <div class="col-md-8">
+                        <div class="col-md-8 article-content">
                         	<h1>{{$data->title}}</h1>
                             {!! $data->description !!}
                         </div> <!-- end of col -->
@@ -37,7 +37,7 @@
 		                                	<div class="box-border">
 				                        		<a href="{{url('/article/'.$value->slug)}}">
 				                        			<h3>{{$value->title}}</h3>
-				                        		    <p>{!! str_limit(implode("", explode("</p>", implode("", explode("<p>", $value->description)))), 100, '...') !!}</p>
+				                        		    <p>{!! str_limit(implode("", explode("</p>", implode("", explode("<p>", strip_tags($value->description, '<p>'))))), 100, '...') !!}</p>
 				                        		    <span>Dibuat tanggal : {{$value->created_at}}</span>
 					                        	</a>
 				                        	</div>

@@ -542,10 +542,12 @@
 		$.getJSON(baseUrl+'/kas/keluar/detail/'+id, function(resp){
 			$('#id').val(resp.id);
 			$('#kategori_edit option[data-cat="'+resp.kategori+'"]').prop("selected", true);
+			$("#kategori_edit").trigger('change');
 			$('#kep_edit').val(resp.keperluan);
 			$('#jumlah_edit').val(rupiah(resp.jumlah, 'Rp'));
 			$('#datepicker_edit').val(dateFormat(resp.tanggal, "d M Y"));
 			$('#dariakun_edit option[data-kode="'+resp.dariakun+'"]').prop("selected", true);
+			$("#dariakun_edit").trigger('change');
 			$('#modal_edit').modal('show');
 		});
 	}
