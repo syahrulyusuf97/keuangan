@@ -4,6 +4,8 @@
 
 Aplikasi KeuanganKu adalah aplikasi untuk manajemen keuangan pribadi yang dibangun menggunakan framework Laravel v5.6
 
+Contoh aplikasi yang sudah online : https://www.keuanganku.info
+
 ## Getting Started
 
 Sebelum menginstall aplikasi ini dianjurkan untuk berdoa terlebih dahulu.

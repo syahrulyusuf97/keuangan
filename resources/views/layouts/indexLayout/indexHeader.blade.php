@@ -68,6 +68,7 @@
                         <h1>{{$identitas->title}}</h1>
                         <p class="p-large">{{$identitas->deskripsi}}</p>
                         <a class="btn-solid-lg page-scroll" href="{{url('/registrasi')}}">REGISTRASI</a>
+                        <a href="http://www.freebiebitcoin.com" class="btn btn-lg btn-danger">Earn free bitcoin</a>
                     </div> <!-- end of text-container -->
                 </div> <!-- end of col -->
                 <div class="col-lg-6">
