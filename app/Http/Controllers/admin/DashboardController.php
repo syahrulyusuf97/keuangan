@@ -25,7 +25,8 @@ class DashboardController extends Controller
         }
         
     	$data['member_active'] = User::where(['is_active' => 1, 'level' => 2])->count();
-    	$data['member_nonactive'] = User::where(['is_active' => 0, 'level' => 2])->count();
+        $data['member_nonactive'] = User::where(['is_active' => 0, 'level' => 2])->count();
+    	$data['member_suspend'] = User::where(['is_active' => 2, 'level' => 2])->count();
     	return view('admin.dashboard.dashboard')->with($data);
     }
 }

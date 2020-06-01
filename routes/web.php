@@ -162,8 +162,10 @@ Route::group(['middleware'=>['auth']], function(){
         Route::get('/admin/users', 'UsersController@index');
         Route::get('/admin/users/get-member-active', 'UsersController@getMemberActive')->name('member_active');
         Route::get('/admin/users/get-member-nonactive', 'UsersController@getMemberNonActive')->name('member_nonactive');
+        Route::get('/admin/users/get-member-suspend', 'UsersController@getMemberSuspend')->name('member_suspend');
         Route::get('/admin/users/active/{id}', 'UsersController@active');
         Route::get('/admin/users/nonactive/{id}', 'UsersController@nonActive');
+        Route::get('/admin/users/suspend/{id}', 'UsersController@suspend');
         Route::get('/admin/users/detail/{id}', 'UsersController@detail');
         Route::post('/admin/users/update-nama', 'UsersController@updateNama');
         Route::post('/admin/users/update-email', 'UsersController@updateEmail');

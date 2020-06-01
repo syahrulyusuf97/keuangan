@@ -35,6 +35,7 @@
 					<ul class="nav nav-tabs">
 					  <li class="active"><a href="#tab_1" data-toggle="tab">Member Aktif</a></li>
 					  <li><a href="#tab_2" data-toggle="tab">Member Tidak Aktif</a></li>
+					  <li><a href="#tab_3" data-toggle="tab">Member Ditangguhkan/Suspend</a></li>
 					</ul>
 					<div class="tab-content">
 						<div class="tab-pane active" id="tab_1">
@@ -47,6 +48,7 @@
 										<tr>
 											<th>Nama</th>
 											<th>Jenis Kelamin</th>
+											<th>Username</th>
 											<th>Email</th>
 											<th>Tanggal Daftar</th>
 											<th>Online Status</th>
@@ -59,6 +61,7 @@
 										<tr>
 											<th>Nama</th>
 											<th>Jenis Kelamin</th>
+											<th>Username</th>
 											<th>Email</th>
 											<th>Tanggal Daftar</th>
 											<th>Online Status</th>
@@ -79,6 +82,7 @@
 										<tr>
 											<th>Nama</th>
 											<th>Jenis Kelamin</th>
+											<th>Username</th>
 											<th>Email</th>
 											<th>Tanggal Daftar</th>
 											<th>Aksi</th>
@@ -90,6 +94,38 @@
 										<tr>
 											<th>Nama</th>
 											<th>Jenis Kelamin</th>
+											<th>Username</th>
+											<th>Email</th>
+											<th>Tanggal Daftar</th>
+											<th>Aksi</th>
+										</tr>
+									</tfoot>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane" id="tab_3">
+							<div class="box-header with-border">
+								<h3 class="box-title">Daftar Member Ditangguhkan/Suspend</h3>
+							</div>
+							<div class="box-body table-responsive">
+								<table id="tb_member_suspend" class="table table-bordered table-striped" style="width: 100%">
+									<thead>
+										<tr>
+											<th>Nama</th>
+											<th>Jenis Kelamin</th>
+											<th>Username</th>
+											<th>Email</th>
+											<th>Tanggal Daftar</th>
+											<th>Aksi</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+									<tfoot>
+										<tr>
+											<th>Nama</th>
+											<th>Jenis Kelamin</th>
+											<th>Username</th>
 											<th>Email</th>
 											<th>Tanggal Daftar</th>
 											<th>Aksi</th>
@@ -108,7 +144,7 @@
 
 <script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
 <script type="text/javascript">
-	var tb_member_active, tb_member_nonactive;
+	var tb_member_active, tb_member_nonactive, tb_member_suspend;
 	$(function(){
 		tb_member_active = $('#tb_member_active').dataTable({
 			"processing": true,
@@ -117,6 +153,7 @@
 			"columns":[
 				{"data": "nama"},
 				{"data": "jekel"},
+				{"data": "username"},
 				{"data": "email"},
 				{"data": "tanggal"},
 				{"data": "is_online"},
@@ -131,6 +168,21 @@
 			"columns":[
 				{"data": "nama"},
 				{"data": "jekel"},
+				{"data": "username"},
+				{"data": "email"},
+				{"data": "tanggal"},
+				{"data": "aksi"}
+			]
+		})
+
+		tb_member_suspend = $('#tb_member_suspend').dataTable({
+			"processing": true,
+			"serverSide": true,
+			"ajax": "{{ route('member_suspend') }}",
+			"columns":[
+				{"data": "nama"},
+				{"data": "jekel"},
+				{"data": "username"},
 				{"data": "email"},
 				{"data": "tanggal"},
 				{"data": "aksi"}

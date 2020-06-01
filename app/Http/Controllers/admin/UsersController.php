@@ -46,6 +46,12 @@ class UsersController extends Controller
 
             })
 
+            ->addColumn('username', function ($data) {
+
+                return $data->username;
+
+            })
+
             ->addColumn('email', function ($data) {
 
                 return $data->email;
@@ -66,11 +72,11 @@ class UsersController extends Controller
 
             ->addColumn('aksi', function ($data) {
 
-                return '<p class="text-center"><a href="'.url('/admin/users/nonactive/'.Crypt::encrypt($data->id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menonaktifkan member ini?'.'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-times"></i></a>&nbsp;<a href="'.url('/admin/users/detail/'.Crypt::encrypt($data->id)).'" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-info"></i></a></p>';
+                return '<p class="text-center"><a href="'.url('/admin/users/suspend/'.Crypt::encrypt($data->id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan menangguhkan member ini?'.'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-times"></i> Suspend</a>&nbsp;<a href="'.url('/admin/users/detail/'.Crypt::encrypt($data->id)).'" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-info"></i> Detail</a></p>';
 
             })
 
-            ->rawColumns(['nama', 'jekel', 'email', 'tanggal', 'is_online', 'aksi'])
+            ->rawColumns(['nama', 'jekel', 'username', 'email', 'tanggal', 'is_online', 'aksi'])
 
             ->make(true);
     }
@@ -92,6 +98,12 @@ class UsersController extends Controller
 
             })
 
+            ->addColumn('username', function ($data) {
+
+                return $data->username;
+
+            })
+
             ->addColumn('email', function ($data) {
 
                 return $data->email;
@@ -106,11 +118,57 @@ class UsersController extends Controller
 
             ->addColumn('aksi', function ($data) {
 
-                return '<p class="text-center"><a href="'.url('/admin/users/active/'.Crypt::encrypt($data->id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan mengaktifkan member ini?'.'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-check"></i></a>&nbsp;<a href="'.url('/admin/users/detail/'.Crypt::encrypt($data->id)).'" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-info"></i></a></p>';
+                return '<p class="text-center"><a href="'.url('/admin/users/active/'.Crypt::encrypt($data->id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan mengaktifkan member ini?'.'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-check"></i> Aktif</a>&nbsp;<a href="'.url('/admin/users/detail/'.Crypt::encrypt($data->id)).'" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-info"></i> Detail</a></p>';
 
             })
 
-            ->rawColumns(['nama', 'jekel', 'email', 'tanggal', 'aksi'])
+            ->rawColumns(['nama', 'jekel', 'username', 'email', 'tanggal', 'aksi'])
+
+            ->make(true);
+    }
+
+    public function getMemberSuspend(){
+        $data = User::where(['is_active' => 2, 'level' => 2])->orderBy('created_at', 'desc');
+
+        return DataTables::of($data)
+
+            ->addColumn('nama', function ($data) {
+
+                return $data->name;
+
+            })
+
+            ->addColumn('jekel', function ($data) {
+
+                return $data->sex;
+
+            })
+
+            ->addColumn('username', function ($data) {
+
+                return $data->username;
+
+            })
+
+            ->addColumn('email', function ($data) {
+
+                return $data->email;
+
+            })
+
+            ->addColumn('tanggal', function ($data) {
+
+                return date('d-m-Y H:i:s', strtotime($data->created_at));
+
+            })
+
+            ->addColumn('aksi', function ($data) {
+
+                return '<p class="text-center"><a href="'.url('/admin/users/active/'.Crypt::encrypt($data->id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan mengaktifkan member ini?'.'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-check"></i> Aktif</a>&nbsp;<a href="'.url('/admin/users/detail/'.Crypt::encrypt($data->id)).'" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-info"></i> Detail</a></p>';
+
+            })
+
+            ->rawColumns(['nama', 'jekel', 'username', 'email', 'tanggal', 'aksi'])
 
             ->make(true);
     }
@@ -166,6 +224,33 @@ class UsersController extends Controller
         }catch (\Exception $e){
             DB::rollback();
             return redirect()->back()->with('flash_message_error', 'Gagal menonaktifkan member!');
+        }
+    }
+
+    public function suspend($id = null)
+    {
+        if (Session::has('adminSession')) {
+            if (Auth::user()->level != 1) {
+                return redirect('/login');
+            }
+        }
+
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            return view('errors/404');
+        }
+
+        DB::beginTransaction();
+        try{
+            User::where('id', $id)->update(['is_active' => 2]);
+            $member = User::where('id', $id)->first()->email;
+            Activity::log(Auth::user()->id, 'Nonactivated Member', 'Suspend Member', 'menangguhkan member '.$member, null, Carbon::now('Asia/Jakarta'));
+            DB::commit();
+            return redirect()->back()->with('flash_message_success', 'Member berhasil ditangguhkan!');
+        }catch (\Exception $e){
+            DB::rollback();
+            return redirect()->back()->with('flash_message_error', 'Gagal menangguhkan member!');
         }
     }
 
