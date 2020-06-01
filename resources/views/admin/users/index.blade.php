@@ -116,7 +116,7 @@
 			"ajax": "{{ route('member_active') }}",
 			"columns":[
 				{"data": "nama"},
-				{"data": "sex"},
+				{"data": "jekel"},
 				{"data": "email"},
 				{"data": "tanggal"},
 				{"data": "is_online"},
@@ -130,7 +130,7 @@
 			"ajax": "{{ route('member_nonactive') }}",
 			"columns":[
 				{"data": "nama"},
-				{"data": "sex"},
+				{"data": "jekel"},
 				{"data": "email"},
 				{"data": "tanggal"},
 				{"data": "aksi"}

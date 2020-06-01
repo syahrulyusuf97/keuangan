@@ -52,9 +52,15 @@ class SignController extends Controller
                 $data = User::where('username', $data['username'])->first();
                 $message = array(
                     'flash_message_error' => 'Akun Anda belum diaktivasi!',
-                    'resendmail' => '<a href="'.url('/resend_email/'.Crypt::encrypt($data->id).'/'.$data->email).'" id="btn_resendmail" class="btn btn-info">Kirim Link Aktivasi</a>'
+                    'resendmail' => '<a href="'.url('/resend_email/'.Crypt::encrypt($data->id).'/'.$data->active_code.'/'.urlencode($data->email)).'?expired='.$data->code_expired.'" id="btn_resendmail" class="btn btn-info">Kirim Link Aktivasi</a>'
                 );
+                Session::flush();
+                Auth::logout();
                 return redirect()->back()->with($message);
+            } else if (Auth::attempt(['username'=>$data['username'], 'password'=>$data['password'], 'is_active'=>2])) {
+                Session::flush();
+                Auth::logout();
+                return redirect()->back()->with('flash_message_error', 'Akun Anda sedang ditangguhkan, silahkan menghubungi Admin melalui form pesan <a href="'.url('/#contact').'">Disini</a>');
             } else {
     			return redirect()->back()->with('flash_message_error', 'Username atau password salah');
     		}
@@ -62,12 +68,22 @@ class SignController extends Controller
     	return view('sign.login');
     }
 
+    function randomNumber($length) {
+        $result = '';
+        for($i = 0; $i < $length; $i++) {
+            $result .= mt_rand(0, 9);
+        }
+        return $result;
+    }
+
     public function registrasi(Request $request) {
         if ($request->isMethod('post')) {
             # code...
-            $data = $request->input();
-            $check_mail = User::where('email', $data['email'])->count();
+            $data           = $request->input();
+            $check_mail     = User::where('email', $data['email'])->count();
             $check_username = User::where('username', $data['username'])->count();
+            $active_code    = $this->randomNumber(6);
+            $code_expired   = date('Y-m-d H:i:s', strtotime('+1 day'));
             if ($check_mail > 0) {
                 return redirect('/registrasi')->with('flash_message_error', 'Anda gagal melakukan pendaftaran, email sudah terdaftar!');
             } else if ($check_username > 0) {
@@ -81,22 +97,24 @@ class SignController extends Controller
                         'email'         => $data['email'],
                         'username'      => $data['username'],
                         'password'      => bcrypt($data['password']),
-                        'is_active'     => 0,//0:nonactive|1:active
+                        'is_active'     => 0,//0:nonactive|1:active|2:suspend
                         'level'         => 2,//member
+                        'active_code'   => $active_code,
+                        'code_expired'  => $code_expired,
                         'created_at'    => Carbon::now('Asia/Jakarta')->format('Y-m-d H:m:s'),
                         'updated_at'    => Carbon::now('Asia/Jakarta')->format('Y-m-d H:m:s')
                     ]);
                     DB::commit();
-                    $send_mail = $this->konfirmasiEmail(Crypt::encrypt($user), $data['email']);
+                    $send_mail = $this->konfirmasiEmail(Crypt::encrypt($user), $active_code, $data['email'], $code_expired);
                     if ($send_mail == TRUE) {
                         $message = array(
                             'flash_message_success' => 'Anda berhasil melakukan pendaftaran! Kami telah mengirimkan konfirmasi ke email Anda',
-                            'resendmail' => '<a href="'.url('/resend_email/'.Crypt::encrypt($user).'/'.$data['email']).'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
+                            'resendmail' => '<a href="'.url('/resend_email/'.Crypt::encrypt($user).'/'.$active_code.'/'.urlencode($data['email'])).'?expired='.$code_expired.'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
                         );
                     } else {
                         $message = array(
                             'flash_message_success' => 'Anda berhasil melakukan pendaftaran! Gagal mengirimkan konfirmasi ke email Anda',
-                            'resendmail' => '<a href="'.url('/resend_email/'.Crypt::encrypt($user).'/'.$data['email']).'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
+                            'resendmail' => '<a href="'.url('/resend_email/'.Crypt::encrypt($user).'/'.$active_code.'/'.urlencode($data['email'])).'?expired='.$code_expired.'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
                         );
                     }
                     return redirect('/registrasi')->with($message);                    
@@ -109,35 +127,76 @@ class SignController extends Controller
         return view('sign.registrasi');
     }
 
-    public function resendEmail($id=null, $email=null) {
-        $link = url('/konfirmasi/'.$id);
+    public function resendEmail(Request $request, $id=null, $code=null, $email=null) {
+        $code_expired = $request->get('expired') == "" ? "null" : $request->get('expired');
+        $link = url('/konfirmasi/'.$code.'/'.$id);
         try {
-            Mail::to($email)->send(new \App\Mail\KonfirmasiEmail($link));
+            Mail::to($email)->send(new \App\Mail\KonfirmasiEmail($link, $code_expired));
             $message = array(
                 'flash_message_success' => 'Kami telah mengirimkan konfirmasi ke email Anda',
-                'resendmail' => '<a href="'.url('/resend_email/'.$id.'/'.$email).'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
+                'resendmail' => '<a href="'.url('/resend_email/'.$id.'/'.$code.'/'.urlencode($email)).'?expired='.$code_expired.'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
             );
             return redirect('/registrasi')->with($message);
         } catch (\Exception $e) {
             $message = array(
-                'flash_message_error' => 'Gagal mengirimkan konfirmasi ke email Anda',
-                'resendmail' => '<a href="'.url('/resend_email/'.$id.'/'.$email).'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
+                'flash_message_error' => 'Gagal mengirimkan konfirmasi ke email Anda '.$e,
+                'resendmail' => '<a href="'.url('/resend_email/'.$id.'/'.$code.'/'.urlencode($email)).'?expired='.$code_expired.'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
             );
             return redirect('/registrasi')->with($message);
         }
     }
 
-    private function konfirmasiEmail($id=null, $email=null) {
-        $link = url('/konfirmasi/'.$id);
+    public function newEmailCode($id=null, $email=null) {
         try {
-            Mail::to($email)->send(new \App\Mail\KonfirmasiEmail($link));
+            $userid = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            return abort(404);
+        }
+
+        $active_code    = $this->randomNumber(6);
+        $code_expired   = date('Y-m-d H:i:s', strtotime('+1 day'));
+
+        DB::beginTransaction();
+        try{
+            User::where('id', $userid)->update(['active_code'=>$active_code, 'code_expired'=>$code_expired]);
+            DB::commit();
+        }catch(Exception $e){
+            DB::rollback();
+            $message = array(
+                'flash_message_error' => 'Kode aktivasi gagal dibuat!',
+                'resendmail' => '<a href="'.url('/new_email_code/'.Crypt::encrypt($id).'/'.urlencode($email)).'" class="btn btn-primary">Buat kode aktivasi baru</a>'
+            );
+            return redirect('/login')->with($message);
+        }
+
+        $link = url('/konfirmasi/'.$active_code.'/'.$id);
+        try {
+            Mail::to($email)->send(new \App\Mail\KonfirmasiEmail($link, $code_expired));
+            $message = array(
+                'flash_message_success' => 'Kami telah mengirimkan konfirmasi ke email Anda',
+                'resendmail' => '<a href="'.url('/resend_email/'.$id.'/'.$active_code.'/'.urlencode($email)).'?expired='.$code_expired.'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
+            );
+            return redirect('/login')->with($message);
+        } catch (\Exception $e) {
+            $message = array(
+                'flash_message_error' => 'Gagal mengirimkan konfirmasi ke email Anda',
+                'resendmail' => '<a href="'.url('/resend_email/'.$id.'/'.$active_code.'/'.urlencode($email)).'?expired='.$code_expired.'" id="btn_resendmail" class="btn btn-info">Kirim Ulang</a>'
+            );
+            return redirect('/login')->with($message);
+        }
+    }
+
+    private function konfirmasiEmail($id=null, $code=null, $email=null, $code_expired=null) {
+        $link = url('/konfirmasi/'.$code.'/'.$id);
+        try {
+            Mail::to($email)->send(new \App\Mail\KonfirmasiEmail($link, $code_expired));
             return true;
         } catch (\Exception $e) {
             return false;
         }
     }
 
-    public function konfirmasi($id=null)
+    public function konfirmasi($code=null, $id=null)
     {
         try {
             $user = Crypt::decrypt($id);
@@ -150,15 +209,36 @@ class SignController extends Controller
         if ($user->count() > 0) {
             if ($user->first()->is_active == 1) {
                 return redirect('/login')->with('flash_message_success', 'Akun Anda sudah aktif, silahkan login untuk memulai sesi Anda!');
-            }
-            DB::beginTransaction();
-            try{
-                $user->update(['is_active'=>1]);
-                DB::commit();
-                return redirect('/login')->with('flash_message_success', 'Konfirmasi email berhasil, silahkan login untuk memulai sesi Anda!');
-            }catch(Exception $e){
-                DB::rollback();
-                return redirect('/login')->with('flash_message_error', 'Konfirmasi email gagal! Silahkan coba lagi.');
+            } else if ($user->first()->is_active == 2) {
+                return redirect('/login')->with('flash_message_error', 'Akun Anda sedang ditangguhkan, silahkan menghubungi Admin melalui form pesan <a href="'.url('/#contact').'">Disini</a>');
+            } else {
+                if (ctype_digit($code) == true) {
+                    $check_code_activasi = $user->where('active_code', $code);
+                    if ($check_code_activasi->count() > 0) {
+                        $now = date("Y-m-d H:i:s");
+                        if ($now > $check_code_activasi->first()->code_expired) {
+                            $message = array(
+                                'flash_message_error' => 'Kode aktivasi Anda sudah kedaluwarsa!',
+                                'resendmail' => '<a href="'.url('/new_email_code/'.Crypt::encrypt($check_code_activasi->first()->id).'/'.urlencode($check_code_activasi->first()->email)).'" class="btn btn-primary">Buat kode aktivasi baru</a>'
+                            );
+                            return redirect('/login')->with($message);
+                        } else {
+                            DB::beginTransaction();
+                            try{
+                                $user->update(['is_active'=>1]);
+                                DB::commit();
+                                return redirect('/login')->with('flash_message_success', 'Konfirmasi email berhasil, silahkan login untuk memulai sesi Anda!');
+                            }catch(Exception $e){
+                                DB::rollback();
+                                return redirect('/login')->with('flash_message_error', 'Konfirmasi email gagal! Silahkan coba lagi.');
+                            }
+                        }
+                    } else {
+                        return redirect('/login')->with('flash_message_error', 'User & kode aktivasi tidak ditemukan!');
+                    }
+                } else {
+                    return redirect('/login')->with('flash_message_error', 'Kode aktivasi Anda tidak valid');
+                }
             }
         } else {
             return redirect('/login')->with('flash_message_error', 'User tidak ditemukan!');

@@ -106,18 +106,18 @@
                 <h2>Pesan</h2>
                 <ul class="list-unstyled li-space-lg">
                     <li class="address">Kirimkan pesan/pertanyaan, kritik, saran Anda kepada Kami.</li>
+                    <li class="address"><i>Contact Support : support@keuanganku.info</i></li>
                 </ul>
             </div> 
         </div>
         <div class="row">
             <div class="col-lg-12">
                 @if(Session::has('flash_message_error'))
-                <div class="alert alert-error alert-block">
+                <div class="alert alert-warning alert-block">
                     <button type="button" class="close" data-dismiss="alert">x</button>
                     <strong>{!! session('flash_message_error') !!}</strong>
                 </div>
-                @endif
-                @if(Session::has('flash_message_success'))
+                @elseif(Session::has('flash_message_success'))
                 <div class="alert alert-success alert-block">
                     <button type="button" class="close" data-dismiss="alert">x</button>
                     <strong>{!! session('flash_message_success') !!}</strong>

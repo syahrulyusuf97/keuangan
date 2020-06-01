@@ -15,7 +15,7 @@
 
 	<p>Kami telah menerima permintaan pendaftaran pada aplikasi <a href="{{url('/')}}">KeuanganKu.info</a> dengan menggunakan email ini.</p>
 
-	<p>Klik link dibawah ini untuk mengkonfirmasi email Anda.</p>
+	<p>Klik link dibawah ini untuk mengkonfirmasi email & mengaktifkan akun Anda. Link aktif sampai dengan {{date('d-m-Y H:i:s', strtotime($code_expired))}}</p>
 
 	{{$link}}
 

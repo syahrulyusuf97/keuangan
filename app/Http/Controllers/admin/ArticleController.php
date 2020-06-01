@@ -85,7 +85,7 @@ class ArticleController extends Controller
 		    		abort(404);
 		    	}
 
-		    	$slug = implode('-', explode(" ", $request->get('title')));
+		    	$slug = implode('-', explode(" ", strtolower($request->get('title'))));
 
         		$check_slug = Article::where('slug', $slug)->whereNotIn('id', [$id])->count();
 
@@ -113,7 +113,7 @@ class ArticleController extends Controller
 		        	}
         		}
         	} else {
-        		$slug = implode('-', explode(" ", $request->get('title')));
+        		$slug = implode('-', explode(" ", strtolower($request->get('title'))));
 
         		$check_slug = Article::where('slug', $slug)->count();
         		if ($check_slug > 0) {

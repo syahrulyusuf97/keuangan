@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\admin;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ActivityController as Activity;
 use App\User;
@@ -122,30 +123,34 @@ class ProfileController extends Controller
             }
         }
 
-        DB::beginTransaction();
-        try{
-            if ($request->oldPassword == "" || $request->newPassword == "" || $request->vernewPassword == ""){
-                return redirect()->back()->with('flash_message_error', 'Lengkapi data!');
-            }
+        if ($request->isMethod('post')) {
+            DB::beginTransaction();
+            try{
+                if ($request->oldPassword == "" || $request->newPassword == "" || $request->vernewPassword == ""){
+                    return redirect()->back()->with('flash_message_error', 'Lengkapi data!');
+                }
 
-            $pwd = User::where('id', Auth::user()->id)->first();
-            $check_pwd = Hash::check($request->oldPassword, $pwd->password, [true]);
+                $pwd = User::where('id', Auth::user()->id)->first();
+                $check_pwd = Hash::check($request->oldPassword, $pwd->password, [true]);
 
-            if ($check_pwd == false){
-                return redirect()->back()->with('flash_message_error', 'Kata sandi tidak ditemukan!');
-            }else if ($request->vernewPassword != $request->newPassword){
-                return redirect()->back()->with('flash_message_error', 'Verifikasi kata sandi baru salah!');
-            } else if ($check_pwd == true && $request->vernewPassword == $request->newPassword){
-                Activity::log(Auth::user()->id, 'Update', 'merubah kata sandi', 'Kata sandi telah diperbarui', null, Carbon::now('Asia/Jakarta'));
-                User::where('id', Auth::user()->id)->update([
-                    'password' => bcrypt($request->newPassword)
-                ]);
-                DB::commit();
-                return redirect()->back()->with('flash_message_success', 'Kata sandi Anda berhasil diubah!');
+                if ($check_pwd == false){
+                    return redirect()->back()->with('flash_message_error', 'Kata sandi tidak ditemukan!');
+                }else if ($request->vernewPassword != $request->newPassword){
+                    return redirect()->back()->with('flash_message_error', 'Verifikasi kata sandi baru salah!');
+                } else if ($check_pwd == true && $request->vernewPassword == $request->newPassword){
+                    Activity::log(Auth::user()->id, 'Update', 'merubah kata sandi', 'Kata sandi telah diperbarui', null, Carbon::now('Asia/Jakarta'));
+                    User::where('id', Auth::user()->id)->update([
+                        'password' => bcrypt($request->newPassword)
+                    ]);
+                    DB::commit();
+                    return redirect()->back()->with('flash_message_success', 'Kata sandi Anda berhasil diubah!');
+                }
+            }catch (\Exception $e){
+                DB::rollback();
+                return redirect()->back()->with('flash_message_error', 'Kata sandi Anda gagal diubah!');
             }
-        }catch (\Exception $e){
-            DB::rollback();
-            return redirect()->back()->with('flash_message_error', 'Kata sandi Anda gagal diubah!');
+        } else {
+            return redirect()->back();
         }
     }
 

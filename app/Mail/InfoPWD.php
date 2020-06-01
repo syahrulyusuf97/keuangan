@@ -35,7 +35,7 @@ class InfoPWD extends Mailable
     public function build()
     {
         // return $this->view('emails.infoPWD');
-        return $this->from('keuangan@keuanganku.info')
+        return $this->from('noreplay@keuanganku.info')
                     ->subject('Informasi Akun')
                     ->view('emails.infoPWD');
     }

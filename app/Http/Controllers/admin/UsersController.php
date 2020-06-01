@@ -12,6 +12,7 @@ use App\User;
 use DataTables;
 use App\Http\Controllers\ActivityController as Activity;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 
@@ -39,7 +40,7 @@ class UsersController extends Controller
 
             })
 
-            ->addColumn('sex', function ($data) {
+            ->addColumn('jekel', function ($data) {
 
                 return $data->sex;
 
@@ -69,7 +70,7 @@ class UsersController extends Controller
 
             })
 
-            ->rawColumns(['nama', 'sex', 'email', 'tanggal', 'is_online', 'aksi'])
+            ->rawColumns(['nama', 'jekel', 'email', 'tanggal', 'is_online', 'aksi'])
 
             ->make(true);
     }
@@ -85,7 +86,7 @@ class UsersController extends Controller
 
             })
 
-            ->addColumn('sex', function ($data) {
+            ->addColumn('jekel', function ($data) {
 
                 return $data->sex;
 
@@ -109,7 +110,7 @@ class UsersController extends Controller
 
             })
 
-            ->rawColumns(['nama', 'sex', 'email', 'tanggal', 'aksi'])
+            ->rawColumns(['nama', 'jekel', 'email', 'tanggal', 'aksi'])
 
             ->make(true);
     }

@@ -11,6 +11,7 @@ use App\Kebijakan;
 use App\Article;
 use Carbon\Carbon;
 use DB;
+use Mail;
 
 class IndexController extends Controller
 {
@@ -39,10 +40,11 @@ class IndexController extends Controller
 	    		);
 	    		DB::table('message')->insert($pesan);
 	    		DB::commit();
-	    		return redirect()->back()->with('flash_message_success', 'Pesan Anda berhasil terkirim!');
+                $this->messageMail(urlencode($data['nama']), urlencode($data['email']), urlencode($data['subyek']), urlencode($data['pesan']));
+                // return redirect('/#contact')->with('flash_message_success', 'Pesan Anda berhasil terkirim!');
 	    	}catch(Exception $e){
 	    		DB::rollback();
-	    		return redirect()->back()->with('flash_message_error', 'Pesan Anda gagal terkirim!');
+	    		return redirect('/#contact')->with('flash_message_error', 'Pesan Anda gagal terkirim!');
 	    	}
     	} else {
     		abort(404);
@@ -76,5 +78,15 @@ class IndexController extends Controller
     		abort(404);
     	}
     	return view('index.detailArticle')->with(compact('identitas', 'data', 'article_other'));
+    }
+
+    private function messageMail($name=null, $email=null, $subject=null, $message=null)
+    {
+        try {
+            Mail::to("support@keuanganku.info")->send(new \App\Mail\SendMessage($name, $email, $subject, $message));
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

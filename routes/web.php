@@ -23,8 +23,9 @@
 Route::get('/', 'SignController@login');
 Route::match(['get', 'post'], '/login', 'SignController@login')->name('login');
 Route::match(['get', 'post'], '/registrasi', 'SignController@registrasi')->name('registrasi');
-Route::get('/resend_email/{id}/{email}', 'SignController@resendEmail');
-Route::get('/konfirmasi/{id}', 'SignController@konfirmasi');
+Route::get('/resend_email/{id}/{code}/{email}', 'SignController@resendEmail');
+Route::get('/new_email_code/{id}/{email}', 'SignController@newEmailCode');
+Route::get('/konfirmasi/{code}/{id}', 'SignController@konfirmasi');
 Route::match(['get', 'post'], '/reset_password', 'SignController@resetPassword');
 Route::post('/password_reset', 'SignController@passwordReset');
 Route::get('/logout', 'SignController@logout');
@@ -159,8 +160,8 @@ Route::group(['middleware'=>['auth']], function(){
 
         // Users
         Route::get('/admin/users', 'UsersController@index');
-        Route::get('/admin/users/get_member_active', 'UsersController@getMemberActive')->name('member_active');
-        Route::get('/admin/users/get_member_nonactive', 'UsersController@getMemberNonActive')->name('member_nonactive');
+        Route::get('/admin/users/get-member-active', 'UsersController@getMemberActive')->name('member_active');
+        Route::get('/admin/users/get-member-nonactive', 'UsersController@getMemberNonActive')->name('member_nonactive');
         Route::get('/admin/users/active/{id}', 'UsersController@active');
         Route::get('/admin/users/nonactive/{id}', 'UsersController@nonActive');
         Route::get('/admin/users/detail/{id}', 'UsersController@detail');
@@ -177,7 +178,7 @@ Route::group(['middleware'=>['auth']], function(){
         Route::post('/admin/profile/update-nama', 'ProfileController@updateNama');
         Route::post('/admin/profile/update-email', 'ProfileController@updateEmail');
         Route::post('/admin/profile/update-username', 'ProfileController@updateUsername');
-        Route::post('/admin/profile/update-password', 'ProfileController@updatePassword');
+        Route::match(['get', 'post'], '/admin/profile/update-password', 'ProfileController@updatePassword');
         Route::post('/admin/profile/update-ttl', 'ProfileController@updateTtl');
         Route::post('/admin/profile/update-alamat', 'ProfileController@updateAlamat');
         Route::post('/admin/profile/update-foto', 'ProfileController@updateFoto');

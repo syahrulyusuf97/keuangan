@@ -12,15 +12,17 @@ class KonfirmasiEmail extends Mailable
     use Queueable, SerializesModels;
 
     public $link;
+    public $code_expired;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($link)
+    public function __construct($link, $code_expired)
     {
         $this->link = $link;
+        $this->code_expired = $code_expired;
     }
 
     /**
@@ -31,7 +33,7 @@ class KonfirmasiEmail extends Mailable
     public function build()
     {
         // return $this->view('emails.linkResetPWD');
-        return $this->from('keuangan@keuanganku.info')
+        return $this->from('noreplay@keuanganku.info')
                     ->subject('Konfirmasi')
                     ->view('emails.konfirmasiEmail');
     }
