@@ -123,26 +123,34 @@
                     <strong>{!! session('flash_message_success') !!}</strong>
                 </div>
                 @endif 
+
                 <form id="contactForm" method="post" data-toggle="validator" data-focus="false" action="{{url('/pesan')}}">{{csrf_field()}}
                     <div class="form-group">
-                        <input type="text" class="form-control-input" id="cname" name="nama" required>
+                        <input type="text" class="form-control-input @if(Session::has('cname')) notEmpty @endif" id="cname" name="nama" value="@if(Session::has('cname')){{session('cname')}}@endif" required>
                         <label class="label-control" for="cname">Nama</label>
                         <div class="help-block with-errors"></div>
                     </div>
                     <div class="form-group">
-                        <input type="email" class="form-control-input" id="cemail" name="email" required>
+                        <input type="email" class="form-control-input @if(Session::has('cemail')) notEmpty @endif" id="cemail" name="email" value="@if(Session::has('cemail')){{session('cemail')}}@endif" required>
                         <label class="label-control" for="cemail">Email</label>
                         <div class="help-block with-errors"></div>
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control-input" id="csubject" name="subyek" required>
+                        <input type="text" class="form-control-input @if(Session::has('csubject')) notEmpty @endif" id="csubject" name="subyek" value="@if(Session::has('csubject')){{session('csubject')}}@endif" required>
                         <label class="label-control" for="csubject">Subyek</label>
                         <div class="help-block with-errors"></div>
                     </div>
                     <div class="form-group">
-                        <textarea class="form-control-textarea" id="cmessage" name="pesan" required></textarea>
+                        <textarea class="form-control-textarea @if(Session::has('cmessage')) notEmpty @endif" id="cmessage" name="pesan" required>@if(Session::has('cmessage')){{session('cmessage')}}@endif</textarea>
                         <label class="label-control" for="cmessage">Pesan Anda...</label>
                         <div class="help-block with-errors"></div>
+                    </div>
+                    <div class="form-group">
+                        <div class="captcha">
+                           <span>{!! captcha_img() !!}</span>
+                           <button type="button" class="btn btn-success"><i class="fa fa-sync-alt" id="refresh"></i></button>
+                        </div>
+                        <input type="text" class="form-control" id="ccaptcha" name="ccaptcha" placeholder="Captcha" autocomplete="off" required>
                     </div>
                     <div class="form-group">
                         <button type="submit" class="form-control-submit-button">KIRIM PESAN</button>

@@ -14,29 +14,16 @@
       </div>
       <div class="pull-left info">
         <p>
-          @if(Session::has('adminName'))
-            {!! auth()->user()->name !!}
-          @endif
+          {{ auth()->user()->name }}
         </p>
-        <a href="#"><i class="fa fa-circle text-success"></i> {{ Helper::userOnlineStatus(Crypt::encrypt(auth()->user()->id)) }}</a>
+        <a href="#"><i class="fa fa-circle"></i> {{ Helper::userOnlineStatus(Crypt::encrypt(auth()->user()->id)) }}</a>
       </div>
     </div>
-    <!-- search form -->
-    {{--<form action="#" method="get" class="sidebar-k-form">--}}
-      {{--<div class="input-group">--}}
-        {{--<input type="text" name="q" class="form-control" placeholder="Search...">--}}
-        {{--<span class="input-group-btn">--}}
-              {{--<button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>--}}
-              {{--</button>--}}
-            {{--</span>--}}
-      {{--</div>--}}
-    {{--</form>--}}
-    <!-- /.search form -->
     <!-- sidebar menu: : style can be found in sidebar.less -->
     <ul class="sidebar-k-menu" data-widget="tree">
       <li class="header">NAVIGASI UTAMA</li>
       <li>
-        <a href="{{ url('/dashboard') }}">
+        <a href="{{ url('/dashboard') }}" data-turbolinks="true">
           <i class="fa fa-dashboard"></i> <span>Dashboard</span>
         </a>
       </li>
@@ -49,21 +36,8 @@
             </span>
         </a>
         <ul class="treeview-menu">
-          <li><a href="{{ url('/master/akun') }}"><i class="fa fa-book"></i> Akun</a></li>
+          <li><a href="{{ url('/master/akun') }}" data-turbolinks="true"><i class="fa fa-book"></i> Akun</a></li>
           <li><a href="{{ url('/master/kategori') }}"><i class="fa fa-list"></i> Kategori</a></li>
-        </ul>
-      </li>
-      <li class="treeview">
-        <a href="#">
-          <i class="fa fa-money"></i>
-          <span>Kas</span>
-          <span class="pull-right-container">
-              <i class="fa fa-angle-left pull-right"></i>
-            </span>
-        </a>
-        <ul class="treeview-menu">
-          <li><a href="{{ url('/kas/masuk') }}"><i class="fa fa-arrow-down"></i> Kas Masuk</a></li>
-          <li><a href="{{ url('/kas/keluar') }}"><i class="fa fa-arrow-up"></i> Kas Keluar</a></li>
         </ul>
       </li>
       <li class="treeview">
@@ -77,6 +51,19 @@
         <ul class="treeview-menu">
           <li><a href="{{ url('/bank/bank-masuk') }}"><i class="fa fa-arrow-down"></i> Bank Masuk</a></li>
           <li><a href="{{ url('/bank/bank-keluar') }}"><i class="fa fa-arrow-up"></i> Bank Keluar</a></li>
+        </ul>
+      </li>
+      <li class="treeview">
+        <a href="#">
+          <i class="fa fa-money"></i>
+          <span>Kas</span>
+          <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu">
+          <li><a href="{{ url('/kas/masuk') }}"><i class="fa fa-arrow-down"></i> Kas Masuk</a></li>
+          <li><a href="{{ url('/kas/keluar') }}"><i class="fa fa-arrow-up"></i> Kas Keluar</a></li>
         </ul>
       </li>
       <li class="treeview">
@@ -102,8 +89,8 @@
         </a>
         <ul class="treeview-menu">
           <li><a href="{{ url('/riwayat/aktivitas') }}"><i class="fa fa-list"></i> Aktivitas</a></li>
-          <li><a href="{{ url('/riwayat/kas') }}"><i class="fa fa-money"></i> Kas</a></li>
           <li><a href="{{ url('/riwayat/bank') }}"><i class="fa fa-bank"></i> Bank</a></li>
+          <li><a href="{{ url('/riwayat/kas') }}"><i class="fa fa-money"></i> Kas</a></li>
         </ul>
       </li>
     </ul>

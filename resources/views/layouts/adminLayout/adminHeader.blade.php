@@ -23,9 +23,7 @@
 							<img src="{{ asset('public/images/'.auth()->user()->img) }}" class="user-image" alt="User Image">
 						@endif
 						<span class="hidden-xs">
-							@if(Session::has('adminName'))
-								{!! auth()->user()->name !!}
-					        @endif
+							{{ auth()->user()->name }}
 						</span>
 					</a>
 					<ul class="dropdown-menu">
@@ -38,7 +36,7 @@
 							@endif
 
 							<p>
-								@if(Session::has('adminName')){!! auth()->user()->name !!}@endif
+								{{ auth()->user()->name }}
 								<small>@if(auth()->user()->level == 1) Admin @elseif(auth()->user()->level == 2) Member @endif KeuanganKu</small>
 							</p>
 						</li>

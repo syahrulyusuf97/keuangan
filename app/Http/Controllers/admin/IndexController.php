@@ -26,7 +26,7 @@ class IndexController extends Controller
 {
     public function identitasApp(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -66,7 +66,7 @@ class IndexController extends Controller
 
     public function layanan(Request $request)
     {
-    	if (Session::has('adminSession')) {
+    	if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -100,7 +100,7 @@ class IndexController extends Controller
 
     public function layananCreate(Request $request)
     {
-    	if (Session::has('adminSession')) {
+    	if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -248,7 +248,7 @@ class IndexController extends Controller
 
     public function layananDelete($id=null)
     {
-    	if (Session::has('adminSession')) {
+    	if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -287,7 +287,7 @@ class IndexController extends Controller
 
     public function syarat(Request $request)
     {
-    	if (Session::has('adminSession')) {
+    	if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -327,7 +327,7 @@ class IndexController extends Controller
 
     public function kebijakan(Request $request)
     {
-    	if (Session::has('adminSession')) {
+    	if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }

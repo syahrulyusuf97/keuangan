@@ -33,7 +33,7 @@ class KonfirmasiEmail extends Mailable
     public function build()
     {
         // return $this->view('emails.linkResetPWD');
-        return $this->from('noreplay@keuanganku.info')
+        return $this->from('noreply@syahrulyusuf.tk')
                     ->subject('Konfirmasi')
                     ->view('emails.konfirmasiEmail');
     }

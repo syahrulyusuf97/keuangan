@@ -18,7 +18,7 @@ class MessageController extends Controller
 {
     public function index()
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -152,7 +152,7 @@ class MessageController extends Controller
 
     public function read($id = null)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -178,7 +178,7 @@ class MessageController extends Controller
 
     public function bookmark($id = null)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -203,7 +203,7 @@ class MessageController extends Controller
 
     public function unBookmark($id = null)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }

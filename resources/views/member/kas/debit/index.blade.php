@@ -1,5 +1,5 @@
 @extends('layouts.memberLayout.memberContent')
-@section('title', 'Kas Masuk')
+@section('title', 'Kas Debet')
 @section('content')
 
 <section class="content-header">
@@ -9,7 +9,7 @@
 	</h1>
 	<ol class="breadcrumb">
 		<li><a href="#"><i class="fa fa-dashboard"></i> Kas </a></li>
-		<li class="active">Kas Masuk</li>
+		<li class="active">Kas Debet</li>
 	</ol>
 </section>
 
@@ -33,11 +33,13 @@
 					<div class="box">
 
 						<div class="box-header with-border">
-							<h3 class="box-title">Form Tambah Kas Masuk</h3>
+							<h3 class="box-title">Form Tambah Kas Debet</h3>
 						</div>
 						<!-- /.box-header -->
 						<!-- form start -->
-						<form class="form-horizontal" method="post" action="{{ url('/kas/masuk') }}" autocomplete="off" onsubmit="{$('#btn_submit').attr('disabled', true)}">{{ csrf_field() }}
+						<!-- <form class="form-horizontal" method="post" action="{{ url('/kas/masuk') }}" autocomplete="off" onsubmit="{$('#btn_submit').attr('disabled', true)}"> -->
+						<form class="form-horizontal" id="form_kas_debet" autocomplete="off">
+							{{ csrf_field() }}
 							<div class="box-body">
 								<div class="form-group">
 									<label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-12 control-label">Kategori</label>
@@ -56,7 +58,7 @@
 
 									<div class="col-lg-10 col-md-10 col-sm-10 col-xs-12">
 										<!-- <input type="text" class="form-control" id="ket" name="ket" placeholder="Keterangan kas masuk..." required> -->
-										<textarea class="form-control" id="ket" name="ket" placeholder="Keterangan kas masuk..." required></textarea>
+										<textarea class="form-control" id="ket" name="ket" placeholder="Keterangan kas debet..." required></textarea>
 									</div>
 								</div>
 								<div class="form-group">
@@ -102,7 +104,7 @@
 				<div class="col-md-6" style="margin-top: 30px;">
 					<div class="box">
 						<div class="box-header with-border">
-							<h3 class="box-title">Akumulasi Total Kas Masuk</h3>
+							<h3 class="box-title">Akumulasi Total Kas Debet</h3>
 							<a style="cursor: pointer;" class="pull-right" id="rincian" data-toggle="modal" data-target="#modal_rincian">Rincian</a>
 						</div>
 						<!-- /.box-header -->
@@ -161,15 +163,15 @@
 							</div>
 							<!-- /.box-body -->
 							<div class="box-footer">
-								<h3 class="pull-left">Total Kas Masuk</h3>
+								<h3 class="pull-left">Total Kas Debet</h3>
 								<h3 class="pull-right" id="txt_total_deposito"></h3>
 							</div>
 							<!-- /.box-footer -->
 						</form>
-						<div class="box-footer">
+						{{-- <div class="box-footer">
 							<h3 class="pull-left">Saldo Kas</h3>
 							<h3 class="pull-right" id="txt_saldo_kas">{{ Helper::displayRupiah($saldo_kas) }}</h3>
-						</div>
+						</div> --}}
 					</div> 
 				</div>
 			</div>
@@ -177,7 +179,8 @@
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 box box-primary">
 				<div class="box-header with-border">
-					<h3 class="box-title">Daftar Kas Masuk</h3>
+					<h3 class="box-title">Daftar Kas Debet</h3>
+					<div class="pull-right"><button type="button" onclick="refreshTable()" class="btn btn-default"><i class="fa fa-refresh"></i></button></div>
 				</div>
 				<div class="box-body table-responsive">
 					<table id="example1" class="table table-bordered table-striped">
@@ -214,9 +217,11 @@
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title">Edit Kas Masuk</h4>
+				<h4 class="modal-title">Edit Kas Debet</h4>
 			</div>
-			<form class="form-horizontal" method="post" action="{{ url('/kas/masuk/edit') }}">
+			<!-- <form class="form-horizontal" method="post" action="{{ url('/kas/masuk/edit') }}"> -->
+			<form class="form-horizontal" id="form_kas_debet_edit" method="POST">
+				<input type="hidden" name="_method" value="PUT">
 				{{ csrf_field() }}
 				<div class="modal-body">
 					<input type="hidden" name="id" id="id">
@@ -288,8 +293,8 @@
 					</fieldset>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Tutup</button>
-					<button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Simpan</button>
+					<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Batal</button>
+					<button type="submit" class="btn btn-primary" id="btn_submit_edit"><i class="fa fa-save"></i> Simpan</button>
 				</div>
 			</form>
 		</div>
@@ -304,7 +309,7 @@
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Rincian Kas Masuk</h4>
+        <h4 class="modal-title">Rincian Kas Debet</h4>
       </div>
       <div class="modal-body">
         <div class="table-responsive">
@@ -322,7 +327,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <h3 class="pull-left">Total Kas Masuk</h3>
+        <h3 class="pull-left">Total Kas Debet</h3>
 		<h3 class="pull-right" id="rincian_total_deposito"></h3>
       </div>
     </div>
@@ -336,13 +341,14 @@
 <script src="{{ asset('public/js/bootstrap/bootstrap-datepicker.min.js') }}"></script>
 
 <script type="text/javascript">
+	var table_kas_debet;
 	$(function() {
 		$('#kategori').val('');
 		$('#ket').val('');
 		$('#jumlah').val('');
 		$('#datepicker').val('');
 		$('#option_view').val('BulanLalu');
-		$('#example1').dataTable({
+		table_kas_debet = $('#example1').dataTable({
 			"processing": true,
 			"serverSide": true,
 			"ajax": "{{ route('debit') }}",
@@ -358,65 +364,6 @@
 	    $('#deposito_pertanggal').hide();
 	    $('#deposito_perbulan').hide();
 	    $('#deposito_pertahun').hide();
-
-	    if ($('#option_view').val() == "BulanLalu") {
-	    	$('#pertanggal').val('');
-	    	$('#perbulan').val('');
-	    	$('#pertahun').val('');
-	    	$('#deposito_pertanggal').hide();
-		    $('#deposito_perbulan').hide();
-		    $('#deposito_pertahun').hide();
-	    	lastMonthYear();
-	    }
-
-	    $('#option_view').on('change', function(e){
-	    	var nilai = $('#option_view').val();
-			if (nilai == "BulanLalu" || nilai == "TahunLalu") {
-				lastMonthYear();
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#deposito_pertanggal').hide();
-			    $('#deposito_perbulan').hide();
-			    $('#deposito_pertahun').hide();
-		    } else if (nilai == "Pertanggal") {
-		    	$('#txt_total_deposito').html('Rp'+number_format('0', '2', ',', '.'));
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#deposito_pertanggal').show();
-			    $('#deposito_perbulan').hide();
-			    $('#deposito_pertahun').hide();
-		    } else if (nilai == "Perbulan") {
-		    	$('#txt_total_deposito').html('Rp'+number_format('0', '2', ',', '.'));
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#deposito_pertanggal').hide();
-			    $('#deposito_perbulan').show();
-			    $('#deposito_pertahun').hide();
-		    } else if (nilai == "Pertahun") {
-		    	$('#txt_total_deposito').html('Rp'+number_format('0', '2', ',', '.'));
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#deposito_pertanggal').hide();
-			    $('#deposito_perbulan').hide();
-			    $('#deposito_pertahun').show();
-		    }
-	    })
-
-	    $('#pertanggal').on('change', function(e){
-	    	pertanggal();
-	    })
-
-	    $('#perbulan').on('change', function(e){
-	    	perbulan();
-	    })
-
-	    $('#pertahun').on('change', function(e){
-	    	pertahun();
-	    })
 
 	    function lastMonthYear() {
 	    	var nilai = $('#option_view').val();
@@ -520,6 +467,122 @@
              	}
 		    });
 	    }
+
+	    if ($('#option_view').val() == "BulanLalu") {
+	    	$('#pertanggal').val('');
+	    	$('#perbulan').val('');
+	    	$('#pertahun').val('');
+	    	$('#deposito_pertanggal').hide();
+		    $('#deposito_perbulan').hide();
+		    $('#deposito_pertahun').hide();
+	    	lastMonthYear();
+	    }
+
+	    $('#option_view').on('change', function(e){
+	    	var nilai = $('#option_view').val();
+			if (nilai == "BulanLalu" || nilai == "TahunLalu") {
+				lastMonthYear();
+		    	$('#pertanggal').val('');
+		    	$('#perbulan').val('');
+		    	$('#pertahun').val('');
+		    	$('#deposito_pertanggal').hide();
+			    $('#deposito_perbulan').hide();
+			    $('#deposito_pertahun').hide();
+		    } else if (nilai == "Pertanggal") {
+		    	$('#txt_total_deposito').html('Rp'+number_format('0', '2', ',', '.'));
+		    	$('#pertanggal').val('');
+		    	$('#perbulan').val('');
+		    	$('#pertahun').val('');
+		    	$('#deposito_pertanggal').show();
+			    $('#deposito_perbulan').hide();
+			    $('#deposito_pertahun').hide();
+		    } else if (nilai == "Perbulan") {
+		    	$('#txt_total_deposito').html('Rp'+number_format('0', '2', ',', '.'));
+		    	$('#pertanggal').val('');
+		    	$('#perbulan').val('');
+		    	$('#pertahun').val('');
+		    	$('#deposito_pertanggal').hide();
+			    $('#deposito_perbulan').show();
+			    $('#deposito_pertahun').hide();
+		    } else if (nilai == "Pertahun") {
+		    	$('#txt_total_deposito').html('Rp'+number_format('0', '2', ',', '.'));
+		    	$('#pertanggal').val('');
+		    	$('#perbulan').val('');
+		    	$('#pertahun').val('');
+		    	$('#deposito_pertanggal').hide();
+			    $('#deposito_perbulan').hide();
+			    $('#deposito_pertahun').show();
+		    }
+	    })
+
+	    $('#pertanggal').on('change', function(e){
+	    	pertanggal();
+	    })
+
+	    $('#perbulan').on('change', function(e){
+	    	perbulan();
+	    })
+
+	    $('#pertahun').on('change', function(e){
+	    	pertahun();
+	    })
+
+	    $("#form_kas_debet").submit(function(evt){
+	    	evt.preventDefault();
+	    	$('#btn_submit').attr('disabled', true);
+	    	showLoading();
+	    	axios.post("{{url('/kas/debet/store')}}", $("#form_kas_debet").serialize())
+	    	  .then(function (response) {
+	    	  	hideLoading();
+	    	  	$('#btn_submit').attr('disabled', false);
+	    	  	if (response.data.status == "success") {
+	    	  		$("#form_kas_debet")[0].reset();
+	    	  		$('#kategori').trigger('change');
+	    	  		$('#keakun').trigger('change');
+	    	  		$('.saldo').text("Saldo = "+response.data.sisa_saldo);
+	    	  		$('.sisa_saldo_bank').text(response.data.sisa_saldo_bank);
+	    	  		$('.sisa_saldo_kas').text(response.data.sisa_saldo_kas);
+	    	  		table_kas_debet.api().ajax.reload();
+	    	  		alertSuccess('Berhasil', response.data.message);
+	    	  	} else {
+	    	  		alertWarning('Gagal', response.data.message);
+	    	  	}
+	    	  })
+	    	  .catch(function (error) {
+	    	  	hideLoading();
+	    	  	$('#btn_submit').attr('disabled', false);
+	    	    alertError('Error', error);
+	    	  });
+	    })
+
+	    $("#form_kas_debet_edit").submit(function(evt){
+	    	evt.preventDefault();
+	    	$('#btn_submit_edit').attr('disabled', true);
+	    	showLoading();
+	    	axios.put("{{url('/kas/debet/edit')}}", $("#form_kas_debet_edit").serialize())
+	    	  .then(function (response) {
+	    	  	hideLoading();
+	    	  	$('#btn_submit_edit').attr('disabled', false);
+	    	  	if (response.data.status == "success") {
+	    	  		$("#form_kas_debet_edit")[0].reset();
+	    	  		$('#kategori_edit').trigger('change');
+	    	  		$('#keakun_edit').trigger('change');
+	    	  		$('.saldo').text("Saldo = "+response.data.sisa_saldo);
+	    	  		$('.sisa_saldo_bank').text(response.data.sisa_saldo_bank);
+	    	  		$('.sisa_saldo_kas').text(response.data.sisa_saldo_kas);
+	    	  		$('#modal_edit').modal('hide');
+	    	  		table_kas_debet.api().ajax.reload();
+	    	  		alertSuccess('Berhasil', response.data.message);
+	    	  	} else {
+	    	  		alertWarning('Gagal', response.data.message);
+	    	  	}
+	    	  })
+	    	  .catch(function (error) {
+	    	  	hideLoading();
+	    	  	$('#btn_submit_edit').attr('disabled', false);
+	    	    alertError('Error', error);
+	    	  });
+	    })
 	})
 
 	var i_jumlah = document.getElementById('jumlah');
@@ -532,6 +595,10 @@
 	{
 		i_jumlah_edit.value = formatRupiah(this.value, 'Rp');
 	});
+
+	function refreshTable() {
+		table_kas_debet.api().ajax.reload();
+	}
 
     function edit(id) {
         $('#kategori_edit').val('');

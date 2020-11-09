@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\member;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+// use Illuminate\Http\Request;
+use Request;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use Jenssegers\Agent\Agent;
 use App\Http\Controllers\ActivityController as Activity;
 use App\Cash;
 use App\User;
@@ -16,23 +19,30 @@ use Auth;
 use DB;
 use Helper;
 use Response;
-use Session;
 use Carbon\Carbon;
 \Carbon\Carbon::setLocale('id');
 
 class DashboardController extends Controller
 {
-    public $last_month;
-    public $last_year;
+    private $last_month;
+    private $last_year;
+    private $agent;
 
     public function __construct()
     {
         $this->last_month = date('Y-m', strtotime('-1 months'));
         $this->last_year = date('Y', strtotime('-1 year'));
+        $this->agent = new Agent();
     }
 
-    function saldo($id_akun)
+    private function saldo($id_akun)
     {
+        // $debit_kas = Cache::remember("saldo_debit_kas", 10 * 60, function () {
+        //     return Cash::where('c_iduser', Auth::user()->id)
+        //             ->where('c_akun', $id_akun)
+        //             ->where('c_jenis', 'D')
+        //             ->sum('c_jumlah');
+        // });
         $debit_kas  = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_akun', $id_akun)
                         ->where('c_jenis', 'D')
@@ -47,12 +57,14 @@ class DashboardController extends Controller
 
     public function dashboard()
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
-
+        
         // Kas
         $debit_kas  = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Kas')
@@ -121,16 +133,23 @@ class DashboardController extends Controller
                                 ->whereYear('c_tanggal', '=', $this->last_year)
                                 ->sum('c_jumlah');
 
-        return view('member.dashboard.dashboard')->with(compact('saldo_kas', 'debit_kas_last_month', 'credit_kas_last_month', 'debit_kas_last_year', 'credit_kas_last_year', 'saldo_bank', 'debit_bank_last_month', 'credit_bank_last_month', 'debit_bank_last_year', 'credit_bank_last_year'));
+        if ($this->agent->isMobile()) {
+            return view('member.dashboard.mobile.dashboard')->with(compact('saldo_kas', 'debit_kas_last_month', 'credit_kas_last_month', 'debit_kas_last_year', 'credit_kas_last_year', 'saldo_bank', 'debit_bank_last_month', 'credit_bank_last_month', 'debit_bank_last_year', 'credit_bank_last_year'));
+        } else {
+            return view('member.dashboard.dashboard')->with(compact('saldo_kas', 'debit_kas_last_month', 'credit_kas_last_month', 'debit_kas_last_year', 'credit_kas_last_year', 'saldo_bank', 'debit_bank_last_month', 'credit_bank_last_month', 'debit_bank_last_year', 'credit_bank_last_year'));
+        }
     }
 
     public function detailSaldo($param)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
+
         $akun = Akun::where('jenis_akun', ucwords($param))->where('iduser', Auth::user()->id);
         if ($akun->count() > 0) {
             $data = array_reduce($akun->get()->toArray(), function($carry, $item){
@@ -144,7 +163,61 @@ class DashboardController extends Controller
         return view('member.dashboard.detail_saldo')->with(compact('data', 'param'));
     }
 
-    public function chartKKDBL()
+    private function chartMutasiBank()
+    {
+        $row = array();
+        $month = explode("-", date('m-Y', strtotime('-1 months')));
+        $t = $month[1].'-'.$month[0].'-'.'1';
+        $from = date('Y-m-d', strtotime($t));
+        $to = date("Y-m-t", strtotime($from));
+
+        $data_mutasi = Cash::select(\DB::raw('DATE_FORMAT(c_tanggal, "%d-%m-%Y") as month'), \DB::raw("SUM(CASE WHEN c_jenis = 'D' THEN c_jumlah ELSE 0 END) as jumlah_debit"), \DB::raw("SUM(CASE WHEN c_jenis = 'K' THEN c_jumlah ELSE 0 END) as jumlah_kredit"), 'c_jenis')
+            ->where('c_iduser', Auth::user()->id)
+            ->where('c_flagakun', 'Bank')
+            ->whereBetween('c_tanggal', [$from, $to])
+            ->groupBy(['c_jenis','c_tanggal'])
+            ->orderBy('c_tanggal', 'asc')
+            ->get();
+
+        foreach ($data_mutasi as $key => $mutasi) {
+            $row[] = array('date' => $mutasi->month, 'debit' => $mutasi->jumlah_debit, 'kredit' => $mutasi->jumlah_kredit);
+        }
+
+        // return Response::json($row);
+        $response_data = [
+            "data" => $row
+        ];
+        return $response_data;
+    }
+
+    private function chartMutasiKas()
+    {
+        $row = array();
+        $month = explode("-", date('m-Y', strtotime('-1 months')));
+        $t = $month[1].'-'.$month[0].'-'.'1';
+        $from = date('Y-m-d', strtotime($t));
+        $to = date("Y-m-t", strtotime($from));
+
+        $data_mutasi = Cash::select(\DB::raw('DATE_FORMAT(c_tanggal, "%d-%m-%Y") as month'), \DB::raw("SUM(CASE WHEN c_jenis = 'D' THEN c_jumlah ELSE 0 END) as jumlah_debit"), \DB::raw("SUM(CASE WHEN c_jenis = 'K' THEN c_jumlah ELSE 0 END) as jumlah_kredit"), 'c_jenis')
+            ->where('c_iduser', Auth::user()->id)
+            ->where('c_flagakun', 'Kas')
+            ->whereBetween('c_tanggal', [$from, $to])
+            ->groupBy(['c_jenis','c_tanggal'])
+            ->orderBy('c_tanggal', 'asc')
+            ->get();
+
+        foreach ($data_mutasi as $key => $mutasi) {
+            $row[] = array('date' => $mutasi->month, 'debit' => $mutasi->jumlah_debit, 'kredit' => $mutasi->jumlah_kredit);
+        }
+
+        // return Response::json($row);
+        $response_data = [
+            "data" => $row
+        ];
+        return $response_data;
+    }
+
+    private function chartKKDBL()
     {
         $ktg_kas_dbt_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -190,10 +263,14 @@ class DashboardController extends Controller
             });
         }
         
-        return Response::json($dtkkdl_dt);
+        // return Response::json($dtkkdl_dt);\
+        $response_data = [
+            "data" => $dtkkdl_dt
+        ];
+        return $response_data;
     }
 
-    public function chartKKKBL()
+    private function chartKKKBL()
     {
         $ktg_kas_krd_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -239,10 +316,14 @@ class DashboardController extends Controller
             });
         }
 
-        return Response::json($dtkkkl_dt);
+        // return Response::json($dtkkkl_dt);
+        $response_data = [
+            "data" => $dtkkkl_dt
+        ];
+        return $response_data;
     }
 
-    public function chartKBDBL()
+    private function chartKBDBL()
     {
         $ktg_bank_dbt_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -286,10 +367,14 @@ class DashboardController extends Controller
             });
         }
 
-        return Response::json($dtkbdl_dt);
+        // return Response::json($dtkbdl_dt);
+        $response_data = [
+            "data" => $dtkbdl_dt
+        ];
+        return $response_data;
     }
 
-    public function chartKBKBL()
+    private function chartKBKBL()
     {
         $ktg_bank_krd_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -333,10 +418,14 @@ class DashboardController extends Controller
             });
         }
 
-        return Response::json($dtkbkl_dt);
+        // return Response::json($dtkbkl_dt);
+        $response_data = [
+            "data" => $dtkbkl_dt
+        ];
+        return $response_data;
     }
 
-    public function chartKKDTL()
+    private function chartKKDTL()
     {
         $ktg_kas_dbt_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -379,10 +468,14 @@ class DashboardController extends Controller
             });
         }
 
-        return Response::json($dtkkdl_dt);
+        // return Response::json($dtkkdl_dt);
+        $response_data = [
+            "data" => $dtkkdl_dt
+        ];
+        return $response_data;
     }
 
-    public function chartKKKTL()
+    private function chartKKKTL()
     {
         $ktg_kas_krd_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -425,10 +518,14 @@ class DashboardController extends Controller
             });
         }
 
-        return Response::json($dtkkkl_dt);
+        // return Response::json($dtkkkl_dt);
+        $response_data = [
+            "data" => $dtkkkl_dt
+        ];
+        return $response_data;
     }
 
-    public function chartKBDTL()
+    private function chartKBDTL()
     {
         $ktg_bank_dbt_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -471,10 +568,14 @@ class DashboardController extends Controller
             });
         }
 
-        return Response::json($dtkbdl_dt);
+        // return Response::json($dtkbdl_dt);
+        $response_data = [
+            "data" => $dtkbdl_dt
+        ];
+        return $response_data;
     }
 
-    public function chartKBKTL()
+    private function chartKBKTL()
     {
         $ktg_bank_krd_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -513,10 +614,14 @@ class DashboardController extends Controller
             });
         }
 
-        return Response::json($dtkbkl_dt);
+        // return Response::json($dtkbkl_dt);
+        $response_data = [
+            "data" => $dtkbkl_dt
+        ];
+        return $response_data;
     }
 
-    public function chartBulanDebitKas()
+    private function chartBulanDebitKas()
     {
         $row = array();
         $month = explode("-", date('m-Y', strtotime('-1 months')));
@@ -538,10 +643,14 @@ class DashboardController extends Controller
             $row[] = array('date' => $debit->month, 'debit' => $debit->jumlah_debit);
         }
 
-        return Response::json($row);
+        // return Response::json($row);
+        $response_data = [
+            "data" => $row
+        ];
+        return $response_data;
     }
 
-    public function chartBulanDebitBank()
+    private function chartBulanDebitBank()
     {
         $row = array();
         $month = explode("-", date('m-Y', strtotime('-1 months')));
@@ -563,10 +672,14 @@ class DashboardController extends Controller
             $row[] = array('date' => $debit->month, 'debit' => $debit->jumlah_debit);
         }
 
-        return Response::json($row);
+        // return Response::json($row);
+        $response_data = [
+            "data" => $row
+        ];
+        return $response_data;
     }
 
-    public function chartBulanKreditKas()
+    private function chartBulanKreditKas()
     {
         $row = array();
         $month = explode("-", date('m-Y', strtotime('-1 months')));
@@ -588,10 +701,14 @@ class DashboardController extends Controller
             $row[] = array('date' => $credit->month, 'kredit' => $credit->jumlah_kredit);
         }
 
-        return Response::json($row);
+        // return Response::json($row);
+        $response_data = [
+            "data" => $row
+        ];
+        return $response_data;
     }
 
-    public function chartBulanKreditBank()
+    private function chartBulanKreditBank()
     {
         $row = array();
         $month = explode("-", date('m-Y', strtotime('-1 months')));
@@ -613,10 +730,14 @@ class DashboardController extends Controller
             $row[] = array('date' => $credit->month, 'kredit' => $credit->jumlah_kredit);
         }
 
-        return Response::json($row);
+        // return Response::json($row);
+        $response_data = [
+            "data" => $row
+        ];
+        return $response_data;
     }
 
-    public function grafikKas()
+    private function grafikKas()
     {
         $data_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit'),
             \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
@@ -646,10 +767,14 @@ class DashboardController extends Controller
             return Helper::monthStrToNumber($a['month']) <=> Helper::monthStrToNumber($b['month']);
         });
 
-        return Response::json($row);
+        // return Response::json($row);
+        $response_data = [
+            "data" => $row
+        ];
+        return $response_data;
     }
 
-    public function grafikBank()
+    private function grafikBank()
     {
         $data_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit'),
             \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
@@ -680,15 +805,80 @@ class DashboardController extends Controller
             return Helper::monthStrToNumber($a['month']) <=> Helper::monthStrToNumber($b['month']);
         });
 
-        return Response::json($row);
+        // return Response::json($row);
+        $response_data = [
+            "data" => $row
+        ];
+        return $response_data;
+    }
+
+    public function getStatistik()
+    {
+        if (Request::ajax()) {
+            try{
+                $response_data = [
+                    // Chart Mutasi Bank Bulan Lalu
+                    "mutasi_bank_bulan_lalu" => $this->chartMutasiBank(),
+                    // Chart Mutasi Kas Bulan Lalu
+                    "mutasi_kas_bulan_lalu" => $this->chartMutasiKas(),
+                    // Chart Kategori Kas Debit Bulan Lalu
+                    "kas_debit_bulan_lalu_kategori" => $this->chartKKDBL(),
+                    // Chart Kategori Kas Kredit Bulan lalu
+                    "kas_kredit_bulan_lalu_kategori" => $this->chartKKKBL(),
+                    // Chart Kategori Bank Debit Bulan Lalu
+                    "bank_debit_bulan_lalu_kategori" => $this->chartKBDBL(),
+                    // Chart Kategori Bank Kredit Bulan Lalu
+                    "bank_kredit_bulan_lalu_kategori" => $this->chartKBKBL(),
+                    // Chart Kategori Kas Debit Tahun Lalu
+                    "kas_debit_tahun_lalu_kategori" => $this->chartKKDTL(),
+                    // Chart Kategori kas Kredit Tahun Lalu
+                    "kas_kredit_tahun_lalu_kategori" => $this->chartKKKTL(),
+                    // Chart Kategori Bank Debit Tahun Lalu
+                    "bank_debit_tahun_lalu_kategori" => $this->chartKBDTL(),
+                    // Chart Kategori Bank Kredit Tahun lalu
+                    "bank_kredit_tahun_lalu_kategori" => $this->chartKBKTL(),
+                    // Debit Kas Bulaln Lalu
+                    // "kas_debit_bulan_lalu" => $this->chartBulanDebitKas(),
+                    // Debit Bank Bulan lalu
+                    // "bank_debit_bulan_lalu" => $this->chartBulanDebitBank(),
+                    // Kas Kredit Bulan lalu
+                    // "kas_kredit_bulan_lalu" => $this->chartBulanKreditKas(),
+                    // Bnak Kredit Bulan lalu
+                    // "bank_kredit_bulan_lalu" => $this->chartBulanKreditBank(),
+                    // Kas Tahun lalu
+                    "kas_tahun_lalu" => $this->grafikKas(),
+                    // Bank Tahun lalu
+                    "bank_tahun_lalu" => $this->grafikBank()
+                ];
+
+                $response = [
+                    'status' => "success",
+                    'data'   => $response_data
+                ];
+            }catch(\Exception $e){
+                $response = [
+                    'status'    => "failed",
+                    'message'   => "Gagal mendapatkan data statistik"
+                ];
+            }
+            return response()->json($response);
+        } else {
+            $response = [
+                'status'    => 'error',
+                'message'   => 'Not Allowed'
+            ];
+            return response()->json($response);
+        }
     }
 
     public function profil()
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
 
         $tgllahir = User::select('tgl_lahir')
@@ -704,15 +894,22 @@ class DashboardController extends Controller
             $month = null;
             $year = null;
         }
-        return view('member.profile.index')->with(compact('day', 'month', 'year'));
+
+        if ($this->agent->isMobile()) {
+            return view('member.profile.mobile.index')->with(compact('day', 'month', 'year'));
+        } else {
+            return view('member.profile.index')->with(compact('day', 'month', 'year'));
+        }
     }
 
     public function updateNama(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
 
         DB::beginTransaction();
@@ -730,12 +927,48 @@ class DashboardController extends Controller
         }
     }
 
+    public function mobileUpdateNama(Request $request)
+    {
+        if (!Auth::check()) {
+            $message = array(
+                'status' => "failed",
+                'message'=> "Invalid Session! Please, sign in again."
+            );
+            return response()->json($message);
+        }
+
+        DB::beginTransaction();
+        try{
+            $user = User::where('id', Auth::user()->id)->first();
+            Activity::log(Auth::user()->id, 'Update', 'merubah nama pengguna', 'Diperbarui menjadi ' . $request->nama, 'Nama sebelumnya ' . $user->name, Carbon::now('Asia/Jakarta'));
+            User::where('id', Auth::user()->id)->update([
+                'name' => $request->nama
+            ]);
+            DB::commit();
+            $message = array(
+                'status'    => "success",
+                'message'   => "Nama Anda berhasil diperbarui",
+                'data'      => array("nama"=>$request->nama)
+            );
+            return response()->json($message);
+        }catch (\Exception $e){
+            DB::rollback();
+            $message = array(
+                'status' => "failed",
+                'message'=> "Nama Anda gagal diperbarui"
+            );
+            return response()->json($message);
+        }
+    }
+
     public function updateEmail(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
 
         DB::beginTransaction();
@@ -758,12 +991,57 @@ class DashboardController extends Controller
         }
     }
 
+    public function mobileUpdateEmail(Request $request)
+    {
+        if (!Auth::check()) {
+            $message = array(
+                'status' => "failed",
+                'message'=> "Invalid Session! Please, sign in again."
+            );
+            return response()->json($message);
+        }
+
+        DB::beginTransaction();
+        try{
+            $check = User::where('email', $request->email)->count();
+            if ($check > 0) {
+                $message = array(
+                    'status' => "failed",
+                    'message'=> "Gagal memperbarui email, email sudah digunakan!"
+                );
+                return response()->json($message);
+            } else {
+                $user = User::where('id', Auth::user()->id)->first();
+                Activity::log(Auth::user()->id, 'Update', 'merubah email', 'Diperbarui menjadi ' . $request->email, 'Email sebelumnya ' . $user->email, Carbon::now('Asia/Jakarta'));
+                User::where('id', Auth::user()->id)->update([
+                    'email' => $request->email
+                ]);
+                DB::commit();
+                $message = array(
+                    'status'    => "success",
+                    'message'   => "Email Anda berhasil diperbarui",
+                    'data'      => array("email"=>$request->email)
+                );
+                return response()->json($message);
+            }
+        }catch (\Exception $e){
+            DB::rollback();
+            $message = array(
+                'status' => "failed",
+                'message'=> "Email Anda gagal diperbarui"
+            );
+            return response()->json($message);
+        }
+    }
+
     public function updateUsername(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
 
         DB::beginTransaction();
@@ -786,12 +1064,57 @@ class DashboardController extends Controller
         }
     }
 
+    public function mobileUpdateUsername(Request $request)
+    {
+        if (!Auth::check()) {
+            $message = array(
+                'status' => "failed",
+                'message'=> "Invalid Session! Please, sign in again."
+            );
+            return response()->json($message);
+        }
+
+        DB::beginTransaction();
+        try{
+            $check = User::where('username', $request->username)->count();
+            if ($check > 0) {
+                $message = array(
+                    'status' => "failed",
+                    'message'=> "Gagal memperbarui username, username sudah digunakan!"
+                );
+                return response()->json($message);
+            } else {
+                $user = User::where('id', Auth::user()->id)->first();
+                Activity::log(Auth::user()->id, 'Update', 'merubah username', 'Diperbarui menjadi ' . $request->username, 'Username sebelumnya ' . $user->username, Carbon::now('Asia/Jakarta'));
+                User::where('id', Auth::user()->id)->update([
+                    'username' => $request->username
+                ]);
+                DB::commit();
+                $message = array(
+                    'status' => "success",
+                    'message'=> "Username Anda berhasil diperbarui",
+                    'data'      => array("username"=>$request->username)
+                );
+                return response()->json($message);
+            }
+        }catch (\Exception $e){
+            DB::rollback();
+            $message = array(
+                'status' => "failed",
+                'message'=> "Username Anda gagal diperbarui"
+            );
+            return response()->json($message);
+        }
+    }
+
     public function updatePassword(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
 
         DB::beginTransaction();
@@ -806,7 +1129,7 @@ class DashboardController extends Controller
             if ($check_pwd == false){
                 return redirect()->back()->with('flash_message_error', 'Kata sandi tidak ditemukan!');
             }else if ($request->vernewPassword != $request->newPassword){
-                return redirect()->back()->with('flash_message_error', 'Verifikasi kata sandi baru salah!');
+                return redirect()->back()->with('flash_message_error', 'Konfirmasi kata sandi baru salah!');
             } else if ($check_pwd == true && $request->vernewPassword == $request->newPassword){
                 Activity::log(Auth::user()->id, 'Update', 'merubah kata sandi', 'Kata sandi telah diperbarui', null, Carbon::now('Asia/Jakarta'));
                 User::where('id', Auth::user()->id)->update([
@@ -821,12 +1144,71 @@ class DashboardController extends Controller
         }
     }
 
+    public function mobileUpdatePassword(Request $request)
+    {
+        if (!Auth::check()) {
+            $message = array(
+                'status' => "failed",
+                'message'=> "Invalid Session! Please, sign in again."
+            );
+            return response()->json($message);
+        }
+
+        DB::beginTransaction();
+        try{
+            if ($request->oldpassword == "" || $request->newpassword == "" || $request->confnewpassword == ""){
+                $message = array(
+                    'status' => "failed",
+                    'message'=> "Lengkapi data!"
+                );
+                return response()->json($message);
+            }
+
+            $pwd = User::where('id', Auth::user()->id)->first();
+            $check_pwd = Hash::check($request->oldpassword, $pwd->password, [true]);
+
+            if ($check_pwd == false){
+                $message = array(
+                    'status' => "failed",
+                    'message'=> "Kata sandi tidak ditemukan!"
+                );
+                return response()->json($message);
+            }else if ($request->confnewpassword != $request->newpassword){
+                $message = array(
+                    'status' => "failed",
+                    'message'=> "Konfirmasi kata sandi baru salah!"
+                );
+                return response()->json($message);
+            } else if ($check_pwd == true && $request->confnewpassword == $request->newpassword){
+                Activity::log(Auth::user()->id, 'Update', 'merubah kata sandi', 'Kata sandi telah diperbarui', null, Carbon::now('Asia/Jakarta'));
+                User::where('id', Auth::user()->id)->update([
+                    'password' => bcrypt($request->newpassword)
+                ]);
+                DB::commit();
+                $message = array(
+                    'status' => "success",
+                    'message'=> "Kata sandi Anda berhasil diperbarui"
+                );
+                return response()->json($message);
+            }
+        }catch (\Exception $e){
+            DB::rollback();
+            $message = array(
+                'status' => "failed",
+                'message'=> "Kata sandi Anda gagal diperbarui"
+            );
+            return response()->json($message);
+        }
+    }
+
     public function updateTtl(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
 
         if ($request->tempat == "" || $request->tanggal == "" || $request->bulan == "" || $request->tahun == "") {
@@ -852,12 +1234,65 @@ class DashboardController extends Controller
         }
     }
 
+    public function mobileUpdateTtl(Request $request)
+    {
+        if (!Auth::check()) {
+            $message = array(
+                'status' => "failed",
+                'message'=> "Invalid Session! Please, sign in again."
+            );
+            return response()->json($message);
+        }
+
+        if ($request->tempat == "" || $request->tanggal == "" || $request->bulan == "" || $request->tahun == "") {
+            $message = array(
+                'status' => "failed",
+                'message'=> "Lengkapi data!"
+            );
+            return response()->json($message);
+        } else {
+            DB::beginTransaction();
+            try{
+                $tempat = $request->tempat;
+                $tgllahir = $request->tahun . '-' . $request->bulan . '-' . $request->tanggal;
+                $tgl = $request->tanggal . '-' . $request->bulan . '-' . $request->tahun;
+                $user = User::where('id', Auth::user()->id)->first();
+                Activity::log(Auth::user()->id, 'Update', 'merubah tempat, tanggal lahir', 'Diperbarui menjadi Tempat Lahir: '.$tempat.', Tanggal Lahir: '. $tgl, 'Tempat, Tanggal lahir sebelumnya Tempat Lahir: '.$user->tempat_lahir.', Tanggal Lahir: '. date('d-m-Y', strtotime($user->tgl_lahir)), Carbon::now('Asia/Jakarta'));
+                User::where('id', Auth::user()->id)->update([
+                    'tempat_lahir' => $tempat,
+                    'tgl_lahir' => $tgllahir
+                ]);
+                DB::commit();
+                $message = array(
+                    'status' => "success",
+                    'message'=> "Tempat, tanggal lahir Anda berhasil diperbarui",
+                    'data'   => array(
+                        'tempat'=> $request->tempat,
+                        'tanggal' => $request->tanggal,
+                        'bulan' => $request->bulan,
+                        'tahun' => $request->tahun
+                    )
+                );
+                return response()->json($message);
+            }catch (\Exception $e){
+                DB::rollback();
+                $message = array(
+                    'status' => "failed",
+                    'message'=> "Tempat, tanggal lahir Anda gagal diperbarui"
+                );
+                return response()->json($message);
+            }
+        }
+    }
+
     public function updateAlamat(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
 
         if ($request->alamat == "") {
@@ -879,12 +1314,56 @@ class DashboardController extends Controller
         }
     }
 
+    public function mobileUpdateAlamat(Request $request)
+    {
+        if (!Auth::check()) {
+            $message = array(
+                'status' => "failed",
+                'message'=> "Invalid Session! Please, sign in again."
+            );
+            return response()->json($message);
+        }
+
+        if ($request->alamat == "") {
+            $message = array(
+                'status' => "failed",
+                'message'=> "Lengkapi data!"
+            );
+            return response()->json($message);
+        } else {
+            DB::beginTransaction();
+            try{
+                $user = User::where('id', Auth::user()->id)->first();
+                Activity::log(Auth::user()->id, 'Update', 'merubah alamat', 'Diperbarui menjadi ' . $request->alamat, 'Alamat sebelumnya ' . $user->address, Carbon::now('Asia/Jakarta'));
+                User::where('id', Auth::user()->id)->update([
+                    'address' => $request->alamat
+                ]);
+                DB::commit();
+                $message = array(
+                    'status' => "success",
+                    'message'=> "Alamat Anda berhasil diperbarui",
+                    'data'   => array('alamat'=>$request->alamat)
+                );
+                return response()->json($message);
+            }catch (\Exception $e){
+                DB::rollback();
+                $message = array(
+                    'status' => "failed",
+                    'message'=> "Alamat Anda gagal diperbarui"
+                );
+                return response()->json($message);
+            }
+        }
+    }
+
     public function updateFoto(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
+        } else {
+            return redirect('/login')->with('flash_message_error', 'Anda belum login!');
         }
         
         DB::beginTransaction();
@@ -937,6 +1416,81 @@ class DashboardController extends Controller
         }catch (\Exception $e){
             DB::rollback();
             return redirect()->back()->with('flash_message_error', 'Foto profil Anda gagal diperbarui!');
+        }
+    }
+
+    public function mobileUpdateFoto(Request $request)
+    {
+        if (!Auth::check()) {
+            $message = array(
+                'status' => "failed",
+                'message'=> "Invalid Session! Please, sign in again."
+            );
+            return response()->json($message);
+        }
+        
+        DB::beginTransaction();
+        try{
+
+            if ($request->hasFile('foto')) {
+                $image_tmp = Input::file('foto');
+                $file = $request->file('foto');
+                $image_size = $image_tmp->getSize(); //getClientSize()
+                $maxsize = '2097152';
+                if ($image_size < $maxsize) {
+
+                    if ($image_tmp->isValid()) {
+
+                        $namefile = $request->current_img;
+
+                        if ($namefile != "") {
+
+                            $path = 'public/images/' . $namefile;
+
+                            if (File::exists($path)) {
+                                # code...
+                                File::delete($path);
+                            }
+
+                        }
+
+                        $extension = $image_tmp->getClientOriginalExtension();
+                        $filename = date('YmdHms') . rand(111, 99999) . '.' . $extension;
+                        $image_path = 'public/images';
+
+                        if (!is_dir($image_path )) {
+                            mkdir("public/images", 0777, true);
+                        }
+
+                        ini_set('memory_limit', '256M');
+                        $file->move($image_path, $filename);
+                        User::where('id', Auth::user()->id)->update(['img' => $filename]);
+                        Activity::log(Auth::user()->id, 'Update', 'merubah foto profil', 'Foto profil telah diperbarui', null, Carbon::now('Asia/Jakarta'));
+                        DB::commit();
+                        $message = array(
+                            'status' => "success",
+                            'message'=> "Foto profil Anda berhasil diperbarui",
+                            'data'  => array('image'=>$filename)
+                        );
+                        return response()->json($message);
+                    }
+                } else {
+                    $message = array(
+                        'status' => "failed",
+                        'message'=> "Foto profil gagal diperbarui...! Ukuran file terlalu besar"
+                    );
+                    return response()->json($message);
+
+                }
+            }
+
+        }catch (\Exception $e){
+            DB::rollback();
+            $message = array(
+                'status' => "failed",
+                'message'=> "Foto profil Anda gagal diperbarui!"
+            );
+            return response()->json($message);
         }
     }
 }

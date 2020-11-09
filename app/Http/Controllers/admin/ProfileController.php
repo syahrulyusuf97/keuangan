@@ -20,7 +20,7 @@ class ProfileController extends Controller
 {
     public function index()
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -38,7 +38,7 @@ class ProfileController extends Controller
 
     public function updateNama(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -61,7 +61,7 @@ class ProfileController extends Controller
 
     public function updateEmail(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -89,7 +89,7 @@ class ProfileController extends Controller
 
     public function updateUsername(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -117,7 +117,7 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -156,7 +156,7 @@ class ProfileController extends Controller
 
     public function updateTtl(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -187,7 +187,7 @@ class ProfileController extends Controller
 
     public function updateAlamat(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -214,7 +214,7 @@ class ProfileController extends Controller
 
     public function updateFoto(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }

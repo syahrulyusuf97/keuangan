@@ -18,7 +18,7 @@ class DashboardController extends Controller
 {
     public function dashboard()
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DB;
 use Auth;
 use Cache;
+use Request;
 use App\Cash;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
@@ -13,6 +14,7 @@ use Illuminate\Contracts\Encryption\DecryptException;
 
 class HelperController extends Controller
 {
+
     static function monthStrToNumber($param)
     {
         $month = array(
@@ -217,5 +219,39 @@ class HelperController extends Controller
     static function countBookmark()
     {
         return DB::table('message')->where('is_bookmark', 1)->count();
+    }
+
+    static function obfuscateEmail($email = null)
+    {
+        if (!is_null($email)) {
+            $em   = explode("@",$email);
+            $name = implode('@', array_slice($em, 0, count($em)-1));
+            $len  = floor(strlen($name)/2);
+
+            return substr($name,0, $len) . str_repeat('*', $len) . "@" . end($em);
+        } else {
+            return;
+        }
+    }
+
+    static function stringLimit($x, $length = 20)
+    {
+      if(strlen($x)<=$length)
+      {
+        return $x;
+      }
+      else
+      {
+        $y=substr($x,0,$length) . '...';
+        return $y;
+      }
+    }
+
+    static function randomNumber($length = 6) {
+        $result = '';
+        for($i = 0; $i < $length; $i++) {
+            $result .= mt_rand(0, 9);
+        }
+        return $result;
     }
 }

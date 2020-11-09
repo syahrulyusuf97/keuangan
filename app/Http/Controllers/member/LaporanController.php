@@ -22,7 +22,7 @@ class LaporanController extends Controller
 {
     public function chart()
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
@@ -586,7 +586,7 @@ class LaporanController extends Controller
 
     public function cashflow()
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
@@ -763,7 +763,7 @@ class LaporanController extends Controller
 
     public function excel($month, $year)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }
@@ -774,7 +774,7 @@ class LaporanController extends Controller
 
     public function pdf($month, $year)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 2) {
                 return redirect('/login');
             }

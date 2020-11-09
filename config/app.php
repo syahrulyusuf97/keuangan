@@ -162,6 +162,9 @@ return [
         Yajra\DataTables\DataTablesServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
+        App\Providers\AgentServiceProvider::class,
+        Mews\Captcha\CaptchaServiceProvider::class,
+        Laravel\Passport\PassportServiceProvider::class,
 
     ],
 
@@ -215,6 +218,8 @@ return [
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'PDF' => Barryvdh\DomPDF\Facade::class,
         'Helper' => App\Http\Controllers\HelperController::class,
+        'Agent' => Jenssegers\Agent\Facades\Agent::class,
+        'Captcha' => Mews\Captcha\Facades\Captcha::class,
     ],
 
 ];

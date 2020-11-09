@@ -15,6 +15,20 @@
 
 <section class="content">
 	<div class="row">
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+			@if(Session::has('flash_message_error'))
+			<div class="alert alert-error alert-block">
+				<button type="button" class="close" data-dismiss="alert">x</button>
+				<strong>{!! session('flash_message_error') !!}</strong>
+			</div>
+			@endif
+			@if(Session::has('flash_message_success'))
+			<div class="alert alert-success alert-block">
+				<button type="button" class="close" data-dismiss="alert">x</button>
+				<strong>{!! session('flash_message_success') !!}</strong>
+			</div>
+			@endif
+		</div>
 		<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
 			<!-- small box -->
 			<div class="small-box bg-green">

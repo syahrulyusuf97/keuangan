@@ -31,7 +31,7 @@
 		                    <a href="{{url('/dashboard/detail-saldo/bank')}}">
 		                      <h3>
 		                        Bank
-		                        <span class="pull-right">{{ Helper::displayRupiah(Helper::saldoBank()) }}</span>
+		                        <span class="pull-right sisa_saldo_bank">{{ Helper::displayRupiah(Helper::saldoBank()) }}</span>
 		                      </h3>
 		                      <!-- <div class="progress xs">
 		                        <div class="progress-bar progress-bar-aqua" style="width: 20%" role="progressbar"
@@ -46,7 +46,7 @@
 		                    <a href="{{url('/dashboard/detail-saldo/kas')}}">
 		                      <h3>
 		                        Kas
-		                        <span class="pull-right">{{ Helper::displayRupiah(Helper::saldoKas()) }}</span>
+		                        <span class="pull-right sisa_saldo_kas">{{ Helper::displayRupiah(Helper::saldoKas()) }}</span>
 		                      </h3>
 		                      <!-- <div class="progress xs">
 		                        <div class="progress-bar progress-bar-green" style="width: 40%" role="progressbar"
@@ -71,9 +71,7 @@
 							<img src="{{ asset('public/images/'.auth()->user()->img) }}" class="user-image" alt="User Image">
 						@endif
 						<span class="hidden-xs">
-							@if(Session::has('adminName'))
-								{!! auth()->user()->name !!}
-					        @endif
+							{{ auth()->user()->name }}
 						</span>
 					</a>
 					<ul class="dropdown-menu">
@@ -86,7 +84,7 @@
 							@endif
 
 							<p>
-								@if(Session::has('adminName')){!! auth()->user()->name !!}@endif
+								{{ auth()->user()->name }}
 								<small>@if(auth()->user()->level == 1) Admin @elseif(auth()->user()->level == 2) Member @endif KeuanganKu</small>
 							</p>
 						</li>

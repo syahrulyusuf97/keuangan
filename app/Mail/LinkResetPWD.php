@@ -12,15 +12,19 @@ class LinkResetPWD extends Mailable
     use Queueable, SerializesModels;
 
     public $link;
+    public $email;
+    public $username;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($link)
+    public function __construct($link, $email, $username)
     {
         $this->link = $link;
+        $this->email = $email;
+        $this->username = $username;
     }
 
     /**
@@ -31,7 +35,7 @@ class LinkResetPWD extends Mailable
     public function build()
     {
         // return $this->view('emails.linkResetPWD');
-        return $this->from('noreplay@keuanganku.info')
+        return $this->from('noreply@syahrulyusuf.tk')
                     ->subject('Reset Password')
                     ->view('emails.linkResetPWD');
     }

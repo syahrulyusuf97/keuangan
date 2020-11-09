@@ -15,6 +15,10 @@
 
 	<p>Kami telah menerima permintaan perubahan kata sandi</p>
 
+	<p>Email : {{$email}}</p>
+	
+	<p>Username : {{$username}}</p>
+
 	<p>Klik link dibawah ini untuk mengkonfirmasi perubahan kata sandi : </p>
 
 	{{$link}}

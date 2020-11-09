@@ -14,8 +14,7 @@
 			<strong>{!! session('flash_message_error') !!}</strong>
 			@if(Session::has('resendmail')){!! session('resendmail') !!}@endif
 		</div>
-		@endif
-		@if(Session::has('flash_message_success'))
+		@elseif(Session::has('flash_message_success'))
 		<div class="alert alert-success alert-block">
 			<strong>{!! session('flash_message_success') !!}</strong>
 			@if(Session::has('resendmail')){!! session('resendmail') !!}@endif

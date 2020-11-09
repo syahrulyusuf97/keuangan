@@ -20,7 +20,7 @@ class UsersController extends Controller
 {
     public function index()
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -61,6 +61,26 @@ class UsersController extends Controller
             ->addColumn('tanggal', function ($data) {
 
                 return date('d-m-Y H:i:s', strtotime($data->created_at));
+
+            })
+
+            ->addColumn('last_login_web', function ($data) {
+
+                if (!is_null($data->login)) {
+                    return date('d-m-Y H:i:s', strtotime($data->login));
+                } else {
+                    return null;
+                }
+
+            })
+
+            ->addColumn('last_login_mobile', function ($data) {
+
+                if (!is_null($data->login_mobile)) {
+                    return date('d-m-Y H:i:s', strtotime($data->login_mobile));
+                } else {
+                    return null;
+                }
 
             })
 
@@ -162,6 +182,26 @@ class UsersController extends Controller
 
             })
 
+            ->addColumn('last_login_web', function ($data) {
+
+                if (!is_null($data->login)) {
+                    return date('d-m-Y H:i:s', strtotime($data->login));
+                } else {
+                    return null;
+                }
+
+            })
+
+            ->addColumn('last_login_mobile', function ($data) {
+
+                if (!is_null($data->login_mobile)) {
+                    return date('d-m-Y H:i:s', strtotime($data->login_mobile));
+                } else {
+                    return null;
+                }
+
+            })
+
             ->addColumn('aksi', function ($data) {
 
                 return '<p class="text-center"><a href="'.url('/admin/users/active/'.Crypt::encrypt($data->id)).'" onclick="return confirm(\''. 'Apakah anda yakin akan mengaktifkan member ini?'.'\')" class="text-danger" style="padding: 4px; font-size: 14px;"><i class="fa fa-check"></i> Aktif</a>&nbsp;<a href="'.url('/admin/users/detail/'.Crypt::encrypt($data->id)).'" class="text-blue" style="padding: 4px; font-size: 14px;"><i class="fa fa-info"></i> Detail</a></p>';
@@ -175,7 +215,7 @@ class UsersController extends Controller
 
     public function active($id = null)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -202,7 +242,7 @@ class UsersController extends Controller
 
     public function nonactive($id = null)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -229,7 +269,7 @@ class UsersController extends Controller
 
     public function suspend($id = null)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -256,7 +296,7 @@ class UsersController extends Controller
 
     public function detail($id = null)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -282,7 +322,7 @@ class UsersController extends Controller
 
     public function updateNama(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -305,7 +345,7 @@ class UsersController extends Controller
 
     public function updateEmail(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -333,7 +373,7 @@ class UsersController extends Controller
 
     public function updateUsername(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -361,7 +401,7 @@ class UsersController extends Controller
 
     public function updatePassword(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -393,7 +433,7 @@ class UsersController extends Controller
 
     public function updateTtl(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -424,7 +464,7 @@ class UsersController extends Controller
 
     public function updateAlamat(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -451,7 +491,7 @@ class UsersController extends Controller
 
     public function updateFoto(Request $request)
     {
-        if (Session::has('adminSession')) {
+        if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }

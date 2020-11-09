@@ -20,7 +20,7 @@ class ArticleController extends Controller
 {
     public function index()
     {
-    	if (Session::has('adminSession')) {
+    	if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -70,7 +70,7 @@ class ArticleController extends Controller
 
     public function articleCreate(Request $request)
     {
-    	if (Session::has('adminSession')) {
+    	if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }
@@ -174,7 +174,7 @@ class ArticleController extends Controller
 
     public function status($id=null, $status_publish=null)
     {
-    	if (Session::has('adminSession')) {
+    	if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return json_encode(['status'=>'Failed','message'=>'Akses Ditolak']);
             }
@@ -227,7 +227,7 @@ class ArticleController extends Controller
 
     public function articleDelete($id=null)
     {
-    	if (Session::has('adminSession')) {
+    	if (Auth::check()) {
             if (Auth::user()->level != 1) {
                 return redirect('/login');
             }

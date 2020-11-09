@@ -33,7 +33,7 @@
             <li class="nav-item">
                 <a class="nav-link page-scroll" href="{{url('/')}}/#donasi">Donasi</a>
             </li>
-            @if(Session::has('adminName'))
+            @if(Auth::check())
 	            @if(auth()->user()->level == 1)
 			    <li class="nav-item">
 	                <a class="nav-link page-scroll" href="{{url('/admin/dashboard')}}">{{auth()->user()->name}}</a>

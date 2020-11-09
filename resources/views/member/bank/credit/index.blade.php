@@ -1,5 +1,5 @@
 @extends('layouts.memberLayout.memberContent')
-@section('title', 'Bank Keluar')
+@section('title', 'Bank Kredit')
 @section('content')
 
 <section class="content-header">
@@ -9,7 +9,7 @@
 	</h1>
 	<ol class="breadcrumb">
 		<li><a href="#"><i class="fa fa-dashboard"></i> Bank</a></li>
-		<li class="active">Bank Keluar</li>
+		<li class="active">Bank Kredit</li>
 	</ol>
 </section>
 
@@ -32,11 +32,13 @@
 				<div class="col-md-6" style="margin-top: 30px;">
 					<div class="box">
 						<div class="box-header with-border">
-							<h3 class="box-title">Form Tambah Bank Keluar</h3>
+							<h3 class="box-title">Form Tambah Bank Kredit</h3>
 						</div>
 						<!-- /.box-header -->
 						<!-- form start -->
-						<form class="form-horizontal" method="post" action="{{ url('/bank/bank-keluar') }}" autocomplete="off" onsubmit="{$('#btn_submit').attr('disabled', true)}">{{ csrf_field() }}
+						<!-- <form class="form-horizontal" method="post" action="{{ url('/bank/bank-keluar') }}" autocomplete="off" onsubmit="{$('#btn_submit').attr('disabled', true)}"> -->
+						<form class="form-horizontal" id="form_bank_kredit" autocomplete="off">
+							{{ csrf_field() }}
 							<div class="box-body">
 								<div class="form-group">
 									<label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-12 control-label">Kategori</label>
@@ -55,7 +57,7 @@
 
 									<div class="col-lg-10 col-md-10 col-sm-10 col-xs-12">
 										<!-- <input type="text" class="form-control" id="kep" name="kep" placeholder="Keperluan Bank Keluar..." required> -->
-										<textarea class="form-control" id="kep" name="kep" placeholder="Keperluan bank keluar..." required></textarea>
+										<textarea class="form-control" id="kep" name="kep" placeholder="Keperluan bank kredit..." required></textarea>
 									</div>
 								</div>
 								<div class="form-group">
@@ -101,7 +103,7 @@
 				<div class="col-md-6" style="margin-top: 30px;">
 					<div class="box">
 						<div class="box-header with-border">
-							<h3 class="box-title">Akumulasi Total Bank Keluar</h3>
+							<h3 class="box-title">Akumulasi Total Bank Kredit</h3>
 							<a style="cursor: pointer;" class="pull-right" id="rincian" data-toggle="modal" data-target="#modal_rincian">Rincian</a>
 						</div>
 						<!-- /.box-header -->
@@ -160,15 +162,15 @@
 							</div>
 							<!-- /.box-body -->
 							<div class="box-footer">
-								<h3 class="pull-left">Total Bank Keluar</h3>
+								<h3 class="pull-left">Total Bank Kredit</h3>
 								<h3 class="pull-right" id="txt_total_credit"></h3>
 							</div>
 							<!-- /.box-footer -->
 						</form>
-						<div class="box-footer">
+						{{-- <div class="box-footer">
 							<h3 class="pull-left">Sisa Saldo Bank</h3>
 							<h3 class="pull-right" id="txt_sisa_saldo_bank">{{ Helper::displayRupiah($saldo_bank) }}</h3>
-						</div>
+						</div> --}}
 					</div> 
 				</div>
 			</div>
@@ -176,7 +178,8 @@
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 box box-primary">
 				<div class="box-header with-border">
-					<h3 class="box-title">Daftar Bank Keluar</h3>
+					<h3 class="box-title">Daftar Bank Kredit</h3>
+					<div class="pull-right"><button type="button" onclick="refreshTable()" class="btn btn-default"><i class="fa fa-refresh"></i></button></div>
 				</div>
 				<div class="box-body table-responsive">
 					<table id="example1" class="table table-bordered table-striped">
@@ -213,9 +216,11 @@
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title">Edit Bank Keluar</h4>
+				<h4 class="modal-title">Edit Bank Kredit</h4>
 			</div>
-			<form class="form-horizontal" method="post" action="{{ url('/bank/keluar/edit') }}">
+			<!-- <form class="form-horizontal" method="post" action="{{ url('/bank/keluar/edit') }}"> -->
+			<form class="form-horizontal" id="form_bank_kredit_edit" method="POST">
+				<input type="hidden" name="_method" value="PUT">
 				{{ csrf_field() }}
 				<div class="modal-body">
 					<input type="hidden" name="id" id="id">
@@ -287,8 +292,8 @@
 					</fieldset>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Tutup</button>
-					<button type="submit" class="btn btn-primary">Simpan perubahan</button>
+					<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Batal</button>
+					<button type="submit" class="btn btn-primary" id="btn_submit_edit"><i class="fa fa-save"></i> Simpan</button>
 				</div>
 			</form>
 		</div>
@@ -303,7 +308,7 @@
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Rincian Bank Keluar</h4>
+        <h4 class="modal-title">Rincian Bank Kredit</h4>
       </div>
       <div class="modal-body">
         <div class="table-responsive">
@@ -321,7 +326,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <h3 class="pull-left">Total Bank Keluar</h3>
+        <h3 class="pull-left">Total Bank Kredit</h3>
 		<h3 class="pull-right" id="rincian_total_credit"></h3>
       </div>
     </div>
@@ -335,13 +340,14 @@
 <script src="{{ asset('public/js/bootstrap/bootstrap-datepicker.min.js') }}"></script>
 
 <script type="text/javascript">
+	var table_bank_kredit;
 	$(function() {
 		$('#kategori').val('');
 		$('#kep').val('');
 		$('#jumlah').val('');
 		$('#datepicker').val('');
 		$('#option_view').val('BulanLalu');
-		$('#example1').dataTable({
+		table_bank_kredit = $('#example1').dataTable({
 			"processing": true,
 			"serverSide": true,
 			"ajax": "{{ route('creditBank') }}",
@@ -357,65 +363,6 @@
 	    $('#credit_pertanggal').hide();
 	    $('#credit_perbulan').hide();
 	    $('#credit_pertahun').hide();
-
-	    if ($('#option_view').val() == "BulanLalu") {
-	    	$('#pertanggal').val('');
-	    	$('#perbulan').val('');
-	    	$('#pertahun').val('');
-	    	$('#credit_pertanggal').hide();
-	    	$('#credit_perbulan').hide();
-	    	$('#credit_pertahun').hide();
-	    	lastMonthYear();
-	    }
-
-	    $('#option_view').on('change', function(e){
-	    	var nilai = $('#option_view').val();
-			if (nilai == "BulanLalu" || nilai == "TahunLalu") {
-				lastMonthYear();
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#credit_pertanggal').hide();
-			    $('#credit_perbulan').hide();
-			    $('#credit_pertahun').hide();
-		    } else if (nilai == "Pertanggal") {
-		    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#credit_pertanggal').show();
-			    $('#credit_perbulan').hide();
-			    $('#credit_pertahun').hide();
-		    } else if (nilai == "Perbulan") {
-		    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#credit_pertanggal').hide();
-			    $('#credit_perbulan').show();
-			    $('#credit_pertahun').hide();
-		    } else if (nilai == "Pertahun") {
-		    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#credit_pertanggal').hide();
-			    $('#credit_perbulan').hide();
-			    $('#credit_pertahun').show();
-		    }
-	    })
-
-	    $('#pertanggal').on('change', function(e){
-	    	pertanggal();
-	    })
-
-	    $('#perbulan').on('change', function(e){
-	    	perbulan();
-	    })
-
-	    $('#pertahun').on('change', function(e){
-	    	pertahun();
-	    })
 
 	    function lastMonthYear() {
 	    	var nilai = $('#option_view').val();
@@ -520,6 +467,122 @@
              	}
 		    });
 	    }
+
+	    if ($('#option_view').val() == "BulanLalu") {
+	    	$('#pertanggal').val('');
+	    	$('#perbulan').val('');
+	    	$('#pertahun').val('');
+	    	$('#credit_pertanggal').hide();
+	    	$('#credit_perbulan').hide();
+	    	$('#credit_pertahun').hide();
+	    	lastMonthYear();
+	    }
+
+	    $('#option_view').on('change', function(e){
+	    	var nilai = $('#option_view').val();
+			if (nilai == "BulanLalu" || nilai == "TahunLalu") {
+				lastMonthYear();
+		    	$('#pertanggal').val('');
+		    	$('#perbulan').val('');
+		    	$('#pertahun').val('');
+		    	$('#credit_pertanggal').hide();
+			    $('#credit_perbulan').hide();
+			    $('#credit_pertahun').hide();
+		    } else if (nilai == "Pertanggal") {
+		    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+		    	$('#pertanggal').val('');
+		    	$('#perbulan').val('');
+		    	$('#pertahun').val('');
+		    	$('#credit_pertanggal').show();
+			    $('#credit_perbulan').hide();
+			    $('#credit_pertahun').hide();
+		    } else if (nilai == "Perbulan") {
+		    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+		    	$('#pertanggal').val('');
+		    	$('#perbulan').val('');
+		    	$('#pertahun').val('');
+		    	$('#credit_pertanggal').hide();
+			    $('#credit_perbulan').show();
+			    $('#credit_pertahun').hide();
+		    } else if (nilai == "Pertahun") {
+		    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+		    	$('#pertanggal').val('');
+		    	$('#perbulan').val('');
+		    	$('#pertahun').val('');
+		    	$('#credit_pertanggal').hide();
+			    $('#credit_perbulan').hide();
+			    $('#credit_pertahun').show();
+		    }
+	    })
+
+	    $('#pertanggal').on('change', function(e){
+	    	pertanggal();
+	    })
+
+	    $('#perbulan').on('change', function(e){
+	    	perbulan();
+	    })
+
+	    $('#pertahun').on('change', function(e){
+	    	pertahun();
+	    })
+
+	    $("#form_bank_kredit").submit(function(evt){
+	    	evt.preventDefault();
+	    	$('#btn_submit').attr('disabled', true);
+	    	showLoading();
+	    	axios.post("{{url('/bank/kredit/store')}}", $("#form_bank_kredit").serialize())
+	    	  .then(function (response) {
+	    	  	hideLoading();
+	    	  	$('#btn_submit').attr('disabled', false);
+	    	  	if (response.data.status == "success") {
+	    	  		$("#form_bank_kredit")[0].reset();
+	    	  		$('#kategori').trigger('change');
+	    	  		$('#dariakun').trigger('change');
+	    	  		$('.saldo').text("Saldo = "+response.data.sisa_saldo);
+	    	  		$('.sisa_saldo_bank').text(response.data.sisa_saldo_bank);
+	    	  		$('.sisa_saldo_kas').text(response.data.sisa_saldo_kas);
+	    	  		table_bank_kredit.api().ajax.reload();
+	    	  		alertSuccess('Berhasil', response.data.message);
+	    	  	} else {
+	    	  		alertWarning('Gagal', response.data.message);
+	    	  	}
+	    	  })
+	    	  .catch(function (error) {
+	    	  	hideLoading();
+	    	  	$('#btn_submit').attr('disabled', false);
+	    	    alertError('Error', error);
+	    	  });
+	    })
+
+	    $("#form_bank_kredit_edit").submit(function(evt){
+	    	evt.preventDefault();
+	    	$('#btn_submit_edit').attr('disabled', true);
+	    	showLoading();
+	    	axios.put("{{url('/bank/kredit/edit')}}", $("#form_bank_kredit_edit").serialize())
+	    	  .then(function (response) {
+	    	  	hideLoading();
+	    	  	$('#btn_submit_edit').attr('disabled', false);
+	    	  	if (response.data.status == "success") {
+	    	  		$("#form_bank_kredit_edit")[0].reset();
+	    	  		$('#kategori_edit').trigger('change');
+	    	  		$('#dariakun_edit').trigger('change');
+	    	  		$('.saldo').text("Saldo = "+response.data.sisa_saldo);
+	    	  		$('.sisa_saldo_bank').text(response.data.sisa_saldo_bank);
+	    	  		$('.sisa_saldo_kas').text(response.data.sisa_saldo_kas);
+	    	  		$('#modal_edit').modal('hide');
+	    	  		table_bank_kredit.api().ajax.reload();
+	    	  		alertSuccess('Berhasil', response.data.message);
+	    	  	} else {
+	    	  		alertWarning('Gagal', response.data.message);
+	    	  	}
+	    	  })
+	    	  .catch(function (error) {
+	    	  	hideLoading();
+	    	  	$('#btn_submit_edit').attr('disabled', false);
+	    	    alertError('Error', error);
+	    	  });
+	    })
 	})
 
 	var i_jumlah = document.getElementById('jumlah');
@@ -533,6 +596,10 @@
 	{
 		i_jumlah_edit.value = formatRupiah(this.value, 'Rp');
 	});
+
+	function refreshTable() {
+		table_bank_kredit.api().ajax.reload();
+	}
 
 	function edit(id) {
 		$('#kategori_edit').val('');

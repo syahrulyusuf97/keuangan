@@ -7,6 +7,16 @@
 
 require('./bootstrap');
 
+// const axios = require('axios');
+// window.axios = require('axios');
+
+// window.axios = require('axios');
+
+// window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+// const Turbolinks = require("turbolinks")
+// Turbolinks.start()
+
 window.Vue = require('vue');
 
 /**

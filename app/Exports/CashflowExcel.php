@@ -139,7 +139,7 @@ class CashflowExcel implements FromView, ShouldAutoSize
             $periode = $this->tahun;
         }
         
-        return view('admin.laporan.excel', [
+        return view('member.laporan.excel', [
             'bank_debit'    => $bank_debit,
             'bank_kredit'   => $bank_kredit,
             'kas_debit'     => $kas_debit,

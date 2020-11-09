@@ -51,6 +51,8 @@
 											<th>Username</th>
 											<th>Email</th>
 											<th>Tanggal Daftar</th>
+											<th>Last Login (WEB)</th>
+											<th>Last Login (MOBILE)</th>
 											<th>Online Status</th>
 											<th>Aksi</th>
 										</tr>
@@ -64,6 +66,8 @@
 											<th>Username</th>
 											<th>Email</th>
 											<th>Tanggal Daftar</th>
+											<th>Last Login (WEB)</th>
+											<th>Last Login (MOBILE)</th>
 											<th>Online Status</th>
 											<th>Aksi</th>
 										</tr>
@@ -116,6 +120,8 @@
 											<th>Username</th>
 											<th>Email</th>
 											<th>Tanggal Daftar</th>
+											<th>Last Login (WEB)</th>
+											<th>Last Login (MOBILE)</th>
 											<th>Aksi</th>
 										</tr>
 									</thead>
@@ -128,6 +134,8 @@
 											<th>Username</th>
 											<th>Email</th>
 											<th>Tanggal Daftar</th>
+											<th>Last Login (WEB)</th>
+											<th>Last Login (MOBILE)</th>
 											<th>Aksi</th>
 										</tr>
 									</tfoot>
@@ -156,6 +164,8 @@
 				{"data": "username"},
 				{"data": "email"},
 				{"data": "tanggal"},
+				{"data": "last_login_web"},
+				{"data": "last_login_mobile"},
 				{"data": "is_online"},
 				{"data": "aksi"}
 			]
@@ -185,6 +195,8 @@
 				{"data": "username"},
 				{"data": "email"},
 				{"data": "tanggal"},
+				{"data": "last_login_web"},
+				{"data": "last_login_mobile"},
 				{"data": "aksi"}
 			]
 		})

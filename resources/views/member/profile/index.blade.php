@@ -42,7 +42,7 @@
                       <img src="{{ asset('public/images/'. auth()->user()->img) }}" alt="Foto profil" title="Sunting foto profil" class="profile-user-img img-responsive img-circle img-profile" onclick="editFoto()">
                     @endif
                     
-                    <h3 class="profile-username text-center text-capitalize">@if(Session::has('adminName')){!! auth()->user()->name !!}@endif</h3>
+                    <h3 class="profile-username text-center text-capitalize">{{ auth()->user()->name }}</h3>
                     <p class="text-muted text-center text-capitalize">@if(auth()->user()->level == 1) Admin @elseif(auth()->user()->level == 2) Member @endif KeuanganKu</p>
                     @if(auth()->user()->tempat_lahir != null && auth()->user()->tgl_lahir != null)
                     <p class="text-muted text-center text-capitalize">{!! auth()->user()->tempat_lahir !!}, {!! date('d F Y', strtotime(auth()->user()->tgl_lahir)) !!}</p>
@@ -157,10 +157,10 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="title" class="col-sm-2 control-label">Verifikasi Kata Sandi</label>
+                                        <label for="title" class="col-sm-2 control-label">Konfirmasi Kata Sandi</label>
 
                                         <div class="col-sm-6">
-                                            <input type="password" class="form-control" id="vernewPassword" name="vernewPassword" placeholder="Verifikasi kata sandi baru...">
+                                            <input type="password" class="form-control" id="vernewPassword" name="vernewPassword" placeholder="Konfirmasi kata sandi baru...">
                                         </div>
                                     </div>
                                     <div class="col-sm-8">

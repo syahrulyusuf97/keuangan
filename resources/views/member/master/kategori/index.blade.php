@@ -68,7 +68,7 @@
 
 									<div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
 										<div class="input-group my-colorpicker2">
-										  <input type="text" class="form-control" id="warna" name="warna" placeholder="Warn Label" required />
+										  <input type="text" class="form-control" id="warna" name="warna" placeholder="Warna Label" required />
 
 										  <div class="input-group-addon">
 										    <i></i>
@@ -203,7 +203,7 @@
 		$('#warna').val('');
 		$('#example1').dataTable({
 			"processing": true,
-			// "serverSide": true,
+			"serverSide": true,
 			"ajax": "{{ route('kategori') }}",
 			"columns":[
 				{"data": "jenis_transaksi"},
@@ -218,7 +218,6 @@
     function edit(id) {
         $('#nama_akun_edit').val('');
         $.getJSON(baseUrl+'/master/kategori/detail?kid='+id, function(resp){
-        	console.log(resp);
             $('#id').val(resp.id);
             $('#jenis_transaksi_edit').val(resp.jenis_transaksi);
             $('#nama_edit').val(resp.nama);

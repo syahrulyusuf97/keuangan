@@ -50,7 +50,12 @@ class Handler extends ExceptionHandler
             if ($exception->getStatusCode() == 404) {
                 return response()->view('error.' . '404', [], 404);
             }
-        }
+        } 
+        // elseif ($exception instanceof TokenMismatchException){
+        //     // Redirect to a form. Here is an example of how I handle mine
+        //     return redirect($request->fullUrl())->with('csrf_error',"Oops! Seems you couldn't submit form for a long time. Please try again.");
+        // }
+
         return parent::render($request, $exception);
     }
 }

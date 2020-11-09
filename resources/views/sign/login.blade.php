@@ -122,7 +122,7 @@
 			</div>
 			<div class="form-group has-feedback">
 				<input type="password" name="password" id="password" class="form-control" placeholder="Password">
-				<span class="glyphicon glyphicon-lock form-control-feedback"></span>
+				<span class="glyphicon glyphicon-lock form-control-feedback toggle-password"></span>
 			</div>
 			<div class="row">
 				<div class="col-xs-8">
@@ -422,6 +422,11 @@
 	password.addEventListener('blur', onPasswordBlur);
 	TweenMax.set(armL, {x: -93, y: 220, rotation: 105, transformOrigin: "top left"});
 	TweenMax.set(armR, {x: -93, y: 220, rotation: -105, transformOrigin: "top right"});
+
+	$(".toggle-password").click(function(evt){
+		evt.preventDefault();
+		alert('ok')
+	})
 </script>
 
 @endsection

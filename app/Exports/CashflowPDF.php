@@ -41,7 +41,7 @@ class CashflowPDF implements FromView, ShouldAutoSize
                 ->get();
             $periode = $this->tahun;
         }
-        return view('admin.laporan.pdf', [
+        return view('member.laporan.pdf', [
             'data' => $cash,
             'periode' => $periode
         ]);
