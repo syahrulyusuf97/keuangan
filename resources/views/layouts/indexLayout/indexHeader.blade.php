@@ -3,7 +3,7 @@
     <a class="navbar-brand logo-text page-scroll" href="{{url('/')}}">KeuanganKu</a>
 
     <!-- Image Logo -->
-    <!-- <a class="navbar-brand logo-image" href="index.html"><img src="{{ asset('public/images/index/logo.svg') }}" alt="alternative"></a> -->
+    <!-- <a class="navbar-brand logo-image" href="index.html"><img src="{{ asset('images/index/logo.svg') }}" alt="alternative"></a> -->
     
     <!-- Mobile Menu Toggle Button -->
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,24 +15,24 @@
     <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link page-scroll" href="{{url('/')}}/#header">Beranda <span class="sr-only">(current)</span></a>
+                <a class="nav-link page-scroll" href="{{url('/')}}/#header" data-turbolinks="true">Beranda <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link page-scroll" href="{{url('/article/')}}">Artikel</a>
+                <a class="nav-link page-scroll" href="{{url('/article/')}}" data-turbolinks="true">Artikel</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link page-scroll" href="{{url('/')}}/#services">Layanan</a>
+                <a class="nav-link page-scroll" href="{{url('/')}}/#services" data-turbolinks="true">Layanan</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link page-scroll" href="{{url('/')}}/#syarat">Syarat & Ketentuan</a>
+                <a class="nav-link page-scroll" href="{{url('/')}}/#syarat" data-turbolinks="true">Syarat & Ketentuan</a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link page-scroll" href="{{url('/')}}/#contact">Pesan</a>
+                <a class="nav-link page-scroll" href="{{url('/')}}/#contact" data-turbolinks="true">Pesan</a>
             </li>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
                 <a class="nav-link page-scroll" href="{{url('/')}}/#donasi">Donasi</a>
-            </li>
+            </li> -->
             @if(Auth::check())
 	            @if(auth()->user()->level == 1)
 			    <li class="nav-item">
@@ -45,10 +45,10 @@
 	            @endif
 			@else
 	            <li class="nav-item">
-	                <a class="nav-link page-scroll" href="{{url('/registrasi')}}">Registrasi</a>
+	                <a class="nav-link" href="{{url('/registrasi')}}" data-turbolinks="true">Registrasi</a>
 	            </li>
 	            <li class="nav-item">
-	                <a class="nav-link page-scroll" href="{{url('/login')}}">Masuk</a>
+	                <a class="nav-link" href="{{url('/login')}}" data-turbolinks="true">Masuk</a>
 	            </li>
             @endif
         </ul>
@@ -72,7 +72,7 @@
                 </div> <!-- end of col -->
                 <div class="col-lg-6">
                     <div class="image-container">
-                        <img class="img-fluid" src="{{ asset('public/images/index/header-teamwork.svg') }}" alt="alternative">
+                        <img class="img-fluid" src="{{ asset('images/index/header-teamwork.svg') }}" alt="alternative">
                     </div> <!-- end of image-container -->
                 </div> <!-- end of col -->
             </div> <!-- end of row -->

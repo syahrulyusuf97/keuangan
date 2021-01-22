@@ -144,6 +144,7 @@
                     <div style="display: none" id="edit_password">
                         <strong>
                             <form class="form-horizontal" method="post" action="{{url('/admin/users/update-password')}}">{{ csrf_field() }}
+                                <input type="hidden" name="id" value="{{Crypt::encrypt($member->id)}}">
                                 <div class="box-body">
                                     <div class="form-group">
                                         <label for="title" class="col-sm-2 control-label">Kata Sandi Baru</label>

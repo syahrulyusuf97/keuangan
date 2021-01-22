@@ -37,7 +37,7 @@ class ActivityController extends Controller
     {
         $date = DB::table('activity')
             ->where('iduser', Auth::user()->id)
-            ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"))
+            ->select(DB::raw("id, DATE_FORMAT(date, '%d %M %Y') as date"))
             ->orderBy('id', 'desc')
             ->distinct()
             ->limit(10)
@@ -52,6 +52,7 @@ class ActivityController extends Controller
                 'activity.note',
                 'activity.oldnote',
                 'activity.created_at',
+                'activity.id',
                 DB::raw("DATE_FORMAT(date, '%d %M %Y %H:%m:%s') as tgl"))
             ->join('users', 'activity.iduser', '=', 'users.id')
             ->orderBy('activity.id', 'desc')
@@ -64,7 +65,7 @@ class ActivityController extends Controller
     {
         $date = DB::table('activity')
             ->where('iduser', Auth::user()->id)
-            ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"))
+            ->select(DB::raw("id, DATE_FORMAT(date, '%d %M %Y') as date"))
             ->orderBy('id', 'desc')
             ->distinct()
             ->limit(10)
@@ -79,6 +80,7 @@ class ActivityController extends Controller
                 'activity.note',
                 'activity.oldnote',
                 'activity.created_at',
+                'activity.id',
                 DB::raw("DATE_FORMAT(date, '%d %M %Y %H:%m:%s') as tgl"))
             ->join('users', 'activity.iduser', '=', 'users.id')
             ->orderBy('activity.id', 'desc')
@@ -94,7 +96,7 @@ class ActivityController extends Controller
             $date = DB::table('activity')
                 ->where('iduser', Auth::user()->id)
                 ->where(DB::raw('substr(date, 1, 10)'), '=', $tanggal)
-                ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"))
+                ->select(DB::raw("id, DATE_FORMAT(date, '%d %M %Y') as date"))
                 ->orderBy('id', 'desc')
                 ->distinct()
                 ->get();
@@ -109,6 +111,7 @@ class ActivityController extends Controller
                     'activity.note',
                     'activity.oldnote',
                     'activity.created_at',
+                    'activity.id',
                     DB::raw("DATE_FORMAT(date, '%d %M %Y %H:%m:%s') as tgl"))
                 ->join('users', 'activity.iduser', '=', 'users.id')
                 ->orderBy('activity.id', 'desc')
@@ -116,7 +119,7 @@ class ActivityController extends Controller
         } else {
             $date = DB::table('activity')
                 ->where('iduser', Auth::user()->id)
-                ->select(DB::raw("DATE_FORMAT(date, '%d %M %Y') as date"))
+                ->select(DB::raw("id, DATE_FORMAT(date, '%d %M %Y') as date"))
                 ->orderBy('id', 'desc')
                 ->distinct()
                 ->limit(10)
@@ -131,6 +134,7 @@ class ActivityController extends Controller
                     'activity.note',
                     'activity.oldnote',
                     'activity.created_at',
+                    'activity.id',
                     DB::raw("DATE_FORMAT(date, '%d %M %Y %H:%m:%s') as tgl"))
                 ->join('users', 'activity.iduser', '=', 'users.id')
                 ->orderBy('activity.id', 'desc')

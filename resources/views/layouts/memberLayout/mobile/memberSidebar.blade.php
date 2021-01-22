@@ -1,4 +1,4 @@
-<!-- App Sidebar -->
+App Sidebar -->
 <div class="modal fade panelbox panelbox-left" id="sidebarPanel" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -7,9 +7,9 @@
                 <div class="profileBox pt-2 pb-2">
                     <div class="image-wrapper">
                         @if(auth()->user()->img == "")
-                        <img src="{{ asset('public/images/default.jpg') }}" alt="image" class="imaged w36">
+                        <img src="{{ asset('images/default.jpg') }}" alt="image" class="imaged w36">
                         @else
-                        <img src="{{ asset('public/images/'. auth()->user()->img) }}" alt="image" class="imaged  w36">
+                        <img src="{{ asset('images/'. auth()->user()->img) }}" alt="image" class="imaged  w36">
                         @endif
                     </div>
                     <div class="in">
@@ -18,7 +18,7 @@
                         </strong>
                         <div class="text-muted">Member</div>
                     </div>
-                    <a href="#" class="btn btn-link btn-icon sidebar-close" data-dismiss="modal">
+                    <a href="#" class="btn btn-link btn-icon sidebar-close" data-dismiss="modal" data-turbolinks="false">
                         <ion-icon name="close-outline"></ion-icon>
                     </a>
                 </div>
@@ -36,12 +36,12 @@
                 <ul class="sidebar-k-menu" data-widget="tree">
                   <li class="header">NAVIGASI UTAMA</li>
                   <li>
-                    <a href="{{ url('/dashboard') }}" data-turbolinks="true" class="page-redirect">
+                    <a href="{{ url('/dashboard') }}" data-turbolinks="true"> <!-- Tambahkan class="page-redirect" untuk memunculkan preloading page -->
                       <i class="fa fa-dashboard"></i> <span>Dashboard</span>
                     </a>
                   </li>
                   <li class="treeview">
-                    <a href="#">
+                    <a href="#" data-turbolinks="false">
                       <i class="fa fa-database"></i>
                       <span>Master</span>
                       <span class="pull-right-container">
@@ -49,12 +49,12 @@
                         </span>
                     </a>
                     <ul class="treeview-menu">
-                      <li><a href="{{ url('/master/akun') }}" data-turbolinks="true" class="page-redirect"><i class="fa fa-book"></i> Akun</a></li>
-                      <li><a href="{{ url('/master/kategori') }}" class="page-redirect"><i class="fa fa-list"></i> Kategori</a></li>
+                      <li><a href="{{ url('/master/akun') }}" data-turbolinks="true"><i class="fa fa-book"></i> Akun</a></li>
+                      <li><a href="{{ url('/master/kategori') }}" data-turbolinks="true"><i class="fa fa-list"></i> Kategori</a></li>
                     </ul>
                   </li>
                   <li class="treeview">
-                    <a href="#">
+                    <a href="#" data-turbolinks="false">
                       <i class="fa fa-bank"></i>
                       <span>Bank</span>
                       <span class="pull-right-container">
@@ -62,12 +62,12 @@
                         </span>
                     </a>
                     <ul class="treeview-menu">
-                      <li><a href="{{ url('/bank/bank-masuk') }}" class=""><i class="fa fa-arrow-down"></i> Bank Masuk</a></li>
-                      <li><a href="{{ url('/bank/bank-keluar') }}" class="page-redirect"><i class="fa fa-arrow-up"></i> Bank Keluar</a></li>
+                      <li><a href="{{ url('/bank/bank-masuk') }}" data-turbolinks="true"><i class="fa fa-arrow-down"></i> Bank Masuk</a></li>
+                      <li><a href="{{ url('/bank/bank-keluar') }}" data-turbolinks="true"><i class="fa fa-arrow-up"></i> Bank Keluar</a></li>
                     </ul>
                   </li>
                   <li class="treeview">
-                    <a href="#">
+                    <a href="#" data-turbolinks="false">
                       <i class="fa fa-money"></i>
                       <span>Kas</span>
                       <span class="pull-right-container">
@@ -75,12 +75,12 @@
                         </span>
                     </a>
                     <ul class="treeview-menu">
-                      <li><a href="{{ url('/kas/masuk') }}" class="page-redirect"><i class="fa fa-arrow-down"></i> Kas Masuk</a></li>
-                      <li><a href="{{ url('/kas/keluar') }}" class="page-redirect"><i class="fa fa-arrow-up"></i> Kas Keluar</a></li>
+                      <li><a href="{{ url('/kas/masuk') }}" data-turbolinks="true"><i class="fa fa-arrow-down"></i> Kas Masuk</a></li>
+                      <li><a href="{{ url('/kas/keluar') }}" data-turbolinks="true"><i class="fa fa-arrow-up"></i> Kas Keluar</a></li>
                     </ul>
                   </li>
                   <li class="treeview">
-                    <a href="#">
+                    <a href="#" data-turbolinks="false">
                       <i class="fa fa-list-alt"></i>
                       <span>Laporan</span>
                       <span class="pull-right-container">
@@ -88,12 +88,12 @@
                         </span>
                     </a>
                     <ul class="treeview-menu">
-                      <li><a href="{{ url('/laporan/chart') }}" class="page-redirect"><i class="fa fa fa-bar-chart"></i> Chart/Grafik</a></li>
-                      <li><a href="{{ url('/laporan/cashflow') }}" class="page-redirect"><i class="fa fa-list"></i> Arus Kas/<i>Cashflow</i></a></li>
+                      <li><a href="{{ url('/laporan/chart') }}" data-turbolinks="true"><i class="fa fa fa-bar-chart"></i> Chart/Grafik</a></li>
+                      <li><a href="{{ url('/laporan/cashflow') }}" data-turbolinks="true"><i class="fa fa-list"></i> Arus Kas/<i>Cashflow</i></a></li>
                     </ul>
                   </li>
                   <li class="treeview">
-                    <a href="#">
+                    <a href="#" data-turbolinks="false">
                       <i class="fa fa-clock-o"></i>
                       <span>Riwayat</span>
                       <span class="pull-right-container">
@@ -101,19 +101,19 @@
                         </span>
                     </a>
                     <ul class="treeview-menu">
-                      <li><a href="{{ url('/riwayat/aktivitas') }}" class="page-redirect"><i class="fa fa-list"></i> Aktivitas</a></li>
-                      <li><a href="{{ url('/riwayat/bank') }}" class="page-redirect"><i class="fa fa-bank"></i> Bank</a></li>
-                      <li><a href="{{ url('/riwayat/kas') }}" class="page-redirect"><i class="fa fa-money"></i> Kas</a></li>
+                      <li><a href="{{ url('/riwayat/aktivitas') }}" data-turbolinks="true"><i class="fa fa-list"></i> Aktivitas</a></li>
+                      <li><a href="{{ url('/riwayat/bank') }}" data-turbolinks="true"><i class="fa fa-bank"></i> Bank</a></li>
+                      <li><a href="{{ url('/riwayat/kas') }}" data-turbolinks="true"><i class="fa fa-money"></i> Kas</a></li>
                     </ul>
                   </li>
                   <li class="header">LAINNYA</li>
                   <li>
-                    <a href="{{ url('/profil') }}" data-turbolinks="true" class="page-redirect">
+                    <a href="{{ url('/profil') }}" data-turbolinks="true">
                       <i class="fa fa-gears"></i> <span>Pengaturan</span>
                     </a>
                   </li>
                   <li>
-                    <a href="#" data-turbolinks="true" class="logout">
+                    <a href="#" data-turbolinks="false" class="logout">
                       <i class="fa fa-sign-out"></i> <span>Keluar</span>
                     </a>
                   </li>
@@ -288,4 +288,4 @@
         </div>
     </div>
 </div>
-<!-- * App Sidebar -->
+<!-- * App Sidebar

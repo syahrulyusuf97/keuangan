@@ -190,10 +190,9 @@
 	</div>
 		<!-- /.modal-dialog -->
 </div>
+@endsection
 
-<!-- jQuery 3 -->
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
-
+@section('extra_script')
 <script type="text/javascript">
 	$(function() {
 		$('.my-colorpicker2').colorpicker()

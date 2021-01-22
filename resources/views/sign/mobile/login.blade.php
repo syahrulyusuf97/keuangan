@@ -5,7 +5,7 @@
 <!-- App Header -->
 <div class="appHeader no-border">
     <div class="left">
-        <a href="javascript:;" class="headerButton goBack">
+        <a href="javascript:void(0);" class="headerButton goBack" data-turbolinks="true">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
@@ -102,7 +102,7 @@
 
 @endsection
 
-@section('script')
+@section('extra_script')
 
 <script type="text/javascript">
     $("#form_login").submit(function(evt){

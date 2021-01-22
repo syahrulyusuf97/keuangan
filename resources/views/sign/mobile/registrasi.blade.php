@@ -5,13 +5,13 @@
 <!-- App Header -->
 <div class="appHeader no-border">
     <div class="left">
-        <a href="javascript:;" class="headerButton goBack">
+        <a href="javascript:void(0);" class="headerButton goBack" data-turbolinks="true">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
     <div class="pageTitle"></div>
     <div class="right">
-        <a href="{{ route('login') }}" class="headerButton page-redirect">
+        <a href="{{ route('login') }}" class="headerButton" data-turbolinks="true">
             Login
         </a>
     </div>
@@ -147,52 +147,61 @@
 
 @endsection
 
-@section('script')
+@section('extra_script')
 <script type="text/javascript">
     function validatePassword() {
-        if($('#repassword').val() != $('#password').val()){
-            $("#error_repassword").addClass('has-error');
-            $("#alert_repassword").show();
-            $("#alert_repassword").html('Konfirmasi password tidak sesuai!');
-            $("#btn_daftar").attr('disabled', true);
+        if ($("#password").val().length < 6) {
+            $('#repassword').val("");
+          $("#error_password").addClass('has-error');
+          $("#btn_daftar").attr('disabled', true);
         } else {
-            if ($("#password").val().length < 6) {
-                $("#error_password").addClass('has-error');
-                $("#btn_daftar").attr('disabled', true);
-            } else {
-                $("#error_password").removeClass('has-error');
+            $("#error_password").removeClass('has-error');
+            if ($('#repassword').val() != "") {
                 $("#error_repassword").removeClass('has-error');
                 $("#alert_repassword").hide();
-                $("#btn_daftar").attr('disabled', false);
+                if($('#repassword').val() != $('#password').val()){
+                    $("#error_repassword").addClass('has-error');
+                    $("#alert_repassword").show();
+                    $("#alert_repassword").html('Konfirmasi password tidak sesuai!');
+                    $("#btn_daftar").attr('disabled', true);
+                } else {
+                    $("#error_repassword").removeClass('has-error');
+                    $("#alert_repassword").hide();
+                    $("#btn_daftar").attr('disabled', false);
+                }
+            } else {
+                $("#error_repassword").addClass('has-error');
+                $("#alert_repassword").show();
+                $("#alert_repassword").html('Kolom konfirmasi password tidak boleh kosong!');
+                $("#btn_daftar").attr('disabled', true);
             }
         }
     }
 
     function validateRePassword() {
-      if ($('#repassword').val() != "") {
-        $("#error_repassword").removeClass('has-error');
-        $("#alert_repassword").hide();
-        if($('#repassword').val() != $('#password').val()){
-            $("#error_repassword").addClass('has-error');
-            $("#alert_repassword").show();
-            $("#alert_repassword").html('Konfirmasi password tidak sesuai!');
-            $("#btn_daftar").attr('disabled', true);
+        if ($("#password").val().length < 6) {
+            $('#repassword').val("");
         } else {
-            if ($("#password").val().length < 6) {
-                $("#error_password").addClass('has-error');
-                $("#btn_daftar").attr('disabled', true);
-            } else {
+            if ($('#repassword').val() != "") {
                 $("#error_repassword").removeClass('has-error');
                 $("#alert_repassword").hide();
-                $("#btn_daftar").attr('disabled', false);
+                if($('#repassword').val() != $('#password').val()){
+                    $("#error_repassword").addClass('has-error');
+                    $("#alert_repassword").show();
+                    $("#alert_repassword").html('Konfirmasi password tidak sesuai!');
+                    $("#btn_daftar").attr('disabled', true);
+                } else {
+                    $("#error_repassword").removeClass('has-error');
+                    $("#alert_repassword").hide();
+                    $("#btn_daftar").attr('disabled', false);
+                }
+                } else {
+                $("#error_repassword").addClass('has-error');
+                $("#alert_repassword").show();
+                $("#alert_repassword").html('Kolom konfirmasi password tidak boleh kosong!');
+                $("#btn_daftar").attr('disabled', true);
             }
         }
-      } else {
-        $("#error_repassword").addClass('has-error');
-        $("#alert_repassword").show();
-        $("#alert_repassword").html('Kolom konfirmasi password tidak boleh kosong!');
-        $("#btn_daftar").attr('disabled', true);
-      }
     }
 
     $("#form_registrasi").submit(function(evt){

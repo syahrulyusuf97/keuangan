@@ -407,19 +407,25 @@ class UsersController extends Controller
             }
         }
 
+        try {
+            $id = Crypt::decrypt($request->id);
+        } catch (DecryptException $e) {
+            return view('errors/404');
+        }
+
         DB::beginTransaction();
         try{
             if ($request->newPassword == "" || $request->vernewPassword == ""){
                 return redirect()->back()->with('flash_message_error', 'Lengkapi data!');
             }
 
-            $pwd = User::where('id', Auth::user()->id)->first();
+            $pwd = User::where('id', $id)->first();
 
             if ($request->vernewPassword != $request->newPassword){
                 return redirect()->back()->with('flash_message_error', 'Verifikasi kata sandi baru salah!');
             } else if ($request->vernewPassword == $request->newPassword){
-                Activity::log(Auth::user()->id, 'Update', 'merubah kata sandi', 'Kata sandi telah diperbarui', null, Carbon::now('Asia/Jakarta'));
-                User::where('id', Auth::user()->id)->update([
+                Activity::log(Auth::user()->id, 'Update', 'merubah kata sandi user "'.$pwd->username.'"', 'Kata sandi telah diperbarui', null, Carbon::now('Asia/Jakarta'));
+                User::where('id', $id)->update([
                     'password' => bcrypt($request->newPassword)
                 ]);
                 DB::commit();

@@ -5,13 +5,13 @@
 <!-- App Header -->
 <div class="appHeader no-border">
     <div class="left">
-        <a href="javascript:;" class="headerButton goBack">
+        <a href="javascript:void(0);" class="headerButton goBack" data-turbolinks="true">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
     <div class="pageTitle"></div>
     <div class="right">
-    	<a href="{{ route('login') }}" class="headerButton page-redirect">
+    	<a href="{{ route('login') }}" class="headerButton" data-turbolinks="true">
             Login
         </a>
     </div>

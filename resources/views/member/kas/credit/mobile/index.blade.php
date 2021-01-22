@@ -1,8 +1,7 @@
 @extends('layouts.memberLayout.mobile.memberContent')
 @section('title', 'Kas Keluar')
 
-@section('stylesheet')
-<link rel="stylesheet" href="{{ asset('public/css/mobile/dataTables.css') }}">
+@section('extra_style')
 <style type="text/css">
 	table.dataTable thead .sorting, 
 	table.dataTable thead .sorting_asc, 
@@ -16,7 +15,7 @@
 <!-- App Header -->
 <div class="appHeader">
     <div class="left">
-        <a href="#" class="headerButton goBack">
+        <a href="#" class="headerButton goBack" data-turbolinks="true">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
@@ -70,15 +69,15 @@
 <!-- * App Capsule -->
 
 <!-- Action Sheet -->
-<div class="modal fade action-sheet" id="modal_form" data-backdrop="static" tabindex="-1" role="dialog">
+<div class="modal fade modal-fullscreen action-sheet" id="modal_form" data-backdrop="static" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">...</h5>
             </div>
-            <div class="modal-body">
-                <div class="action-sheet-content">
-                    <form id="form_data">
+            <form id="form_data">
+                <div class="modal-body">
+                    <div class="action-sheet-content">
                     	{{csrf_field()}}
                     	<input type="hidden" name="id" id="id">
                         <div class="form-group basic">
@@ -119,24 +118,58 @@
                                 </select>
                             </div>
                         </div>
-
-                        <div class="form-group">
-                        	<button type="submit" class="btn btn-primary btn-block btn-lg">Simpan</button>
-                        	<button type="button" class="btn btn-danger btn-block btn-lg" data-dismiss="modal">Batal</button>
-                        </div>
-                    </form>
+                        
+                    </div>
                 </div>
-            </div>
+                <div class="modal-footer">
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-danger btn-block btn-lg" data-dismiss="modal">BATAL</button>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" id="btn_submit" class="btn btn-outline-primary btn-block btn-lg">SIMPAN</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 <!-- * Action Sheet -->
 @endsection
 
-@section('script')
-<script src="{{ asset('public/js/jQuery/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('public/js/bootstrap/dataTables.bootstrap.min.js') }}"></script>
+@section('extra_script')
 <script type="text/javascript">
+    function getKategori() {
+        $.getJSON(baseUrl+'/mobile/get-kategori/Pengeluaran', function(resp){
+            $('#kategori').html(resp);
+        });
+    }
+
+    function getAkun() {
+        $.getJSON(baseUrl+'/mobile/get-akun/Kas', function(resp){
+            $('#dariakun').html(resp);
+        });
+    }
+
+    function add() {
+        $('#id').val("");
+        $("#form_data")[0].reset();
+        $("#modal_form .modal-title").html('Tambah Kas Keluar');
+        $("#modal_form").modal('show');
+    }
+
+    function edit(id) {
+        $("#modal_form .modal-title").html('Edit Kas Keluar');
+        $.getJSON(baseUrl+'/kas/keluar/detail/'+id, function(resp){
+            $('#id').val(resp.id);
+            $('#kategori option[data-cat="'+resp.kategori+'"]').prop("selected", true);
+            $('#kep').val(resp.keperluan);
+            $('#jumlah').val(rupiah(resp.jumlah, 'Rp'));
+            $('#tanggal').val(dateFormat(resp.tanggal, "d M Y"));
+            $('#dariakun option[data-kode="'+resp.dariakun+'"]').prop("selected", true);
+            $('#modal_form').modal('show');
+        });
+    }
+    
 	$(function(){
 		table = $('#example1').dataTable({
 			"processing": true,
@@ -155,43 +188,15 @@
 		getAkun();
 	})
 
-	function getKategori() {
-		$.getJSON(baseUrl+'/mobile/get-kategori/Pengeluaran', function(resp){
-            $('#kategori').html(resp);
-        });
-	}
-
-	function getAkun() {
-		$.getJSON(baseUrl+'/mobile/get-akun/Kas', function(resp){
-            $('#dariakun').html(resp);
-        });
-	}
-
-	function add() {
-		$('#id').val("");
-		$("#form_data")[0].reset();
-		$("#modal_form .modal-title").html('Tambah Kas Keluar');
-		$("#modal_form").modal('show');
-	}
-
-	function edit(id) {
-		$("#modal_form .modal-title").html('Edit Kas Keluar');
-        $.getJSON(baseUrl+'/kas/keluar/detail/'+id, function(resp){
-            $('#id').val(resp.id);
-            $('#kategori option[data-cat="'+resp.kategori+'"]').prop("selected", true);
-            $('#kep').val(resp.keperluan);
-            $('#jumlah').val(rupiah(resp.jumlah, 'Rp'));
-            $('#tanggal').val(dateFormat(resp.tanggal, "d M Y"));
-            $('#dariakun option[data-kode="'+resp.dariakun+'"]').prop("selected", true);
-            $('#modal_form').modal('show');
-        });
-    }
-
 	$("#form_data").submit(function(evt){
 		evt.preventDefault();
 		postData(baseUrl+"/mobile/kas/keluar/add", $("#form_data").serialize(), "#modal_form").done(function(response){
 			if (response.status == "success") {$("#form_data")[0].reset();$('#id').val("");table.api().ajax.reload();$(".total-saldo").text(response.data.saldo);}
 		})
 	})
+
+    // $(document).on("click", "#btn_submit", function(e){
+    //     $("#btn_submit_shadow").click();
+    // })
 </script>
 @endsection

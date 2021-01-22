@@ -1,15 +1,11 @@
 @extends('layouts.memberLayout.mobile.memberContent')
 @section('title', 'Dashboard')
 
-@section('stylesheet')
-
-@endsection
-
 @section('content')
 <!-- App Header -->
 <div class="appHeader">
     <div class="left">
-        <a href="#" class="headerButton goBack">
+        <a href="#" class="headerButton goBack" data-turbolinks="true">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
@@ -28,9 +24,9 @@
         <div class="avatar-section">
             <a data-toggle="modal" data-target="#DialogFormUbahFoto">
             	@if(auth()->user()->img == "")
-            	<img src="{{ asset('public/images/default.jpg') }}" alt="image" class="imaged w100 rounded img_profile">
+            	<img src="{{ asset('images/default.jpg') }}" alt="image" class="imaged w100 rounded img_profile">
             	@else
-            	<img src="{{ asset('public/images/'. auth()->user()->img) }}" alt="image" class="imaged w100 rounded img_profile">
+            	<img src="{{ asset('images/'. auth()->user()->img) }}" alt="image" class="imaged w100 rounded img_profile">
             	@endif
                 <span class="button">
                     <ion-icon name="camera-outline"></ion-icon>
@@ -309,7 +305,7 @@
                 <div class="modal-body text-left mb-2">
                 	<div class="section mt-3 text-center">
                 	    <div class="avatar-section">
-                	        <img src="{{ asset('public/images/default.jpg') }}" alt="image" class="imaged w100 rounded" id="newimage">
+                	        <img src="{{ asset('images/default.jpg') }}" alt="image" class="imaged w100 rounded" id="newimage">
                 	    </div>
                 	</div>
 
@@ -333,9 +329,13 @@
 <!-- * Ubah Foto -->
 @endsection
 
-@section('script')
-<script src="{{ asset('public/js/dobpicker.js') }}"></script>
+@section('extra_script')
 <script type="text/javascript">
+    function loadFile(event)
+    {
+        $("#newimage").attr("src", URL.createObjectURL(event.target.files[0]));
+    }
+
 	$(function(){
 		$.dobPicker({
             // Selectopr IDs
@@ -358,11 +358,6 @@
         $('#dobmonth').val('{{ $month }}');
         $('#dobyear').val('{{ $year }}');
 	})
-
-	function loadFile(event)
-	{
-	    $("#newimage").attr("src", URL.createObjectURL(event.target.files[0]));
-	}
 
 	$("#form_ubah_nama").submit(function(evt){
 		evt.preventDefault();
@@ -425,7 +420,7 @@
 			infoMessage('Info', 'Pilih foto Anda');
 		} else {
 			postData(baseUrl+"/mobile/profil/update-foto", this, "#DialogFormUbahFoto", true).done(function(response){
-				if (response.status == "success") {$("#foto").val(""); $(".img_profile").attr('src', "{{ asset('public/images/') }}/"+response.data.image)}
+				if (response.status == "success") {$("#foto").val(""); $(".img_profile").attr('src', "{{ asset('images/') }}/"+response.data.image)}
 			});
 		}
 	})

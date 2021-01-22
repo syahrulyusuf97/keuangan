@@ -195,6 +195,12 @@ throw new Error('AdminLTE requires jQuery')
   $(window).on('load', function () {
     Plugin.call($('body'))
   })
+
+  $(document).on('turbolinks:load', function(){
+    $(Selector.data).each(function(){
+      Plugin.call($(this));
+    })
+  })
 }(jQuery)
 
 
@@ -373,6 +379,12 @@ throw new Error('AdminLTE requires jQuery')
   $(window).on('load', function () {
     Plugin.call($(Selector.button))
   })
+
+  $(document).on('turbolinks:load', function(){
+    $(Selector.data).each(function(){
+      Plugin.call($(this));
+    })
+  })
 }(jQuery)
 
 
@@ -520,6 +532,12 @@ throw new Error('AdminLTE requires jQuery')
     })
   })
 
+  $(document).on('turbolinks:load', function(){
+    $(Selector.data).each(function(){
+      Plugin.call($(this));
+    })
+  })
+
 }(jQuery)
 
 
@@ -658,6 +676,12 @@ throw new Error('AdminLTE requires jQuery')
   $(document).on('click', Selector.data, function (event) {
     if (event) event.preventDefault()
     Plugin.call($(this), 'toggle')
+  })
+
+  $(document).on('turbolinks:load', function(){
+    $(Selector.data).each(function(){
+      Plugin.call($(this));
+    })
   })
 
 }(jQuery)
@@ -825,6 +849,12 @@ throw new Error('AdminLTE requires jQuery')
     })
   })
 
+  $(document).on('turbolinks:load', function(){
+    $(Selector.data).each(function(){
+      Plugin.call($(this));
+    })
+  })
+
 }(jQuery)
 
 
@@ -934,6 +964,12 @@ throw new Error('AdminLTE requires jQuery')
     })
   })
 
+  $(document).on('turbolinks:load', function(){
+    $(Selector.data).each(function(){
+      Plugin.call($(this));
+    })
+  })
+
 }(jQuery)
 
 
@@ -1000,6 +1036,12 @@ throw new Error('AdminLTE requires jQuery')
   $(document).on('click', Selector.data, function (event) {
     if (event) event.preventDefault()
     Plugin.call($(this), 'toggle')
+  })
+
+  $(document).on('turbolinks:load', function(){
+    $(Selector.data).each(function(){
+      Plugin.call($(this));
+    })
   })
 
 }(jQuery)

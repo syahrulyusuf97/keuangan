@@ -7,6 +7,7 @@ use DB;
 use Mail;
 use Helper;
 use Jenssegers\Agent\Agent;
+use App\Identitas;
 use App\User;
 use App\Syarat;
 use App\Kebijakan;
@@ -70,10 +71,11 @@ class SignController extends Controller
     			return redirect()->back()->with('flash_message_error', 'Username atau password salah');
     		}
     	} else {
+            $identitas  = Identitas::first();
             if ($this->agent->isMobile()) {
                 return view('sign.mobile.login');
             } else {
-                return view('sign.login');
+                return view('sign.login')->with(compact('identitas'));
             }
         }
     }
@@ -194,7 +196,8 @@ class SignController extends Controller
                 $kebijakan  = Kebijakan::first();
                 return view('sign.mobile.registrasi')->with(compact('syarat', 'kebijakan'));
             } else {
-                return view('sign.registrasi');
+                $identitas  = Identitas::first();
+                return view('sign.registrasi')->with(compact('identitas'));
             }
         }
     }

@@ -36,7 +36,7 @@
             </div>
             <div class="col-lg-6">
                 <div class="image-container">
-                    <img class="img-fluid" src="{{ asset('public/images/index/'.$value->image) }}" alt="alternative">
+                    <img class="img-fluid" src="{{ asset('images/index/'.$value->image) }}" alt="alternative">
                 </div>
             </div>
         </div>
@@ -50,7 +50,7 @@
         <div class="row">
             <div class="col-lg-6">
                 <div class="image-container">
-                    <img class="img-fluid" src="{{ asset('public/images/index/'.$value->image) }}" alt="alternative">
+                    <img class="img-fluid" src="{{ asset('images/index/'.$value->image) }}" alt="alternative">
                 </div>
             </div>
             <div class="col-lg-6">
@@ -106,7 +106,7 @@
                 <h2>Pesan</h2>
                 <ul class="list-unstyled li-space-lg">
                     <li class="address">Kirimkan pesan/pertanyaan, kritik, saran Anda kepada Kami.</li>
-                    <li class="address"><i>Contact Support : support@keuanganku.info</i></li>
+                    <!-- <li class="address"><i>Contact Support : support@keuanganku.my.id</i></li> -->
                 </ul>
             </div> 
         </div>
@@ -165,7 +165,7 @@
     </div>
 </div>
 
-<div id="donasi">
+<!-- <div id="donasi">
     <div class="basic-4 container">
         <div class="row">
             <div class="col-lg-12">
@@ -182,5 +182,5 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 @endsection

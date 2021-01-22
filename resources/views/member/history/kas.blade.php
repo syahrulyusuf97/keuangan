@@ -83,10 +83,9 @@
         </section>
     </div>
 </section>
+@endsection
 
-<!-- jQuery 3 -->
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
-
+@section('extra_script')
 <script type="text/javascript">
     $(function () {
         $('#table_deposito').dataTable();

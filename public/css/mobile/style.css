@@ -4405,7 +4405,17 @@ a.close.disabled {
   position: relative;
   width: auto;
   margin: .5rem;
-  pointer-events: none; }
+  pointer-events: none; 
+
+  /*max-width: 100%;
+  margin: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  display: flex;*/
+}
 
 .modal.fade .modal-dialog {
   transition: -webkit-transform .3s ease-out;

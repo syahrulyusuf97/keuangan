@@ -1,21 +1,17 @@
 @extends('layouts.memberLayout.mobile.memberContent')
 @section('title', 'Dashboard')
 
-@section('stylesheet')
-<link rel="stylesheet" href="{{ asset('public/css/morris/morris.css') }}">
-@endsection
-
 @section('content')
 
 <!-- App Header -->
 <div class="appHeader bg-primary text-light">
     <div class="left">
-        <a href="#" class="headerButton" data-toggle="modal" data-target="#sidebarPanel">
+        <a href="#" class="headerButton" data-toggle="modal" data-target="#sidebarPanel" data-turbolinks="false">
             <ion-icon name="menu-outline"></ion-icon>
         </a>
     </div>
     <div class="pageTitle">
-        <!-- <img src="{{ asset('public/images/icon/logo.png') }}" alt="logo" class="logo"> -->
+        <!-- <img src="{{ asset('images/icon/logo.png') }}" alt="logo" class="logo"> -->
         <span class="logo">KeuanganKu</span>
     </div>
     <div class="right">
@@ -23,11 +19,11 @@
             <ion-icon class="icon" name="notifications-outline"></ion-icon>
             <span class="badge badge-danger">4</span>
         </a> -->
-        <a href="{{url('/profil')}}" class="headerButton">
+        <a href="{{url('/profil')}}" class="headerButton" data-turbolinks="true">
             @if(auth()->user()->img == "")
-            <img src="{{ asset('public/images/default.jpg') }}" alt="image" class="imaged w32">
+            <img src="{{ asset('images/default.jpg') }}" alt="image" class="imaged w32">
             @else
-            <img src="{{ asset('public/images/'. auth()->user()->img) }}" alt="image" class="imaged w32">
+            <img src="{{ asset('images/'. auth()->user()->img) }}" alt="image" class="imaged w32">
             @endif
             <!-- <span class="badge badge-danger">6</span> -->
         </a>
@@ -52,7 +48,7 @@
             <!-- Wallet Footer -->
             <div class="wallet-footer">
                 <div class="item">
-                    <a href="{{url('/kas/masuk')}}" class="page-redirect">
+                    <a href="{{url('/kas/masuk')}}" data-turbolinks="true">
                         <div class="icon-wrapper bg-danger">
                             <ion-icon name="arrow-down-outline"></ion-icon>
                         </div>
@@ -60,7 +56,7 @@
                     </a>
                 </div>
                 <div class="item">
-                    <a href="{{url('/kas/keluar')}}" class="page-redirect">
+                    <a href="{{url('/kas/keluar')}}" data-turbolinks="true">
                         <div class="icon-wrapper">
                             <ion-icon name="arrow-up-outline"></ion-icon>
                         </div>
@@ -68,7 +64,7 @@
                     </a>
                 </div>
                 <div class="item">
-                    <a href="{{url('/bank/bank-masuk')}}" class="page-redirect">
+                    <a href="{{url('/bank/bank-masuk')}}" data-turbolinks="true">
                         <div class="icon-wrapper bg-success">
                             <ion-icon name="arrow-down-outline"></ion-icon>
                         </div>
@@ -76,7 +72,7 @@
                     </a>
                 </div>
                 <div class="item">
-                    <a href="{{url('/bank/bank-keluar')}}" class="page-redirect">
+                    <a href="{{url('/bank/bank-keluar')}}" data-turbolinks="true">
                         <div class="icon-wrapper bg-warning">
                             <ion-icon name="arrow-up-outline"></ion-icon>
                         </div>
@@ -98,7 +94,7 @@
                     <div class="title">Sisa Saldo Bank</div>
                     <div class="value text-success">{{ Helper::displayRupiah($saldo_bank) }}</div>
                     <div class="mt-2">
-                        <a href="{{url('/dashboard/detail-saldo/bank')}}" class="btn btn-primary btn-block btn-sm">Detail Saldo</a>
+                        <a href="{{url('/dashboard/detail-saldo/bank')}}" class="btn btn-primary btn-block btn-sm" data-turbolinks="true">Detail Saldo</a>
                     </div>
                 </div>
             </div>
@@ -109,7 +105,7 @@
                     <div class="title">Sisa Saldo Kas</div>
                     <div class="value text-success">{{ Helper::displayRupiah($saldo_kas) }}</div>
                     <div class="mt-2">
-                        <a href="{{url('/dashboard/detail-saldo/kas')}}" class="btn btn-primary btn-block btn-sm">Detail Saldo</a>
+                        <a href="{{url('/dashboard/detail-saldo/kas')}}" class="btn btn-primary btn-block btn-sm" data-turbolinks="true">Detail Saldo</a>
                     </div>
                 </div>
             </div>
@@ -447,12 +443,7 @@
 
 @endsection
 
-@section('script')
-<script src="{{ asset('public/js/chart/Chart.js') }}"></script>
-<script src="{{ asset('public/js/morris/morris.min.js') }}"></script>
-<script src="{{ asset('public/js/raphael/raphael.min.js') }}"></script>
-<script src="{{ asset('public/js/chart/Chart2-9-3.min.js') }}"></script>
-<script src="{{ asset('public/js/chart/utils.js') }}"></script>
+@section('extra_script')
 <script type="text/javascript">
     var data_kd = [], data_kk = [], data_bd = [], data_bk = [],
         data_t_kd = [], data_t_kk = [], data_t_bd = [], data_t_bk = [], 

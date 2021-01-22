@@ -160,10 +160,9 @@
     <!-- /.row -->
 
 </section>
+@endsection
 
-<!-- jQuery 3 -->
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
-
+@section('extra_script')
 <script type="text/javascript">
     $(function () {
         $('#tanggal').on('change', function(e){
@@ -175,7 +174,7 @@
                 date = "null"
             }
             $.ajax({
-                url: baseUrl+'/log-aktivitas/filter/'+date,
+                url: baseUrl+'/riwayat/aktivitas/filter/'+date,
                 dataType: 'json',
             }).done(function (results){
                 if (results.tanggal.length == 0) {

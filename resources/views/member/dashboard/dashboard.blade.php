@@ -499,9 +499,9 @@
         </section>  
     </div>
 </section>
+@endsection
 
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
-
+@section('extra_script')
 <script type="text/javascript">
 	var data_kd = [], data_kk = [], data_bd = [], data_bk = [],
     	data_t_kd = [], data_t_kk = [], data_t_bd = [], data_t_bk = [], 

@@ -335,11 +335,9 @@
   </div>
   <!-- /.modal-dialog -->
 </div>
+@endsection
 
-<!-- jQuery 3 -->
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
-<script src="{{ asset('public/js/bootstrap/bootstrap-datepicker.min.js') }}"></script>
-
+@section('extra_script')
 <script type="text/javascript">
 	var table_kas_debet;
 	$(function() {

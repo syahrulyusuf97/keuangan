@@ -197,6 +197,12 @@ $.AdminLTE.tree = function (menu) {
     })
   })
 
+  $(document).on('turbolinks:load', function(){
+    $(Selector.data).each(function(){
+      Plugin.call($(this));
+    })
+  })
+
 }(jQuery)
 // Loader
 $(document).ready(function () {

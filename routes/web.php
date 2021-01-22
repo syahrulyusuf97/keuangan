@@ -110,8 +110,8 @@ Route::group(['middleware'=>['auth']], function(){
         Route::post('/mobile/profil/update-foto', 'DashboardController@mobileUpdateFoto');
 
         //Log Kegiatan
-        Route::get('/log-aktivitas', 'DashboardController@history');
-        Route::get('/log-aktivitas/filter/{tanggal}', 'DashboardController@filterHistory');
+        // Route::get('/log-aktivitas', 'DashboardController@history');
+        // Route::get('/log-aktivitas/filter/{tanggal}', 'DashboardController@filterHistory');
 
         // Start Kas
         // kas masuk
