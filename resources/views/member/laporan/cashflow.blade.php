@@ -199,7 +199,7 @@
           "myNav").style.width = "0%"; 
     } 
 
-    $(function () {
+    $(document).on('turbolinks:load', function(){
         
         $('#perbulan').datepicker({
             autoclose: true,

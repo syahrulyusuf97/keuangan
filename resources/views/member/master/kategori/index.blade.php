@@ -93,7 +93,7 @@
 					<h3 class="box-title">Daftar Kategori</h3>
 				</div>
 				<div class="box-body table-responsive">
-					<table id="example1" class="table table-bordered table-striped">
+					<table id="master_kategori_dashboard" class="table table-bordered table-striped">
 						<thead>
 							<tr>
 								<th>Jenis Transaksi</th>
@@ -194,13 +194,13 @@
 
 @section('extra_script')
 <script type="text/javascript">
-	$(function() {
+	$(document).on('turbolinks:load', function(){
 		$('.my-colorpicker2').colorpicker()
 
 		$('#nama').val('');
 		$('#keterangan').val('');
 		$('#warna').val('');
-		$('#example1').dataTable({
+		$('#master_kategori_dashboard').dataTable({
 			"processing": true,
 			"serverSide": true,
 			"ajax": "{{ route('kategori') }}",

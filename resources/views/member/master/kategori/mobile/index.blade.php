@@ -38,7 +38,7 @@
         	<p><a class="btn btn-primary" onclick="addKategori()"><ion-icon name="add-outline"></ion-icon>Tambah Data</a></p>
         	<hr>
             <div class="table-responsive">
-                <table id="example1" class="table">
+                <table id="master_kategori_mobile" class="table">
 					<thead>
 						<tr>
 							<th>Jenis Transaksi</th>
@@ -148,10 +148,11 @@
         });
     }
     
-	$(function(){
-		table = $('#example1').dataTable({
+	$(document).on('turbolinks:load', function(){
+		table = $('#master_kategori_mobile').dataTable({
 			"processing": true,
 			"serverSide": true,
+            "destroy": true,
 			"ajax": "{{ route('kategori') }}",
 			"columns":[
 				{"data": "jenis_transaksi"},

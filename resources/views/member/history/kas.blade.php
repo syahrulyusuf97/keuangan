@@ -87,7 +87,7 @@
 
 @section('extra_script')
 <script type="text/javascript">
-    $(function () {
+    $(document).on('turbolinks:load', function(){
         $('#table_deposito').dataTable();
         $('#table_credit').dataTable();
         $('#calendar').datepicker({

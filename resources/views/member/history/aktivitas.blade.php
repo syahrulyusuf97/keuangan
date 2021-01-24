@@ -164,71 +164,35 @@
 
 @section('extra_script')
 <script type="text/javascript">
-    $(function () {
-        $('#tanggal').on('change', function(e){
-            $("#result").find("p").remove();
-            $("#result").find("ul").remove();
-            var row = '';
-            var date = $(this).val();
-            if (date == "") {
-                date = "null"
-            }
-            $.ajax({
-                url: baseUrl+'/riwayat/aktivitas/filter/'+date,
-                dataType: 'json',
-            }).done(function (results){
-                if (results.tanggal.length == 0) {
-                    row = '<p class="text-center">Tidak ada log kegiatan</p>';
-                } else {
-                    row = '<ul class="timeline">';
-                    results.tanggal.forEach(function(element) {
-                        row += '<li class="time-label">\n' +
-                                '<span class="bg-aqua">\n' +
-                                ''+element.date+'\n' +
-                                '</span>\n' +
-                                '</li>';
-                        
-                        results.data.forEach(function(dt){
-                            if (element.date == dt.date) {
-                                if (dt.action == "Create") {
-                                    if(dt.title == "membuat kas masuk") {
-                                        row += '<li>\n' +
-                                            '<i class="fa fa-money bg-green"></i>\n' +
-                                            '\n' +
-                                            '<div class="timeline-item">\n' +
-                                            '<span class="time"><i class="fa fa-clock-o"></i>'+dt.times+'</span>\n' +
-                                            '\n' +
-                                            '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
-                                            '\n' +
-                                            '<div class="timeline-body">\n' +
-                                            ''+dt.note+'\n' +
-                                            '</div>\n' +
-                                            '<div class="timeline-footer">\n' +
-                                            '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
-                                            '</div>\n' +
-                                            '</div>\n' +
-                                            '</li>';
-                                    } else if (dt.title == "membuat kas keluar") {
-                                        row += '<li>\n' +
-                                            '<i class="fa fa-money bg-red"></i>\n' +
-                                            '\n' +
-                                            '<div class="timeline-item">\n' +
-                                            '<span class="time"><i class="fa fa-clock-o"></i>'+dt.times+'</span>\n' +
-                                            '\n' +
-                                            '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
-                                            '\n' +
-                                            '<div class="timeline-body">\n' +
-                                            ''+dt.note+'\n' +
-                                            '</div>\n' +
-                                            '<div class="timeline-footer">\n' +
-                                            '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
-                                            '</div>\n' +
-                                            '</div>\n' +
-                                            '</li>';
-                                    }
-                                } else if (dt.action == "Update") {
+    $('#tanggal').on('change', function(e){
+        $("#result").find("p").remove();
+        $("#result").find("ul").remove();
+        var row = '';
+        var date = $(this).val();
+        if (date == "") {
+            date = "null"
+        }
+        $.ajax({
+            url: baseUrl+'/riwayat/aktivitas/filter/'+date,
+            dataType: 'json',
+        }).done(function (results){
+            if (results.tanggal.length == 0) {
+                row = '<p class="text-center">Tidak ada log kegiatan</p>';
+            } else {
+                row = '<ul class="timeline">';
+                results.tanggal.forEach(function(element) {
+                    row += '<li class="time-label">\n' +
+                            '<span class="bg-aqua">\n' +
+                            ''+element.date+'\n' +
+                            '</span>\n' +
+                            '</li>';
+                    
+                    results.data.forEach(function(dt){
+                        if (element.date == dt.date) {
+                            if (dt.action == "Create") {
+                                if(dt.title == "membuat kas masuk") {
                                     row += '<li>\n' +
-                                        '<i class="fa fa-money bg-yellow"></i>\n' +
+                                        '<i class="fa fa-money bg-green"></i>\n' +
                                         '\n' +
                                         '<div class="timeline-item">\n' +
                                         '<span class="time"><i class="fa fa-clock-o"></i>'+dt.times+'</span>\n' +
@@ -236,7 +200,6 @@
                                         '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
                                         '\n' +
                                         '<div class="timeline-body">\n' +
-                                        '<span class="label label-info">'+dt.oldnote+'</span>\n' +
                                         ''+dt.note+'\n' +
                                         '</div>\n' +
                                         '<div class="timeline-footer">\n' +
@@ -244,46 +207,12 @@
                                         '</div>\n' +
                                         '</div>\n' +
                                         '</li>';
-                                } else if (dt.action == "Delete") {
+                                } else if (dt.title == "membuat kas keluar") {
                                     row += '<li>\n' +
                                         '<i class="fa fa-money bg-red"></i>\n' +
                                         '\n' +
                                         '<div class="timeline-item">\n' +
-                                        '<span class="time"><i class="fa fa-clock-o"></i> '+dt.times+'</span>\n' +
-                                        '\n' +
-                                        '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
-                                        '\n' +
-                                        '<div class="timeline-body">\n' +
-                                        ''+dt.note+'\n' +
-                                        '</div>\n' +
-                                        '<div class="timeline-footer">\n' +
-                                        '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
-                                        '</div>\n' +
-                                        '</div>\n' +
-                                        '</li>';
-                                } else if (dt.action == "Login") {
-                                    row += '<li>\n' +
-                                        '<i class="fa fa-sign-in bg-green"></i>\n' +
-                                        '\n' +
-                                        '<div class="timeline-item">\n' +
-                                        '<span class="time"><i class="fa fa-clock-o"></i> '+dt.times+'</span>\n' +
-                                        '\n' +
-                                        '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
-                                        '\n' +
-                                        '<div class="timeline-body">\n' +
-                                        ''+dt.note+'\n' +
-                                        '</div>\n' +
-                                        '<div class="timeline-footer">\n' +
-                                        '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
-                                        '</div>\n' +
-                                        '</div>\n' +
-                                        '</li>';
-                                } else if (dt.action == "Logout") {
-                                    row += '<li>\n' +
-                                        '<i class="fa fa-sign-out bg-red"></i>\n' +
-                                        '\n' +
-                                        '<div class="timeline-item">\n' +
-                                        '<span class="time"><i class="fa fa-clock-o"></i> '+dt.times+'</span>\n' +
+                                        '<span class="time"><i class="fa fa-clock-o"></i>'+dt.times+'</span>\n' +
                                         '\n' +
                                         '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
                                         '\n' +
@@ -296,19 +225,88 @@
                                         '</div>\n' +
                                         '</li>';
                                 }
+                            } else if (dt.action == "Update") {
+                                row += '<li>\n' +
+                                    '<i class="fa fa-money bg-yellow"></i>\n' +
+                                    '\n' +
+                                    '<div class="timeline-item">\n' +
+                                    '<span class="time"><i class="fa fa-clock-o"></i>'+dt.times+'</span>\n' +
+                                    '\n' +
+                                    '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
+                                    '\n' +
+                                    '<div class="timeline-body">\n' +
+                                    '<span class="label label-info">'+dt.oldnote+'</span>\n' +
+                                    ''+dt.note+'\n' +
+                                    '</div>\n' +
+                                    '<div class="timeline-footer">\n' +
+                                    '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
+                                    '</div>\n' +
+                                    '</div>\n' +
+                                    '</li>';
+                            } else if (dt.action == "Delete") {
+                                row += '<li>\n' +
+                                    '<i class="fa fa-money bg-red"></i>\n' +
+                                    '\n' +
+                                    '<div class="timeline-item">\n' +
+                                    '<span class="time"><i class="fa fa-clock-o"></i> '+dt.times+'</span>\n' +
+                                    '\n' +
+                                    '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
+                                    '\n' +
+                                    '<div class="timeline-body">\n' +
+                                    ''+dt.note+'\n' +
+                                    '</div>\n' +
+                                    '<div class="timeline-footer">\n' +
+                                    '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
+                                    '</div>\n' +
+                                    '</div>\n' +
+                                    '</li>';
+                            } else if (dt.action == "Login") {
+                                row += '<li>\n' +
+                                    '<i class="fa fa-sign-in bg-green"></i>\n' +
+                                    '\n' +
+                                    '<div class="timeline-item">\n' +
+                                    '<span class="time"><i class="fa fa-clock-o"></i> '+dt.times+'</span>\n' +
+                                    '\n' +
+                                    '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
+                                    '\n' +
+                                    '<div class="timeline-body">\n' +
+                                    ''+dt.note+'\n' +
+                                    '</div>\n' +
+                                    '<div class="timeline-footer">\n' +
+                                    '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
+                                    '</div>\n' +
+                                    '</div>\n' +
+                                    '</li>';
+                            } else if (dt.action == "Logout") {
+                                row += '<li>\n' +
+                                    '<i class="fa fa-sign-out bg-red"></i>\n' +
+                                    '\n' +
+                                    '<div class="timeline-item">\n' +
+                                    '<span class="time"><i class="fa fa-clock-o"></i> '+dt.times+'</span>\n' +
+                                    '\n' +
+                                    '<h3 class="timeline-header"><a href="#">'+dt.user+'</a> '+dt.title+'</h3>\n' +
+                                    '\n' +
+                                    '<div class="timeline-body">\n' +
+                                    ''+dt.note+'\n' +
+                                    '</div>\n' +
+                                    '<div class="timeline-footer">\n' +
+                                    '<span class="time text-light-blue"><i class="fa fa-clock-o"></i> '+dt.tgl+'</span>\n' +
+                                    '</div>\n' +
+                                    '</div>\n' +
+                                    '</li>';
                             }
-                        })
+                        }
+                    })
 
-                    });
-                    row += '<li>\n' +
-                        '<i class="fa fa-clock-o bg-gray"></i>\n' +
-                        '</li>\n' +
-                        '</ul>';
-                }
+                });
+                row += '<li>\n' +
+                    '<i class="fa fa-clock-o bg-gray"></i>\n' +
+                    '</li>\n' +
+                    '</ul>';
+            }
 
-                $("#result").append(row);
+            $("#result").append(row);
 
-            })
         })
     })
 </script>

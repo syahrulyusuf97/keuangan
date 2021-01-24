@@ -15,7 +15,7 @@
   <!-- Ionicons -->
   <link rel="stylesheet" href="{{ asset('css/Ionicons/css/ionicons.min.css') }}">
   <!-- DataTables -->
-  <link rel="stylesheet" href="{{ asset('css/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/datatables.net-bs/css/dataTables.bootstrap.min.css') }}" data-turbolinks-track="reload">
   <!-- Chart morris -->
   <link rel="stylesheet" href="{{ asset('css/morris/morris.css') }}">
   <link rel="stylesheet" href="{{ asset('css/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css') }}">
@@ -25,7 +25,7 @@
   <!-- Date Picker -->
   <link rel="stylesheet" href="{{ asset('css/bootstrap/bootstrap-datepicker.min.css') }}">
   <link rel="stylesheet" href="{{ asset('css/style/style.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/select2/select2.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/select2/select2.min.css') }}" data-turbolinks-track="reload">
   <link rel="stylesheet" href="{{ asset('css/sweetalert2/sweetalert2.css') }}">
   <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic"> -->
   <link rel="stylesheet" href="{{ asset('fonts/fonts-google-apis/fonts.css') }}">
@@ -46,8 +46,8 @@
   <!-- Bootstrap 3.3.7 -->
   <script src="{{ asset('js/bootstrap/bootstrap.min.js') }}"></script>
   <!-- DataTables -->
-  <script src="{{ asset('js/jQuery/jquery.dataTables.min.js') }}"></script>
-  <script src="{{ asset('js/bootstrap/dataTables.bootstrap.min.js') }}"></script>
+  <script src="{{ asset('js/jQuery/jquery.dataTables.min.js') }}" data-turbolinks-track="reload"></script>
+  <script src="{{ asset('js/bootstrap/dataTables.bootstrap.min.js') }}" data-turbolinks-track="reload"></script>
   <!-- daterangepicker -->
   <script src="{{ asset('js/moment/moment.min.js') }}"></script>
   <script src="{{ asset('js/bootstrap/daterangepicker.js') }}"></script>
@@ -74,7 +74,7 @@
   <!-- Chartjs -->
   <script src="{{ asset('js/chart/Chart2-9-3.min.js') }}"></script>
   <script src="{{ asset('js/chart/utils.js') }}"></script>
-  <script src="{{ asset('js/select2/select2.full.min.js') }}"></script>
+  <script src="{{ asset('js/select2/select2.full.min.js') }}" data-turbolinks-track="reload"></script>
   <script src="{{ asset('js/sweetalert2/sweetalert2.js') }}"></script>
   <!-- axios -->
   <script src="{{ asset('js/axios/axios.min.js') }}"></script>
@@ -108,35 +108,12 @@
 
   <script type="text/javascript">
     var baseUrl = '{{ url('/') }}';
-    
+
     if(Turbolinks.supported) {
         Turbolinks.start()
     } else {
         console.warn("browser kamu tidak mendukung `Turbolinks`")
     }
-
-    // adminLte app.js
-    // _init();
-    // var lte_ready = function () {
-    //   var options;
-    //   options = $.AdminLTE.options;
-    //   $.turboAlreadyLoaded = true;
-    //   if ($.turboAlreadyLoaded) {
-    //     if (options.sidebarPushMenu) {
-    //       $.AdminLTE.pushMenu.activate(options.sidebarToggleSelector);
-    //     }
-    //     if (options.enableControlSidebar) {
-    //       $.AdminLTE.controlSidebar.activate();
-    //     }
-    //   }
-      
-    //   return $.AdminLTE.layout.activate();
-    // };
-    // document.addEventListener('turbolinks:load', lte_ready);
-
-    $(document).ready(function(){
-      $(".select2").select2();
-    })
 
     function showLoading(){
       // show loading
@@ -147,59 +124,6 @@
       // close loading
       $(".loading").fadeOut(200);
     }
-
-    $(document).ajaxSend(function(){
-      // show loading
-      $(".loading").fadeIn(200);
-    });
-
-    $(document).ajaxComplete(function(){
-      // close loading
-      $(".loading").fadeOut(200);
-    });
-
-    // configurasi datepicker
-    $.fn.datepicker.dates['id'] = {
-      days: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
-      daysShort: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
-      daysMin: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
-      months: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
-      monthsShort: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
-      today: "Hari Ini",
-      clear: "Bersihkan",
-      format: "yyyy-mm-dd",
-      titleFormat: "MM yyyy",
-      weekStart: 0
-    };
-
-    $(".input-datepicker").datepicker({
-      autoclose: true,
-      format: 'dd MM yyyy',
-      todayHighlight: true,
-      language: 'id'
-    });
-
-    $('.pertanggal').datepicker({
-      autoclose: true,
-      format: 'dd MM yyyy',
-      language: 'id'
-    })
-
-    $('.perbulan').datepicker({
-      autoclose: true,
-      format: 'MM yyyy',
-      language: 'id',
-      viewMode: 'months',
-      minViewMode: 'months'
-    })
-
-    $('.pertahun').datepicker({
-      autoclose: true,
-      format: 'yyyy',
-      language: 'id',
-      viewMode: 'years',
-      minViewMode: 'years'
-    })
 
     function isNumberKey(evt) {
         var charCode = (evt.which) ? evt.which : evt.keyCode;
@@ -389,6 +313,63 @@
         var hasil = rupiah.split('',rupiah.length-1).reverse().join('');
         return hasil;
     }
+
+    $(document).ajaxSend(function(){
+      // show loading
+      $(".loading").fadeIn(200);
+    });
+
+    $(document).ajaxComplete(function(){
+      // close loading
+      $(".loading").fadeOut(200);
+    });
+
+    $(document).on('turbolinks:load', function(){
+      $(".select2").select2();
+
+      // configurasi datepicker
+      $.fn.datepicker.dates['id'] = {
+        days: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
+        daysShort: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+        daysMin: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+        months: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+        monthsShort: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
+        today: "Hari Ini",
+        clear: "Bersihkan",
+        format: "yyyy-mm-dd",
+        titleFormat: "MM yyyy",
+        weekStart: 0
+      };
+
+      $(".input-datepicker").datepicker({
+        autoclose: true,
+        format: 'dd MM yyyy',
+        todayHighlight: true,
+        language: 'id'
+      });
+
+      $('.pertanggal').datepicker({
+        autoclose: true,
+        format: 'dd MM yyyy',
+        language: 'id'
+      })
+
+      $('.perbulan').datepicker({
+        autoclose: true,
+        format: 'MM yyyy',
+        language: 'id',
+        viewMode: 'months',
+        minViewMode: 'months'
+      })
+
+      $('.pertahun').datepicker({
+        autoclose: true,
+        format: 'yyyy',
+        language: 'id',
+        viewMode: 'years',
+        minViewMode: 'years'
+      })
+    })
   </script>
   @yield('extra_script')
 </body>

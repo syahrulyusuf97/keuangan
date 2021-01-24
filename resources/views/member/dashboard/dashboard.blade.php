@@ -1178,9 +1178,9 @@
 	    });
 	}
 
-	$(function(){
+	// $(document).on('turbolinks:load', function(){
 		// Get Statistik
 		getStatistik();
-	})	
+	// })	
 </script>
 @endsection

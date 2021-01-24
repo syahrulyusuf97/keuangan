@@ -274,7 +274,7 @@
 
 @section('extra_script')
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(document).on('turbolinks:load', function(){
         $.dobPicker({
             // Selectopr IDs
             daySelector: '#dobday',

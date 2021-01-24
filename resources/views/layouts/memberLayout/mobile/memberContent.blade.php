@@ -18,7 +18,7 @@
     <!-- Morris -->
     <link rel="stylesheet" href="{{ asset('css/morris/morris.css') }}">
     <!-- DataTables -->
-    <link rel="stylesheet" href="{{ asset('css/mobile/dataTables.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile/dataTables.css') }}" data-turbolinks-track="reload">
     <style type="text/css">
       .turbolinks-progress-bar {
         background-color: red;
@@ -59,8 +59,8 @@
     <script src="{{ asset('js/mobile/plugins/owl-carousel/owl.carousel.min.js') }}"></script>
     <script src="{{ asset('js/bootstrap/bootstrap-datepicker.min.js') }}"></script>
     <!-- DataTables -->
-    <script src="{{ asset('js/jQuery/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('js/bootstrap/dataTables.bootstrap.min.js') }}"></script>
+    <script src="{{ asset('js/jQuery/jquery.dataTables.min.js') }}"  data-turbolinks-track="reload"></script>
+    <script src="{{ asset('js/bootstrap/dataTables.bootstrap.min.js') }}" data-turbolinks-track="reload"></script>
     <!-- Chart -->
     <script src="{{ asset('js/chart/Chart.js') }}"></script>
     <script src="{{ asset('js/morris/morris.min.js') }}"></script>
@@ -268,14 +268,15 @@
             console.warn("browser kamu tidak mendukung `Turbolinks`. Perbarui peramban Anda!")
         }
 
-        // Logout
-        $(".logout").click(function(evt){
-            evt.preventDefault();
-            warningMessage('Konfirmasi', 'Keluar dari aplikasi?', baseUrl+'/logout');
-        })
-        // End logout
+        $(document).on('turbolinks:load', function(){
 
-        $(document).on('turbolinks:render', function() {
+            // Logout
+            $(".logout").click(function(evt){
+                evt.preventDefault();
+                warningMessage('Konfirmasi', 'Keluar dari aplikasi?', baseUrl+'/logout');
+            })
+            // End logout
+
             // configurasi datepicker
             $.fn.datepicker.dates['id'] = {
               days: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
@@ -289,14 +290,14 @@
               titleFormat: "MM yyyy",
               weekStart: 0
             };
-        });
 
-        $(".input-datepicker").datepicker({
-          autoclose: true,
-          format: 'dd MM yyyy',
-          todayHighlight: true,
-          language: 'id'
-        });
+            $(".input-datepicker").datepicker({
+              autoclose: true,
+              format: 'dd MM yyyy',
+              todayHighlight: true,
+              language: 'id'
+            });
+        })
     </script>
     @yield('extra_script')
 </body>

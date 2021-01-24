@@ -73,7 +73,7 @@
 					<h3 class="box-title">Daftar Akun</h3>
 				</div>
 				<div class="box-body table-responsive">
-					<table id="example1" class="table table-bordered table-striped">
+					<table id="master_akun_dashboard" class="table table-bordered table-striped">
 						<thead>
 							<tr>
 								<th>Kode</th>
@@ -159,9 +159,9 @@
 @section('extra_script')
 <script type="text/javascript">
 
-	$(function() {
+	$(document).on('turbolinks:load', function(){
 		$('#nama_akun').val('');
-		$('#example1').dataTable({
+		$('#master_akun_dashboard').dataTable({
 			"processing": true,
 			"serverSide": true,
 			"ajax": "{{ route('akun') }}",

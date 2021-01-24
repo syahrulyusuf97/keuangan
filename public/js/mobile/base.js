@@ -1,3 +1,56 @@
+$(document).on('turbolinks:load', function(){
+  // Owl Carousel
+  $('.carousel-full').owlCarousel({
+      loop:true,
+      margin:8,
+      nav:false,
+      items: 1,
+      dots: false,
+  });
+  $('.carousel-single').owlCarousel({
+      stagePadding: 30,
+      loop:true,
+      margin:16,
+      nav:false,
+      items: 1,
+      dots: false,
+  });
+  $('.carousel-multiple').owlCarousel({
+      stagePadding: 32,
+      loop:true,
+      margin:16,
+      nav:false,
+      items: 2,
+      dots: false,
+  });
+  $('.carousel-small').owlCarousel({
+      stagePadding: 32,
+      loop:true,
+      margin:8,
+      nav:false,
+      items: 4,
+      dots: false,
+  });
+  $('.carousel-slider').owlCarousel({
+      loop:true,
+      margin:8,
+      nav:false,
+      items: 1,
+      dots: true,
+  });
+  ///////////////////////////////////////////////////////////////////////////
+
+  
+
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+// loader
+setTimeout(() => {
+    $("#loader").fadeToggle(250);
+}, 800); 
+// hide delay when page load
+
 // AJax setup header
 $.ajaxSetup({
   headers: {
@@ -204,12 +257,6 @@ $.AdminLTE.tree = function (menu) {
   })
 
 }(jQuery)
-// Loader
-$(document).ready(function () {
-    setTimeout(() => {
-        $("#loader").fadeToggle(250);
-    }, 800); // hide delay when page load
-});
 
 $(".page-redirect").click(function(){
     $("#loader").fadeToggle(250);
@@ -533,10 +580,6 @@ $(".goBack").click(function () {
 ///////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////
-// Tooltip
-$(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-})
 ///////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////
@@ -573,43 +616,4 @@ $(".toggle-searchbox").click(function () {
 ///////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////
-// Owl Carousel
-$('.carousel-full').owlCarousel({
-    loop:true,
-    margin:8,
-    nav:false,
-    items: 1,
-    dots: false,
-});
-$('.carousel-single').owlCarousel({
-    stagePadding: 30,
-    loop:true,
-    margin:16,
-    nav:false,
-    items: 1,
-    dots: false,
-});
-$('.carousel-multiple').owlCarousel({
-    stagePadding: 32,
-    loop:true,
-    margin:16,
-    nav:false,
-    items: 2,
-    dots: false,
-});
-$('.carousel-small').owlCarousel({
-    stagePadding: 32,
-    loop:true,
-    margin:8,
-    nav:false,
-    items: 4,
-    dots: false,
-});
-$('.carousel-slider').owlCarousel({
-    loop:true,
-    margin:8,
-    nav:false,
-    items: 1,
-    dots: true,
-});
-///////////////////////////////////////////////////////////////////////////
+

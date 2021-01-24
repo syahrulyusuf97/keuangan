@@ -452,601 +452,601 @@
         warna_kd = [], warna_kk = [], warna_bd = [], warna_bk = [],
         warna_t_kd = [], warna_t_kk = [], warna_t_bd = [], warna_t_bk = [];
 
-    function setStatistikMutasiBank(data) {
-        if (data.length == 0) {
-           $("#line-chart-mutasi-bank").html('<h2 class="text-center">Tidak ada transaksi</h2>');
-        } else {
-            new Morris.Line({
-                element: 'line-chart-mutasi-bank',
-                resize: true,
-                data: data,
-                xkey: 'date',
-                ykeys: ['debit','kredit'],
-                labels: ['Debet','Kredit'],
-                lineColors: ['#3c8dbc','#d9534f'],
-                hideHover: 'auto',
-                parseTime: false
-            });
-        }
-    }
-
-    function setStatistikMutasiKas(data) {
-        if (data.length == 0) {
-           $("#line-chart-mutasi-kas").html('<h2 class="text-center">Tidak ada transaksi</h2>');
-        } else {
-            new Morris.Line({
-                element: 'line-chart-mutasi-kas',
-                resize: true,
-                data: data,
-                xkey: 'date',
-                ykeys: ['debit','kredit'],
-                labels: ['Debet','Kredit'],
-                lineColors: ['#3c8dbc','#d9534f'],
-                hideHover: 'auto',
-                parseTime: false
-            });
-        }
-    }
-
-    function setStatistikBank(data) {
-        if (data.length == 0) {
-            $("#bar-chart-bank").html('<h1 class="text-center">Tidak ada transaksi</h1>');
-        } else {
-            new Morris.Bar({
-                element: 'bar-chart-bank',
-                resize: true,
-                data: data,
-                barColors: ['#00a65a', '#f56954'],
-                xkey: 'month',
-                ykeys: ['debit', 'kredit'],
-                labels: ['DEBIT', 'KREDIT'],
-                hideHover: 'auto',
-                parseTime: false
-            });
-        }
-    }
-
-    function setStatistikKas(data) {
-        if (data.length == 0) {
-            $("#bar-chart-kas").html('<h1 class="text-center">Tidak ada transaksi</h1>');
-        } else {
-            new Morris.Bar({
-                element: 'bar-chart-kas',
-                resize: true,
-                data: data,
-                barColors: ['#00a65a', '#f56954'],
-                xkey: 'month',
-                ykeys: ['debit', 'kredit'],
-                labels: ['DEBIT', 'KREDIT'],
-                hideHover: 'auto',
-                parseTime: false
-            });
-        }
-    }
-
-    function setStatistikKategoriBankDebetBulanLalu(data) {
-        if (data.length == 0) {
-            var ctx = document.getElementById('dnt-ch-b-m-b-l').getContext('2d');
-            ctx.font = "30px Arial";
-            ctx.fillText("Tidak ada transaksi", 10, 50);
-        } else {
-            var row = "";
-            var total = 0;
-            var tot_percent = 0;
-            data.forEach(function(element){
-                data_bd.push(element.persen);
-                label_bd.push(element.kategori);
-                warna_bd.push(element.warna);
-                row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
-                total += parseFloat(element.jumlah);
-                tot_percent += parseFloat(element.persen);
-            })
-
-            row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
-
-            $("#tb_bm_b_l").append(row);
-
-            var config = {
-                type: 'pie',
-                data: {
-                    datasets: [{
-                        data: data_bd,
-                        backgroundColor: warna_bd,
-                        label: 'Dataset 1'
-                    }],
-                    labels: label_bd
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                                display: false,
-                                position: 'right',
-                                align: 'start'
-                            },
-                    tooltips: {
-                        callbacks: {
-                          label: function(tooltipItem, data) {
-
-                            var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
-
-                            if (label) {
-                              label += '%';
-                            }
-
-                            return label;
-                          }
-                        }
-                      }
-                }
-            };
-
-            var ctx = document.getElementById('dnt-ch-b-m-b-l').getContext('2d');
-            window.myPie = new Chart(ctx, config);
-        }
-    }
-
-    function setStatistikKategoriBankKreditBulanLalu(data) {
-        if (data.length == 0) {
-            var ctx = document.getElementById('dnt-ch-b-k-b-l').getContext('2d');
-            ctx.font = "30px Arial";
-            ctx.fillText("Tidak ada transaksi", 10, 50);
-        } else {
-            var row = "";
-            var total = 0;
-            var tot_percent = 0;
-            data.forEach(function(element){
-                data_bk.push(element.persen);
-                label_bk.push(element.kategori);
-                warna_bk.push(element.warna);
-                row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
-                total += parseFloat(element.jumlah);
-                tot_percent += parseFloat(element.persen);
-            })
-
-            row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
-
-            $("#tb_bk_b_l").append(row);
-
-            var config = {
-                type: 'pie',
-                data: {
-                    datasets: [{
-                        data: data_bk,
-                        backgroundColor: warna_bk,
-                        label: 'Dataset 1'
-                    }],
-                    labels: label_bk
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                                display: false,
-                                position: 'right',
-                                align: 'start'
-                            },
-                    tooltips: {
-                        callbacks: {
-                          label: function(tooltipItem, data) {
-
-                            var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
-
-                            if (label) {
-                              label += '%';
-                            }
-
-                            return label;
-                          }
-                        }
-                      }
-                }
-            };
-
-            var ctx = document.getElementById('dnt-ch-b-k-b-l').getContext('2d');
-            window.myPie = new Chart(ctx, config);
-        }
-    }
-
-    function setStatistikKategoriKasDebetBulanLalu(data) {
-        if (data.length == 0) {
-            var ctx = document.getElementById('dnt-ch-k-m-b-l').getContext('2d');
-            ctx.font = "30px Arial";
-            ctx.fillText("Tidak ada transaksi", 10, 50);
-        } else {
-            var row = "";
-            var total = 0;
-            var tot_percent = 0;
-            data.forEach(function(element){
-                data_kd.push(element.persen);
-                label_kd.push(element.kategori);
-                warna_kd.push(element.warna);
-                row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
-                total += parseFloat(element.jumlah);
-                tot_percent += parseFloat(element.persen);
-            })
-
-            row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+Math.round(tot_percent)+'%</td></tr>';
-
-            $("#tb_km_b_l").append(row);
-
-            var config = {
-                type: 'pie',
-                data: {
-                    datasets: [{
-                        data: data_kd,
-                        backgroundColor: warna_kd,
-                        label: 'Dataset 1'
-                    }],
-                    labels: label_kd
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                                display: false,
-                                position: 'right',
-                                align: 'start'
-                            },
-                    tooltips: {
-                        callbacks: {
-                          label: function(tooltipItem, data) {
-
-                            var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
-
-                            if (label) {
-                              label += '%';
-                            }
-
-                            return label;
-                          }
-                        }
-                      }
-                }
-            };
-
-            var ctx = document.getElementById('dnt-ch-k-m-b-l').getContext('2d');
-            window.myPie = new Chart(ctx, config);
-        }
-    }
-
-    function setStatistikKategoriKasKreditBulanLalu(data) {
-        if (data.length == 0) {
-            var ctx = document.getElementById('dnt-ch-k-k-b-l').getContext('2d');
-            ctx.font = "30px Arial";
-            ctx.fillText("Tidak ada transaksi", 10, 50);
-        } else {
-            var row = "";
-            var total = 0;
-            var tot_percent = 0;
-            data.forEach(function(element){
-                data_kk.push(element.persen);
-                label_kk.push(element.kategori);
-                warna_kk.push(element.warna);
-                row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
-                total += parseFloat(element.jumlah);
-                tot_percent += parseFloat(element.persen);
-            })
-
-            row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+Math.round(tot_percent)+'%</td></tr>';
-
-            $("#tb_kk_b_l").append(row);
-
-            var config = {
-                type: 'pie',
-                data: {
-                    datasets: [{
-                        data: data_kk,
-                        backgroundColor: warna_kk,
-                        label: 'Dataset 1'
-                    }],
-                    labels: label_kk
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                                display: false,
-                                position: 'right',
-                                align: 'start'
-                            },
-                    tooltips: {
-                        callbacks: {
-                          label: function(tooltipItem, data) {
-
-                            var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
-
-                            if (label) {
-                              label += '%';
-                            }
-
-                            return label;
-                          }
-                        }
-                      }
-                }
-            };
-
-            var ctx = document.getElementById('dnt-ch-k-k-b-l').getContext('2d');
-            window.myPie = new Chart(ctx, config);
-        }
-    }
-
-    function setStatistikKategoriBankDebetTahunLalu(data) {
-        if (data.length == 0) {
-            var ctx = document.getElementById('dnt-ch-b-m-t-l').getContext('2d');
-            ctx.font = "30px Arial";
-            ctx.fillText("Tidak ada transaksi", 10, 50);
-        } else {
-            var row = "";
-            var total = 0;
-            var tot_percent = 0;
-            data.forEach(function(element){
-                data_t_bd.push(element.persen);
-                label_t_bd.push(element.kategori);
-                warna_t_bd.push(element.warna);
-                row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
-                total += parseFloat(element.jumlah);
-                tot_percent += parseFloat(element.persen);
-            })
-
-            row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
-
-            $("#tb_bm_t_l").append(row);
-
-            var config = {
-                type: 'pie',
-                data: {
-                    datasets: [{
-                        data: data_t_bd,
-                        backgroundColor: warna_t_bd,
-                        label: 'Dataset 1'
-                    }],
-                    labels: label_t_bd
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                                display: false,
-                                position: 'right',
-                                align: 'start'
-                            },
-                    tooltips: {
-                        callbacks: {
-                          label: function(tooltipItem, data) {
-
-                            var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
-
-                            if (label) {
-                              label += '%';
-                            }
-
-                            return label;
-                          }
-                        }
-                      }
-                }
-            };
-
-            var ctx = document.getElementById('dnt-ch-b-m-t-l').getContext('2d');
-            window.myPie = new Chart(ctx, config);
-        }
-    }
-
-    function setStatistikKategoriBankKreditTahunLalu(data) {
-        if (data.length == 0) {
-            var ctx = document.getElementById('dnt-ch-b-k-t-l').getContext('2d');
-            ctx.font = "30px Arial";
-            ctx.fillText("Tidak ada transaksi", 10, 50);
-        } else {
-            var row = "";
-            var total = 0;
-            var tot_percent = 0;
-            data.forEach(function(element){
-                data_t_bk.push(element.persen);
-                label_t_bk.push(element.kategori);
-                warna_t_bk.push(element.warna);
-                row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
-                total += parseFloat(element.jumlah);
-                tot_percent += parseFloat(element.persen);
-            })
-
-            row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
-
-            $("#tb_bk_t_l").append(row);
-
-            var config = {
-                type: 'pie',
-                data: {
-                    datasets: [{
-                        data: data_t_bk,
-                        backgroundColor: warna_t_bk,
-                        label: 'Dataset 1'
-                    }],
-                    labels: label_t_bk
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                                display: false,
-                                position: 'right',
-                                align: 'start'
-                            },
-                    tooltips: {
-                        callbacks: {
-                          label: function(tooltipItem, data) {
-
-                            var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
-
-                            if (label) {
-                              label += '%';
-                            }
-
-                            return label;
-                          }
-                        }
-                      }
-                }
-            };
-
-            var ctx = document.getElementById('dnt-ch-b-k-t-l').getContext('2d');
-            window.myPie = new Chart(ctx, config);
-        }
-    }
-
-    function setStatistikKategoriKasDebetTahunLalu(data) {
-        if (data.length == 0) {
-            var ctx = document.getElementById('dnt-ch-k-m-t-l').getContext('2d');
-            ctx.font = "30px Arial";
-            ctx.fillText("Tidak ada transaksi", 10, 50);
-        } else {
-            var row = "";
-            var total = 0;
-            var tot_percent = 0;
-            data.forEach(function(element){
-                data_t_kd.push(element.persen);
-                label_t_kd.push(element.kategori);
-                warna_t_kd.push(element.warna);
-                row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
-                total += parseFloat(element.jumlah);
-                tot_percent += parseFloat(element.persen);
-            })
-
-            row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
-
-            $("#tb_km_t_l").append(row);
-
-            var config = {
-                type: 'pie',
-                data: {
-                    datasets: [{
-                        data: data_t_kd,
-                        backgroundColor: warna_t_kd,
-                        label: 'Dataset 1'
-                    }],
-                    labels: label_t_kd
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                                display: false,
-                                position: 'right',
-                                align: 'start'
-                            },
-                    tooltips: {
-                        callbacks: {
-                          label: function(tooltipItem, data) {
-
-                            var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
-
-                            if (label) {
-                              label += '%';
-                            }
-
-                            return label;
-                          }
-                        }
-                      }
-                }
-            };
-
-            var ctx = document.getElementById('dnt-ch-k-m-t-l').getContext('2d');
-            window.myPie = new Chart(ctx, config);
-        }
-    }
-
-    function setStatistikKategoriKasKreditTahunLalu(data) {
-        if (data.length == 0) {
-            var ctx = document.getElementById('dnt-ch-k-k-t-l').getContext('2d');
-            ctx.font = "30px Arial";
-            ctx.fillText("Tidak ada transaksi", 10, 50);
-        } else {
-            var row = "";
-            var total = 0;
-            var tot_percent = 0;
-            data.forEach(function(element){
-                data_t_kk.push(element.persen);
-                label_t_kk.push(element.kategori);
-                warna_t_kk.push(element.warna);
-                row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
-                total += parseFloat(element.jumlah);
-                tot_percent += parseFloat(element.persen);
-            })
-
-            row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
-
-            $("#tb_kk_t_l").append(row);
-
-            var config = {
-                type: 'pie',
-                data: {
-                    datasets: [{
-                        data: data_t_kk,
-                        backgroundColor: warna_t_kk,
-                        label: 'Dataset 1'
-                    }],
-                    labels: label_t_kk
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                                display: false,
-                                position: 'right',
-                                align: 'start'
-                            },
-                    tooltips: {
-                        callbacks: {
-                          label: function(tooltipItem, data) {
-
-                            var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
-
-                            if (label) {
-                              label += '%';
-                            }
-
-                            return label;
-                          }
-                        }
-                      }
-                }
-            };
-
-            var ctx = document.getElementById('dnt-ch-k-k-t-l').getContext('2d');
-            window.myPie = new Chart(ctx, config);
-        }
-    }
-
-    function getStatistik() {
-        $.ajax({
-            url: baseUrl+'/dashboard/statistik',
-            dataType: 'json',
-            success: function(response){
-                if (response.status == "failed") {
-                    errorMessage('Warning', response.message);
-                } else if (response.status == "error") {
-                    errorMessage('Error', response.message);
-                } else {
-                    // alertSuccess('Berhasil', 'Hore!');
-                    setStatistikMutasiBank(response.data.mutasi_bank_bulan_lalu.data)
-                    setStatistikMutasiKas(response.data.mutasi_kas_bulan_lalu.data)
-                    setStatistikBank(response.data.bank_tahun_lalu.data)
-                    setStatistikKas(response.data.kas_tahun_lalu.data)
-                    setStatistikKategoriBankDebetBulanLalu(response.data.bank_debit_bulan_lalu_kategori.data)
-                    setStatistikKategoriBankKreditBulanLalu(response.data.bank_kredit_bulan_lalu_kategori.data)
-                    setStatistikKategoriKasDebetBulanLalu(response.data.kas_debit_bulan_lalu_kategori.data)
-                    setStatistikKategoriKasKreditBulanLalu(response.data.kas_kredit_bulan_lalu_kategori.data)
-                    setStatistikKategoriBankDebetTahunLalu(response.data.bank_debit_tahun_lalu_kategori.data)
-                    setStatistikKategoriBankKreditTahunLalu(response.data.bank_kredit_tahun_lalu_kategori.data)
-                    setStatistikKategoriKasDebetTahunLalu(response.data.kas_debit_tahun_lalu_kategori.data)
-                    setStatistikKategoriKasKreditTahunLalu(response.data.kas_kredit_tahun_lalu_kategori.data)
-                }
-            },
-            error: function(XMLHttpRequest, textStatus, errorThrown){
-                errorMessage(textStatus, errorThrown);
-                // alert("Status: " + textStatus); alert("Error: " + errorThrown);
+    // $(document).on('turbolinks:load', function(){
+        function setStatistikMutasiBank(data) {
+            if (data.length == 0) {
+               $("#line-chart-mutasi-bank").html('<h2 class="text-center">Tidak ada transaksi</h2>');
+            } else {
+                new Morris.Line({
+                    element: 'line-chart-mutasi-bank',
+                    resize: true,
+                    data: data,
+                    xkey: 'date',
+                    ykeys: ['debit','kredit'],
+                    labels: ['Debet','Kredit'],
+                    lineColors: ['#3c8dbc','#d9534f'],
+                    hideHover: 'auto',
+                    parseTime: false
+                });
             }
-        });
-    }
+        }
 
-    $(function(){
+        function setStatistikMutasiKas(data) {
+            if (data.length == 0) {
+               $("#line-chart-mutasi-kas").html('<h2 class="text-center">Tidak ada transaksi</h2>');
+            } else {
+                new Morris.Line({
+                    element: 'line-chart-mutasi-kas',
+                    resize: true,
+                    data: data,
+                    xkey: 'date',
+                    ykeys: ['debit','kredit'],
+                    labels: ['Debet','Kredit'],
+                    lineColors: ['#3c8dbc','#d9534f'],
+                    hideHover: 'auto',
+                    parseTime: false
+                });
+            }
+        }
+
+        function setStatistikBank(data) {
+            if (data.length == 0) {
+                $("#bar-chart-bank").html('<h1 class="text-center">Tidak ada transaksi</h1>');
+            } else {
+                new Morris.Bar({
+                    element: 'bar-chart-bank',
+                    resize: true,
+                    data: data,
+                    barColors: ['#00a65a', '#f56954'],
+                    xkey: 'month',
+                    ykeys: ['debit', 'kredit'],
+                    labels: ['DEBIT', 'KREDIT'],
+                    hideHover: 'auto',
+                    parseTime: false
+                });
+            }
+        }
+
+        function setStatistikKas(data) {
+            if (data.length == 0) {
+                $("#bar-chart-kas").html('<h1 class="text-center">Tidak ada transaksi</h1>');
+            } else {
+                new Morris.Bar({
+                    element: 'bar-chart-kas',
+                    resize: true,
+                    data: data,
+                    barColors: ['#00a65a', '#f56954'],
+                    xkey: 'month',
+                    ykeys: ['debit', 'kredit'],
+                    labels: ['DEBIT', 'KREDIT'],
+                    hideHover: 'auto',
+                    parseTime: false
+                });
+            }
+        }
+
+        function setStatistikKategoriBankDebetBulanLalu(data) {
+            if (data.length == 0) {
+                var ctx = document.getElementById('dnt-ch-b-m-b-l').getContext('2d');
+                ctx.font = "30px Arial";
+                ctx.fillText("Tidak ada transaksi", 10, 50);
+            } else {
+                var row = "";
+                var total = 0;
+                var tot_percent = 0;
+                data.forEach(function(element){
+                    data_bd.push(element.persen);
+                    label_bd.push(element.kategori);
+                    warna_bd.push(element.warna);
+                    row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
+                    total += parseFloat(element.jumlah);
+                    tot_percent += parseFloat(element.persen);
+                })
+
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
+
+                $("#tb_bm_b_l").append(row);
+
+                var config = {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: data_bd,
+                            backgroundColor: warna_bd,
+                            label: 'Dataset 1'
+                        }],
+                        labels: label_bd
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                                    display: false,
+                                    position: 'right',
+                                    align: 'start'
+                                },
+                        tooltips: {
+                            callbacks: {
+                              label: function(tooltipItem, data) {
+
+                                var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+
+                                if (label) {
+                                  label += '%';
+                                }
+
+                                return label;
+                              }
+                            }
+                          }
+                    }
+                };
+
+                var ctx = document.getElementById('dnt-ch-b-m-b-l').getContext('2d');
+                window.myPie = new Chart(ctx, config);
+            }
+        }
+
+        function setStatistikKategoriBankKreditBulanLalu(data) {
+            if (data.length == 0) {
+                var ctx = document.getElementById('dnt-ch-b-k-b-l').getContext('2d');
+                ctx.font = "30px Arial";
+                ctx.fillText("Tidak ada transaksi", 10, 50);
+            } else {
+                var row = "";
+                var total = 0;
+                var tot_percent = 0;
+                data.forEach(function(element){
+                    data_bk.push(element.persen);
+                    label_bk.push(element.kategori);
+                    warna_bk.push(element.warna);
+                    row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
+                    total += parseFloat(element.jumlah);
+                    tot_percent += parseFloat(element.persen);
+                })
+
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
+
+                $("#tb_bk_b_l").append(row);
+
+                var config = {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: data_bk,
+                            backgroundColor: warna_bk,
+                            label: 'Dataset 1'
+                        }],
+                        labels: label_bk
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                                    display: false,
+                                    position: 'right',
+                                    align: 'start'
+                                },
+                        tooltips: {
+                            callbacks: {
+                              label: function(tooltipItem, data) {
+
+                                var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+
+                                if (label) {
+                                  label += '%';
+                                }
+
+                                return label;
+                              }
+                            }
+                          }
+                    }
+                };
+
+                var ctx = document.getElementById('dnt-ch-b-k-b-l').getContext('2d');
+                window.myPie = new Chart(ctx, config);
+            }
+        }
+
+        function setStatistikKategoriKasDebetBulanLalu(data) {
+            if (data.length == 0) {
+                var ctx = document.getElementById('dnt-ch-k-m-b-l').getContext('2d');
+                ctx.font = "30px Arial";
+                ctx.fillText("Tidak ada transaksi", 10, 50);
+            } else {
+                var row = "";
+                var total = 0;
+                var tot_percent = 0;
+                data.forEach(function(element){
+                    data_kd.push(element.persen);
+                    label_kd.push(element.kategori);
+                    warna_kd.push(element.warna);
+                    row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
+                    total += parseFloat(element.jumlah);
+                    tot_percent += parseFloat(element.persen);
+                })
+
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+Math.round(tot_percent)+'%</td></tr>';
+
+                $("#tb_km_b_l").append(row);
+
+                var config = {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: data_kd,
+                            backgroundColor: warna_kd,
+                            label: 'Dataset 1'
+                        }],
+                        labels: label_kd
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                                    display: false,
+                                    position: 'right',
+                                    align: 'start'
+                                },
+                        tooltips: {
+                            callbacks: {
+                              label: function(tooltipItem, data) {
+
+                                var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+
+                                if (label) {
+                                  label += '%';
+                                }
+
+                                return label;
+                              }
+                            }
+                          }
+                    }
+                };
+
+                var ctx = document.getElementById('dnt-ch-k-m-b-l').getContext('2d');
+                window.myPie = new Chart(ctx, config);
+            }
+        }
+
+        function setStatistikKategoriKasKreditBulanLalu(data) {
+            if (data.length == 0) {
+                var ctx = document.getElementById('dnt-ch-k-k-b-l').getContext('2d');
+                ctx.font = "30px Arial";
+                ctx.fillText("Tidak ada transaksi", 10, 50);
+            } else {
+                var row = "";
+                var total = 0;
+                var tot_percent = 0;
+                data.forEach(function(element){
+                    data_kk.push(element.persen);
+                    label_kk.push(element.kategori);
+                    warna_kk.push(element.warna);
+                    row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
+                    total += parseFloat(element.jumlah);
+                    tot_percent += parseFloat(element.persen);
+                })
+
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+Math.round(tot_percent)+'%</td></tr>';
+
+                $("#tb_kk_b_l").append(row);
+
+                var config = {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: data_kk,
+                            backgroundColor: warna_kk,
+                            label: 'Dataset 1'
+                        }],
+                        labels: label_kk
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                                    display: false,
+                                    position: 'right',
+                                    align: 'start'
+                                },
+                        tooltips: {
+                            callbacks: {
+                              label: function(tooltipItem, data) {
+
+                                var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+
+                                if (label) {
+                                  label += '%';
+                                }
+
+                                return label;
+                              }
+                            }
+                          }
+                    }
+                };
+
+                var ctx = document.getElementById('dnt-ch-k-k-b-l').getContext('2d');
+                window.myPie = new Chart(ctx, config);
+            }
+        }
+
+        function setStatistikKategoriBankDebetTahunLalu(data) {
+            if (data.length == 0) {
+                var ctx = document.getElementById('dnt-ch-b-m-t-l').getContext('2d');
+                ctx.font = "30px Arial";
+                ctx.fillText("Tidak ada transaksi", 10, 50);
+            } else {
+                var row = "";
+                var total = 0;
+                var tot_percent = 0;
+                data.forEach(function(element){
+                    data_t_bd.push(element.persen);
+                    label_t_bd.push(element.kategori);
+                    warna_t_bd.push(element.warna);
+                    row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
+                    total += parseFloat(element.jumlah);
+                    tot_percent += parseFloat(element.persen);
+                })
+
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
+
+                $("#tb_bm_t_l").append(row);
+
+                var config = {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: data_t_bd,
+                            backgroundColor: warna_t_bd,
+                            label: 'Dataset 1'
+                        }],
+                        labels: label_t_bd
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                                    display: false,
+                                    position: 'right',
+                                    align: 'start'
+                                },
+                        tooltips: {
+                            callbacks: {
+                              label: function(tooltipItem, data) {
+
+                                var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+
+                                if (label) {
+                                  label += '%';
+                                }
+
+                                return label;
+                              }
+                            }
+                          }
+                    }
+                };
+
+                var ctx = document.getElementById('dnt-ch-b-m-t-l').getContext('2d');
+                window.myPie = new Chart(ctx, config);
+            }
+        }
+
+        function setStatistikKategoriBankKreditTahunLalu(data) {
+            if (data.length == 0) {
+                var ctx = document.getElementById('dnt-ch-b-k-t-l').getContext('2d');
+                ctx.font = "30px Arial";
+                ctx.fillText("Tidak ada transaksi", 10, 50);
+            } else {
+                var row = "";
+                var total = 0;
+                var tot_percent = 0;
+                data.forEach(function(element){
+                    data_t_bk.push(element.persen);
+                    label_t_bk.push(element.kategori);
+                    warna_t_bk.push(element.warna);
+                    row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
+                    total += parseFloat(element.jumlah);
+                    tot_percent += parseFloat(element.persen);
+                })
+
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
+
+                $("#tb_bk_t_l").append(row);
+
+                var config = {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: data_t_bk,
+                            backgroundColor: warna_t_bk,
+                            label: 'Dataset 1'
+                        }],
+                        labels: label_t_bk
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                                    display: false,
+                                    position: 'right',
+                                    align: 'start'
+                                },
+                        tooltips: {
+                            callbacks: {
+                              label: function(tooltipItem, data) {
+
+                                var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+
+                                if (label) {
+                                  label += '%';
+                                }
+
+                                return label;
+                              }
+                            }
+                          }
+                    }
+                };
+
+                var ctx = document.getElementById('dnt-ch-b-k-t-l').getContext('2d');
+                window.myPie = new Chart(ctx, config);
+            }
+        }
+
+        function setStatistikKategoriKasDebetTahunLalu(data) {
+            if (data.length == 0) {
+                var ctx = document.getElementById('dnt-ch-k-m-t-l').getContext('2d');
+                ctx.font = "30px Arial";
+                ctx.fillText("Tidak ada transaksi", 10, 50);
+            } else {
+                var row = "";
+                var total = 0;
+                var tot_percent = 0;
+                data.forEach(function(element){
+                    data_t_kd.push(element.persen);
+                    label_t_kd.push(element.kategori);
+                    warna_t_kd.push(element.warna);
+                    row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
+                    total += parseFloat(element.jumlah);
+                    tot_percent += parseFloat(element.persen);
+                })
+
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
+
+                $("#tb_km_t_l").append(row);
+
+                var config = {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: data_t_kd,
+                            backgroundColor: warna_t_kd,
+                            label: 'Dataset 1'
+                        }],
+                        labels: label_t_kd
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                                    display: false,
+                                    position: 'right',
+                                    align: 'start'
+                                },
+                        tooltips: {
+                            callbacks: {
+                              label: function(tooltipItem, data) {
+
+                                var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+
+                                if (label) {
+                                  label += '%';
+                                }
+
+                                return label;
+                              }
+                            }
+                          }
+                    }
+                };
+
+                var ctx = document.getElementById('dnt-ch-k-m-t-l').getContext('2d');
+                window.myPie = new Chart(ctx, config);
+            }
+        }
+
+        function setStatistikKategoriKasKreditTahunLalu(data) {
+            if (data.length == 0) {
+                var ctx = document.getElementById('dnt-ch-k-k-t-l').getContext('2d');
+                ctx.font = "30px Arial";
+                ctx.fillText("Tidak ada transaksi", 10, 50);
+            } else {
+                var row = "";
+                var total = 0;
+                var tot_percent = 0;
+                data.forEach(function(element){
+                    data_t_kk.push(element.persen);
+                    label_t_kk.push(element.kategori);
+                    warna_t_kk.push(element.warna);
+                    row += '<tr><td>'+element.kategori+'</td><td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.jumlah)+'</td><td><div class="lbl-ktg" style="background-color: '+element.warna+';"></div>'+element.persen+'%</td></tr>';
+                    total += parseFloat(element.jumlah);
+                    tot_percent += parseFloat(element.persen);
+                })
+
+                row += '<tr><td class="text-right text-bold">Total</td><td class="text-right text-bold">'+new Intl.NumberFormat('de-DE').format(total)+'</td><td class="text-center text-bold">'+tot_percent+'%</td></tr>';
+
+                $("#tb_kk_t_l").append(row);
+
+                var config = {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: data_t_kk,
+                            backgroundColor: warna_t_kk,
+                            label: 'Dataset 1'
+                        }],
+                        labels: label_t_kk
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                                    display: false,
+                                    position: 'right',
+                                    align: 'start'
+                                },
+                        tooltips: {
+                            callbacks: {
+                              label: function(tooltipItem, data) {
+
+                                var label = data.labels[tooltipItem.index] + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+
+                                if (label) {
+                                  label += '%';
+                                }
+
+                                return label;
+                              }
+                            }
+                          }
+                    }
+                };
+
+                var ctx = document.getElementById('dnt-ch-k-k-t-l').getContext('2d');
+                window.myPie = new Chart(ctx, config);
+            }
+        }
+
+        function getStatistik() {
+            $.ajax({
+                url: baseUrl+'/dashboard/statistik',
+                dataType: 'json',
+                success: function(response){
+                    if (response.status == "failed") {
+                        errorMessage('Warning', response.message);
+                    } else if (response.status == "error") {
+                        errorMessage('Error', response.message);
+                    } else {
+                        // alertSuccess('Berhasil', 'Hore!');
+                        setStatistikMutasiBank(response.data.mutasi_bank_bulan_lalu.data)
+                        setStatistikMutasiKas(response.data.mutasi_kas_bulan_lalu.data)
+                        setStatistikBank(response.data.bank_tahun_lalu.data)
+                        setStatistikKas(response.data.kas_tahun_lalu.data)
+                        setStatistikKategoriBankDebetBulanLalu(response.data.bank_debit_bulan_lalu_kategori.data)
+                        setStatistikKategoriBankKreditBulanLalu(response.data.bank_kredit_bulan_lalu_kategori.data)
+                        setStatistikKategoriKasDebetBulanLalu(response.data.kas_debit_bulan_lalu_kategori.data)
+                        setStatistikKategoriKasKreditBulanLalu(response.data.kas_kredit_bulan_lalu_kategori.data)
+                        setStatistikKategoriBankDebetTahunLalu(response.data.bank_debit_tahun_lalu_kategori.data)
+                        setStatistikKategoriBankKreditTahunLalu(response.data.bank_kredit_tahun_lalu_kategori.data)
+                        setStatistikKategoriKasDebetTahunLalu(response.data.kas_debit_tahun_lalu_kategori.data)
+                        setStatistikKategoriKasKreditTahunLalu(response.data.kas_kredit_tahun_lalu_kategori.data)
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown){
+                    errorMessage(textStatus, errorThrown);
+                    // alert("Status: " + textStatus); alert("Error: " + errorThrown);
+                }
+            });
+        }
+        
         // Get Statistik
         getStatistik();
-    })
+    // })
 </script>
 @endsection

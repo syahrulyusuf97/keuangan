@@ -182,7 +182,7 @@
 					<div class="pull-right"><button type="button" onclick="refreshTable()" class="btn btn-default"><i class="fa fa-refresh"></i></button></div>
 				</div>
 				<div class="box-body table-responsive">
-					<table id="example1" class="table table-bordered table-striped">
+					<table id="kas_credit_dashboard" class="table table-bordered table-striped">
 						<thead>
 							<tr>
 								<th>Tanggal</th>
@@ -339,13 +339,13 @@
 @section('extra_script')
 <script type="text/javascript">
 	var table_kas_kredit;
-	$(function() {
+	$(document).on('turbolinks:load', function(){
 		$('#kategori').val('');
 		$('#kep').val('');
 		$('#jumlah').val('');
 		$('#datepicker').val('');
 		$('#option_view').val('BulanLalu');
-		table_kas_kredit = $('#example1').dataTable({
+		table_kas_kredit = $('#kas_credit_dashboard').dataTable({
 			"processing": true,
 			"serverSide": true,
 			"ajax": "{{ route('credit') }}",
@@ -361,227 +361,227 @@
 	    $('#credit_pertanggal').hide();
 	    $('#credit_perbulan').hide();
 	    $('#credit_pertahun').hide();
+	})
 
-	    function lastMonthYear() {
-	    	var nilai = $('#option_view').val();
-	    	$('#table_rincian').dataTable().fnClearTable();
-	    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-	    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_null', function(resp){
-	    		$('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
-		        var array_data = [];
-             	var temp_array = [];
-             	if (resp.result != "") {
-             		$.each(resp.result, function(key, val){
-			        	temp_array = [];
-                       	temp_array = [
-                                        dateFormat(val.tanggal),
-                                        val.keperluan,
-                                        'Rp'+number_format(val.jumlah, '2', ',', '.')
-                                	];
-                        array_data[array_data.length] = temp_array;
-			        })
-			        $('#table_rincian').dataTable().fnAddData(array_data);
-                  	$('#table_rincian').dataTable().fnDraw();
-                  	$('#rincian_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
-             	}
-		        
-		    });
-	    }
+	function lastMonthYear() {
+    	var nilai = $('#option_view').val();
+    	$('#table_rincian').dataTable().fnClearTable();
+    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_null', function(resp){
+    		$('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
+	        var array_data = [];
+         	var temp_array = [];
+         	if (resp.result != "") {
+         		$.each(resp.result, function(key, val){
+		        	temp_array = [];
+                   	temp_array = [
+                                    dateFormat(val.tanggal),
+                                    val.keperluan,
+                                    'Rp'+number_format(val.jumlah, '2', ',', '.')
+                            	];
+                    array_data[array_data.length] = temp_array;
+		        })
+		        $('#table_rincian').dataTable().fnAddData(array_data);
+              	$('#table_rincian').dataTable().fnDraw();
+              	$('#rincian_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
+         	}
+	        
+	    });
+    }
 
-	    function pertanggal() {
-	    	$('#table_rincian').dataTable().fnClearTable();
-	    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-	    	var nilai = $('#option_view').val();
-	    	var tgl = getFormattedDate($('#pertanggal').val());
-	    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_'+tgl, function(resp){
-		        $('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
-		        var array_data = [];
-             	var temp_array = [];
-             	if (resp.result != "") {
-             		$.each(resp.result, function(key, val){
-			        	temp_array = [];
-                       	temp_array = [
-                                        dateFormat(val.tanggal),
-                                        val.keperluan,
-                                        'Rp'+number_format(val.jumlah, '2', ',', '.')
-                                	];
-                        array_data[array_data.length] = temp_array;
-			        })
-			        $('#table_rincian').dataTable().fnAddData(array_data);
-                  	$('#table_rincian').dataTable().fnDraw();
-                  	$('#rincian_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
-             	}
-		    });
-	    }
+    function pertanggal() {
+    	$('#table_rincian').dataTable().fnClearTable();
+    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+    	var nilai = $('#option_view').val();
+    	var tgl = getFormattedDate($('#pertanggal').val());
+    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_'+tgl, function(resp){
+	        $('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
+	        var array_data = [];
+         	var temp_array = [];
+         	if (resp.result != "") {
+         		$.each(resp.result, function(key, val){
+		        	temp_array = [];
+                   	temp_array = [
+                                    dateFormat(val.tanggal),
+                                    val.keperluan,
+                                    'Rp'+number_format(val.jumlah, '2', ',', '.')
+                            	];
+                    array_data[array_data.length] = temp_array;
+		        })
+		        $('#table_rincian').dataTable().fnAddData(array_data);
+              	$('#table_rincian').dataTable().fnDraw();
+              	$('#rincian_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
+         	}
+	    });
+    }
 
-	    function perbulan() {
-	    	$('#table_rincian').dataTable().fnClearTable();
-	    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-	    	var nilai = $('#option_view').val();
-	    	var tgl = getFormattedMonth($('#perbulan').val());
-	    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_'+tgl, function(resp){
-		        $('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
-		        var array_data = [];
-             	var temp_array = [];
-             	if (resp.result != "") {
-             		$.each(resp.result, function(key, val){
-			        	temp_array = [];
-                       	temp_array = [
-                                        dateFormat(val.tanggal),
-                                        val.keperluan,
-                                        'Rp'+number_format(val.jumlah, '2', ',', '.')
-                                	];
-                        array_data[array_data.length] = temp_array;
-			        })
-			        $('#table_rincian').dataTable().fnAddData(array_data);
-                  	$('#table_rincian').dataTable().fnDraw();
-                  	$('#rincian_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
-             	}
-		    });
-	    }
+    function perbulan() {
+    	$('#table_rincian').dataTable().fnClearTable();
+    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+    	var nilai = $('#option_view').val();
+    	var tgl = getFormattedMonth($('#perbulan').val());
+    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_'+tgl, function(resp){
+	        $('#txt_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
+	        var array_data = [];
+         	var temp_array = [];
+         	if (resp.result != "") {
+         		$.each(resp.result, function(key, val){
+		        	temp_array = [];
+                   	temp_array = [
+                                    dateFormat(val.tanggal),
+                                    val.keperluan,
+                                    'Rp'+number_format(val.jumlah, '2', ',', '.')
+                            	];
+                    array_data[array_data.length] = temp_array;
+		        })
+		        $('#table_rincian').dataTable().fnAddData(array_data);
+              	$('#table_rincian').dataTable().fnDraw();
+              	$('#rincian_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
+         	}
+	    });
+    }
 
-	    function pertahun() {
-	    	$('#table_rincian').dataTable().fnClearTable();
-	    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-	    	var nilai = $('#option_view').val();
-	    	var tahun = $('#pertahun').val();
-	    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_'+tahun, function(resp){
-		        $('#txt_total_deposito').html('Rp'+number_format(resp.total, '2', ',', '.'));
-		        var array_data = [];
-             	var temp_array = [];
-             	if (resp.result != "") {
-             		$.each(resp.result, function(key, val){
-			        	temp_array = [];
-                       	temp_array = [
-                                        dateFormat(val.tanggal),
-                                        val.keperluan,
-                                        'Rp'+number_format(val.jumlah, '2', ',', '.')
-                                	];
-                        array_data[array_data.length] = temp_array;
-			        })
-			        $('#table_rincian').dataTable().fnAddData(array_data);
-                  	$('#table_rincian').dataTable().fnDraw();
-                  	$('#rincian_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
-             	}
-		    });
-	    }
+    function pertahun() {
+    	$('#table_rincian').dataTable().fnClearTable();
+    	$('#rincian_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+    	var nilai = $('#option_view').val();
+    	var tahun = $('#pertahun').val();
+    	$.getJSON(baseUrl+'/kas/keluar/akumulasi/'+nilai+'_'+tahun, function(resp){
+	        $('#txt_total_deposito').html('Rp'+number_format(resp.total, '2', ',', '.'));
+	        var array_data = [];
+         	var temp_array = [];
+         	if (resp.result != "") {
+         		$.each(resp.result, function(key, val){
+		        	temp_array = [];
+                   	temp_array = [
+                                    dateFormat(val.tanggal),
+                                    val.keperluan,
+                                    'Rp'+number_format(val.jumlah, '2', ',', '.')
+                            	];
+                    array_data[array_data.length] = temp_array;
+		        })
+		        $('#table_rincian').dataTable().fnAddData(array_data);
+              	$('#table_rincian').dataTable().fnDraw();
+              	$('#rincian_total_credit').html('Rp'+number_format(resp.total, '2', ',', '.'));
+         	}
+	    });
+    }
 
-	    if ($('#option_view').val() == "BulanLalu") {
+    if ($('#option_view').val() == "BulanLalu") {
+    	$('#pertanggal').val('');
+    	$('#perbulan').val('');
+    	$('#pertahun').val('');
+    	$('#credit_pertanggal').hide();
+    	$('#credit_perbulan').hide();
+    	$('#credit_pertahun').hide();
+    	lastMonthYear();
+    }
+
+    $('#option_view').on('change', function(e){
+    	var nilai = $('#option_view').val();
+		if (nilai == "BulanLalu" || nilai == "TahunLalu") {
+			lastMonthYear();
 	    	$('#pertanggal').val('');
 	    	$('#perbulan').val('');
 	    	$('#pertahun').val('');
 	    	$('#credit_pertanggal').hide();
-	    	$('#credit_perbulan').hide();
-	    	$('#credit_pertahun').hide();
-	    	lastMonthYear();
+		    $('#credit_perbulan').hide();
+		    $('#credit_pertahun').hide();
+	    } else if (nilai == "Pertanggal") {
+	    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+	    	$('#pertanggal').val('');
+	    	$('#perbulan').val('');
+	    	$('#pertahun').val('');
+	    	$('#credit_pertanggal').show();
+		    $('#credit_perbulan').hide();
+		    $('#credit_pertahun').hide();
+	    } else if (nilai == "Perbulan") {
+	    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+	    	$('#pertanggal').val('');
+	    	$('#perbulan').val('');
+	    	$('#pertahun').val('');
+	    	$('#credit_pertanggal').hide();
+		    $('#credit_perbulan').show();
+		    $('#credit_pertahun').hide();
+	    } else if (nilai == "Pertahun") {
+	    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
+	    	$('#pertanggal').val('');
+	    	$('#perbulan').val('');
+	    	$('#pertahun').val('');
+	    	$('#credit_pertanggal').hide();
+		    $('#credit_perbulan').hide();
+		    $('#credit_pertahun').show();
 	    }
+    })
 
-	    $('#option_view').on('change', function(e){
-	    	var nilai = $('#option_view').val();
-			if (nilai == "BulanLalu" || nilai == "TahunLalu") {
-				lastMonthYear();
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#credit_pertanggal').hide();
-			    $('#credit_perbulan').hide();
-			    $('#credit_pertahun').hide();
-		    } else if (nilai == "Pertanggal") {
-		    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#credit_pertanggal').show();
-			    $('#credit_perbulan').hide();
-			    $('#credit_pertahun').hide();
-		    } else if (nilai == "Perbulan") {
-		    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#credit_pertanggal').hide();
-			    $('#credit_perbulan').show();
-			    $('#credit_pertahun').hide();
-		    } else if (nilai == "Pertahun") {
-		    	$('#txt_total_credit').html('Rp'+number_format('0', '2', ',', '.'));
-		    	$('#pertanggal').val('');
-		    	$('#perbulan').val('');
-		    	$('#pertahun').val('');
-		    	$('#credit_pertanggal').hide();
-			    $('#credit_perbulan').hide();
-			    $('#credit_pertahun').show();
-		    }
-	    })
+    $('#pertanggal').on('change', function(e){
+    	pertanggal();
+    })
 
-	    $('#pertanggal').on('change', function(e){
-	    	pertanggal();
-	    })
+    $('#perbulan').on('change', function(e){
+    	perbulan();
+    })
 
-	    $('#perbulan').on('change', function(e){
-	    	perbulan();
-	    })
+    $('#pertahun').on('change', function(e){
+    	pertahun();
+    })
 
-	    $('#pertahun').on('change', function(e){
-	    	pertahun();
-	    })
+    $("#form_kas_kredit").submit(function(evt){
+    	evt.preventDefault();
+    	$('#btn_submit').attr('disabled', true);
+    	showLoading();
+    	axios.post("{{url('/kas/kredit/store')}}", $("#form_kas_kredit").serialize())
+    	  .then(function (response) {
+    	  	hideLoading();
+    	  	$('#btn_submit').attr('disabled', false);
+    	  	if (response.data.status == "success") {
+    	  		$("#form_kas_kredit")[0].reset();
+    	  		$('#kategori').trigger('change');
+    	  		$('#dariakun').trigger('change');
+    	  		$('.saldo').text("Saldo = "+response.data.sisa_saldo);
+    	  		$('.sisa_saldo_bank').text(response.data.sisa_saldo_bank);
+    	  		$('.sisa_saldo_kas').text(response.data.sisa_saldo_kas);
+    	  		table_kas_kredit.api().ajax.reload();
+    	  		alertSuccess('Berhasil', response.data.message);
+    	  	} else {
+    	  		alertWarning('Gagal', response.data.message);
+    	  	}
+    	  })
+    	  .catch(function (error) {
+    	  	hideLoading();
+    	  	$('#btn_submit').attr('disabled', false);
+    	    alertError('Error', error);
+    	  });
+    })
 
-	    $("#form_kas_kredit").submit(function(evt){
-	    	evt.preventDefault();
-	    	$('#btn_submit').attr('disabled', true);
-	    	showLoading();
-	    	axios.post("{{url('/kas/kredit/store')}}", $("#form_kas_kredit").serialize())
-	    	  .then(function (response) {
-	    	  	hideLoading();
-	    	  	$('#btn_submit').attr('disabled', false);
-	    	  	if (response.data.status == "success") {
-	    	  		$("#form_kas_kredit")[0].reset();
-	    	  		$('#kategori').trigger('change');
-	    	  		$('#dariakun').trigger('change');
-	    	  		$('.saldo').text("Saldo = "+response.data.sisa_saldo);
-	    	  		$('.sisa_saldo_bank').text(response.data.sisa_saldo_bank);
-	    	  		$('.sisa_saldo_kas').text(response.data.sisa_saldo_kas);
-	    	  		table_kas_kredit.api().ajax.reload();
-	    	  		alertSuccess('Berhasil', response.data.message);
-	    	  	} else {
-	    	  		alertWarning('Gagal', response.data.message);
-	    	  	}
-	    	  })
-	    	  .catch(function (error) {
-	    	  	hideLoading();
-	    	  	$('#btn_submit').attr('disabled', false);
-	    	    alertError('Error', error);
-	    	  });
-	    })
-
-	    $("#form_kas_kredit_edit").submit(function(evt){
-	    	evt.preventDefault();
-	    	$('#btn_submit_edit').attr('disabled', true);
-	    	showLoading();
-	    	axios.put("{{url('/kas/kredit/edit')}}", $("#form_kas_kredit_edit").serialize())
-	    	  .then(function (response) {
-	    	  	hideLoading();
-	    	  	$('#btn_submit_edit').attr('disabled', false);
-	    	  	if (response.data.status == "success") {
-	    	  		$("#form_kas_kredit_edit")[0].reset();
-	    	  		$('#kategori_edit').trigger('change');
-	    	  		$('#dariakun_edit').trigger('change');
-	    	  		$('.saldo').text("Saldo = "+response.data.sisa_saldo);
-	    	  		$('.sisa_saldo_bank').text(response.data.sisa_saldo_bank);
-	    	  		$('.sisa_saldo_kas').text(response.data.sisa_saldo_kas);
-	    	  		$('#modal_edit').modal('hide');
-	    	  		table_kas_kredit.api().ajax.reload();
-	    	  		alertSuccess('Berhasil', response.data.message);
-	    	  	} else {
-	    	  		alertWarning('Gagal', response.data.message);
-	    	  	}
-	    	  })
-	    	  .catch(function (error) {
-	    	  	hideLoading();
-	    	  	$('#btn_submit_edit').attr('disabled', false);
-	    	    alertError('Error', error);
-	    	  });
-	    })
-	})
+    $("#form_kas_kredit_edit").submit(function(evt){
+    	evt.preventDefault();
+    	$('#btn_submit_edit').attr('disabled', true);
+    	showLoading();
+    	axios.put("{{url('/kas/kredit/edit')}}", $("#form_kas_kredit_edit").serialize())
+    	  .then(function (response) {
+    	  	hideLoading();
+    	  	$('#btn_submit_edit').attr('disabled', false);
+    	  	if (response.data.status == "success") {
+    	  		$("#form_kas_kredit_edit")[0].reset();
+    	  		$('#kategori_edit').trigger('change');
+    	  		$('#dariakun_edit').trigger('change');
+    	  		$('.saldo').text("Saldo = "+response.data.sisa_saldo);
+    	  		$('.sisa_saldo_bank').text(response.data.sisa_saldo_bank);
+    	  		$('.sisa_saldo_kas').text(response.data.sisa_saldo_kas);
+    	  		$('#modal_edit').modal('hide');
+    	  		table_kas_kredit.api().ajax.reload();
+    	  		alertSuccess('Berhasil', response.data.message);
+    	  	} else {
+    	  		alertWarning('Gagal', response.data.message);
+    	  	}
+    	  })
+    	  .catch(function (error) {
+    	  	hideLoading();
+    	  	$('#btn_submit_edit').attr('disabled', false);
+    	    alertError('Error', error);
+    	  });
+    })
 
 	var i_jumlah = document.getElementById('jumlah');
 	var i_jumlah_edit = document.getElementById('jumlah_edit');

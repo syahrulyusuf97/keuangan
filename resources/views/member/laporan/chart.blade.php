@@ -294,7 +294,7 @@
         warna_kd = [], warna_kk = [], warna_bd = [], warna_bk = [],
         warna_t_kd = [], warna_t_kk = [], warna_t_bd = [], warna_t_bk = [];
 
-    $(function() {
+    $(document).on('turbolinks:load', function(){
         $('#perbulan').datepicker({
             autoclose: true,
             format: 'MM yyyy',

@@ -38,7 +38,7 @@
         	<p><a class="btn btn-primary" onclick="add()"><ion-icon name="add-outline"></ion-icon>Tambah Data</a></p>
         	<hr>
             <div class="table-responsive">
-                <table id="example1" class="table">
+                <table id="bank_credit_mobile" class="table">
 					<thead>
 						<tr>
 							<th>Tanggal</th>
@@ -169,10 +169,11 @@
         });
     }
     
-	$(function(){
-		table = $('#example1').dataTable({
+	$(document).on('turbolinks:load', function(){
+		table = $('#bank_credit_mobile').dataTable({
 			"processing": true,
 			"serverSide": true,
+            "destroy": true,
 			"ajax": "{{ route('creditBank') }}",
 			"columns":[
 				{"data": "tanggal"},
@@ -187,11 +188,11 @@
 		getAkun();
 	})
 
-	$("#form_data").submit(function(evt){
-		evt.preventDefault();
-		postData(baseUrl+"/mobile/bank/keluar/add", $("#form_data").serialize(), "#modal_form").done(function(response){
-			if (response.status == "success") {$("#form_data")[0].reset();$('#id').val("");table.api().ajax.reload();$(".total-saldo").text(response.data.saldo);}
-		})
-	})
+    $("#form_data").submit(function(evt){
+        evt.preventDefault();
+        postData(baseUrl+"/mobile/bank/keluar/add", $("#form_data").serialize(), "#modal_form").done(function(response){
+            if (response.status == "success") {$("#form_data")[0].reset();$('#id').val("");table.api().ajax.reload();$(".total-saldo").text(response.data.saldo);}
+        })
+    })
 </script>
 @endsection

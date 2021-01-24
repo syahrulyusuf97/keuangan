@@ -4,7 +4,7 @@
 
 Aplikasi KeuanganKu adalah aplikasi untuk manajemen keuangan pribadi.
 
-URL : https://www.keuanganku.info
+URL : https://www.keuanganku.my.id
 
 Semoga aplikasi ini dapat membantu anda dalam mengelola keuangan pribadi Anda.
 

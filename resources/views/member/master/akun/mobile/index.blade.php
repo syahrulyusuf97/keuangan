@@ -38,7 +38,7 @@
         	<p><a class="btn btn-primary" onclick="addAkun()"><ion-icon name="add-outline"></ion-icon>Tambah Data</a></p>
         	<hr>
             <div class="table-responsive">
-                <table id="example1" class="table">
+                <table id="master_akun_mobile" class="table">
 					<thead>
 						<tr>
 							<th>Kode</th>
@@ -132,10 +132,11 @@
         });
     }
     
-	$(function(){
-		table = $('#example1').dataTable({
+	$(document).on('turbolinks:load', function(){
+		table = $('#master_akun_mobile').dataTable({
 			"processing": true,
 			"serverSide": true,
+            "destroy": true,
 			"ajax": "{{ route('akun') }}",
 			"columns":[
 				{"data": "kode"},

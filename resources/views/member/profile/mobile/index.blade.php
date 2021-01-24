@@ -336,7 +336,7 @@
         $("#newimage").attr("src", URL.createObjectURL(event.target.files[0]));
     }
 
-	$(function(){
+	$(document).on('turbolinks:load', function(){
 		$.dobPicker({
             // Selectopr IDs
             daySelector: '#dobday',

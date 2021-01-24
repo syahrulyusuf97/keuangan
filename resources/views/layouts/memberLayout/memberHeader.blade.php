@@ -82,7 +82,7 @@
 								<a href="{{ url('/profil') }}" class="btn btn-default btn-flat" data-turbolinks="true">Profil</a>
 							</div>
 							<div class="pull-right">
-								<a href="{{ url('/logout') }}" class="btn btn-default btn-flat" data-turbolinks="true">Keluar</a>
+								<a href="{{ url('/logout') }}" class="btn btn-default btn-flat" data-turbolinks="false">Keluar</a>
 							</div>
 						</li>
 					</ul>
