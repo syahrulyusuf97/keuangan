@@ -6,6 +6,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta name="turbolinks-cache-control" content="no-cache">
 <!-- Bootstrap 3.3.7 -->
   <link rel="icon" type="image/png" href="{{ asset('images/icon/keuanganku.png') }}" />
   <link rel="stylesheet" href="{{ asset('css/bootstrap/bootstrap.min.css') }}">
@@ -14,7 +15,7 @@
   <!-- Ionicons -->
   <link rel="stylesheet" href="{{ asset('css/Ionicons/css/ionicons.min.css') }}">
   <!-- DataTables -->
-  <link rel="stylesheet" href="{{ asset('css/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/datatables.net-bs/css/dataTables.bootstrap.min.css') }}" data-turbolinks-track="reload">
   {{--Chart morris--}}
   <link rel="stylesheet" href="{{ asset('css/morris/morris.css') }}">
   <link rel="stylesheet" href="{{ asset('css/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css') }}">
@@ -30,6 +31,18 @@
   <link rel="stylesheet" href="{{ asset('fonts/fonts-google-apis/fonts.css') }}">
   <!-- <script data-ad-client="ca-pub-1006524802991381" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
   <script data-ad-client="ca-pub-5316550212400820" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- Turbolinks -->
+  <script src="{{ asset('js/turbolinks-5.2.0/dist/turbolinks.js') }}" type="text/javascript" charset="utf-8">
+</script>
+  <style type="text/css">
+    .turbolinks-progress-bar {
+      background-color: red;
+    }
+
+    .swal2-popup {
+      font-size: 1.6rem !important;
+    }
+  </style>
 </head>
 <body class="hold-transition skin-blue fixed sidebar-mini">
   <div class="loading">Loading&#8230;</div>
@@ -59,8 +72,8 @@
 <!-- Bootstrap 3.3.7 -->
 <script src="{{ asset('js/bootstrap/bootstrap.min.js') }}"></script>
 <!-- DataTables -->
-<script src="{{ asset('js/jQuery/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('js/bootstrap/dataTables.bootstrap.min.js') }}"></script>
+<script src="{{ asset('js/jQuery/jquery.dataTables.min.js') }}" data-turbolinks-track="reload"></script>
+<script src="{{ asset('js/bootstrap/dataTables.bootstrap.min.js') }}" data-turbolinks-track="reload"></script>
 <!-- daterangepicker -->
 <script src="{{ asset('js/moment/moment.min.js') }}"></script>
 <script src="{{ asset('js/bootstrap/daterangepicker.js') }}"></script>
@@ -90,6 +103,8 @@
 <!-- <script src="{{ asset('js/apps.js') }}"></script> -->
 <script src="{{ asset('js/sweetalert2/sweetalert2.js') }}"></script>
 
+
+
 <script type="text/javascript"  charset="utf-8">
 // Place this code snippet near the footer of your page before the close of the /body tag
                             
@@ -116,48 +131,51 @@ eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a
     $(".loading").fadeOut(200);
   }
 
-  // configurasi datepicker
-  $.fn.datepicker.dates['id'] = {
-    days: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
-    daysShort: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
-    daysMin: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
-    months: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
-    monthsShort: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
-    today: "Hari Ini",
-    clear: "Bersihkan",
-    format: "yyyy-mm-dd",
-    titleFormat: "MM yyyy",
-    weekStart: 0
-  };
+  $(document).on('turbolinks:load', function(){
 
-  $(".input-datepicker").datepicker({
-    autoclose: true,
-    format: 'dd MM yyyy',
-    todayHighlight: true,
-    language: 'id'
-  });
+      // configurasi datepicker
+      $.fn.datepicker.dates['id'] = {
+        days: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
+        daysShort: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+        daysMin: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+        months: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+        monthsShort: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
+        today: "Hari Ini",
+        clear: "Bersihkan",
+        format: "yyyy-mm-dd",
+        titleFormat: "MM yyyy",
+        weekStart: 0
+      };
 
-  $('.pertanggal').datepicker({
-    autoclose: true,
-    format: 'dd MM yyyy',
-    language: 'id'
-  })
+      $(".input-datepicker").datepicker({
+        autoclose: true,
+        format: 'dd MM yyyy',
+        todayHighlight: true,
+        language: 'id'
+      });
 
-  $('.perbulan').datepicker({
-    autoclose: true,
-    format: 'MM yyyy',
-    language: 'id',
-    viewMode: 'months',
-    minViewMode: 'months'
-  })
+      $('.pertanggal').datepicker({
+        autoclose: true,
+        format: 'dd MM yyyy',
+        language: 'id'
+      })
 
-  $('.pertahun').datepicker({
-    autoclose: true,
-    format: 'yyyy',
-    language: 'id',
-    viewMode: 'years',
-    minViewMode: 'years'
-  })
+      $('.perbulan').datepicker({
+        autoclose: true,
+        format: 'MM yyyy',
+        language: 'id',
+        viewMode: 'months',
+        minViewMode: 'months'
+      })
+
+      $('.pertahun').datepicker({
+        autoclose: true,
+        format: 'yyyy',
+        language: 'id',
+        viewMode: 'years',
+        minViewMode: 'years'
+      })
+    })
 
   function isNumberKey(evt) {
       var charCode = (evt.which) ? evt.which : evt.keyCode;
