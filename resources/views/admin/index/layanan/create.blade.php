@@ -92,7 +92,6 @@
 		<!-- /.modal-dialog -->
 </div>
 
-<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
 <script src="{{ asset('vendor/ckeditor/ckeditor.js') }}"></script>
 <script type="text/javascript">
 	$(function () {

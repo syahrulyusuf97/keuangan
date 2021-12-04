@@ -60,8 +60,6 @@
 	</div>
 </section>
 
-<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
-
 <script type="text/javascript">
 	var table;
 	$(document).ready(function(){

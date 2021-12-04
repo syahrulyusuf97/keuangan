@@ -150,7 +150,6 @@
 	</div>
 </section>
 
-<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
 <script type="text/javascript">
 	var tb_member_active, tb_member_nonactive, tb_member_suspend;
 	$(function(){

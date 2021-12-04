@@ -133,7 +133,6 @@
 	</div>
 </section>
 
-<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
 <script type="text/javascript">
 	var tb_psn_unread, tb_psn_read, tb_psn_bookmark;
 	$(function(){

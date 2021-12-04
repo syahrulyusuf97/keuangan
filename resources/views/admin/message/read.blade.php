@@ -57,6 +57,4 @@
     </div>
 </section>
 
-<!-- jQuery 3 -->
-<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
 @endsection

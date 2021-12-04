@@ -265,9 +265,6 @@
     </div>
 </section>
 
-<!-- jQuery 3 -->
-<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
-
 <script type="text/javascript">
     $(document).ready(function () {
         $.dobPicker({
