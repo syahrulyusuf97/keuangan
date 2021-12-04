@@ -126,7 +126,7 @@
                                             <div class="input-group-addon">
                                                 <i class="fa fa-calendar"></i>
                                             </div>
-                                            <input type="text" class="form-control pull-right" id="perbulan">
+                                            <input type="text" class="form-control pull-right" id="perbulan_cashflow">
                                         </div>
                                     </div>
                                 </div>
@@ -153,7 +153,7 @@
                                             <div class="input-group-addon">
                                                 <i class="fa fa-calendar"></i>
                                             </div>
-                                            <input type="text" class="form-control pull-right" id="pertahun">
+                                            <input type="text" class="form-control pull-right" id="pertahun_cashflow">
                                         </div>
                                     </div>
                                 </div>
@@ -201,7 +201,7 @@
 
     $(document).on('turbolinks:load', function(){
         
-        $('#perbulan').datepicker({
+        $('#perbulan_cashflow').datepicker({
             autoclose: true,
             format: 'MM yyyy',
             viewMode: 'months',
@@ -209,358 +209,957 @@
             language: 'id'
         })
 
-        $('#pertahun').datepicker({
+        $('#pertahun_cashflow').datepicker({
             autoclose: true,
             format: 'yyyy',
             viewMode: 'years',
             minViewMode: 'years'
         })
 
-        changeBulan();
-        changeTahun();
-
     });
 
-    function changeBulan() {
-        $('#perbulan').on('change', function(e){
-            var row = '';
-            var totalDebitBank = 0;
-            var totalKreditBank = 0;
-            var totalDebitKas = 0;
-            var totalKreditKas = 0;
-            if ($("#tbl_report").length > 0){
-                $("#tbl_report").remove();
+    $('#perbulan_cashflow').on('change', function(e){
+        var row = '';
+        var totalDebitBank = 0;
+        var totalKreditBank = 0;
+        var totalDebitKas = 0;
+        var totalKreditKas = 0;
+        if ($("#tbl_report").length > 0){
+            $("#tbl_report").remove();
+        }
+        $("#pertahun_cashflow").val('');
+        $.ajax({
+            url: baseUrl+'/laporan/cashflow/bulan/'+$(this).val(),
+            dataType: 'json',
+            beforeSend: function() {
+                // setting a timeout
+                $("#per_bulan").css('display', 'none');
             }
-            $("#pertahun").val('');
-            $.ajax({
-                url: baseUrl+'/laporan/cashflow/bulan/'+$(this).val(),
-                dataType: 'json',
-                beforeSend: function() {
-                    // setting a timeout
-                    $("#per_bulan").css('display', 'none');
-                }
-            }).done(function (results){
-                $("#per_bulan").css('display', 'block');
-                if (results.bank_debit.length == 0 && results.bank_kredit.length == 0 && results.kas_debit.length == 0 && results.kas_kredit.length == 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Tidak ada transaksi pada bulan '+$("#perbulan").val()
+        }).done(function (results){
+            $("#per_bulan").css('display', 'block');
+            if (results.bank_debit.length == 0 && results.bank_kredit.length == 0 && results.kas_debit.length == 0 && results.kas_kredit.length == 0) {
+
+                alertWarning('Oops', 'Tidak ada transaksi pada bulan '+$("#perbulan_cashflow").val());
+
+                row += '<table class="table table-bordered" style="font-size: 12px;" id="tbl_report">';
+
+                row += '<tr>\n' +
+                        '<td width="15%" class="text-center"><strong>Tanggal</strong></td>\n' +
+                        '<td class="text-center"><strong>Akun</strong></td>\n' +
+                        '<td class="text-center"><strong>Keterangan</strong></td>\n' +
+                        '<td class="text-center"><strong>Jumlah</strong></td>\n' +
+                        '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="3"><strong>Saldo Awal</strong></td>\n' +
+                        '<td class="text-right"><strong>'+new Intl.NumberFormat('de-DE').format(results.saldo_awal)+'</strong></td>\n' +
+                        '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="4"><strong>Bank Masuk</strong></td>\n' +
+                        '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="0">';
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL BANK MASUK</i></strong></td>\n' +
+                    '<td class="text-right" id="totBankDebit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                    '<td colspan="4"><strong>Bank Keluar</strong></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                            '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="0">';
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL BANK KELUAR</i></strong></td>\n' +
+                    '<td class="text-right" id="totBankKredit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="4"><strong>Kas Masuk</strong></td>\n' +
+                        '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="0">';
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL KAS MASUK</i></strong></td>\n' +
+                    '<td class="text-right" id="totKasDebit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                    '<td colspan="4"><strong>Kas Keluar</strong></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="0">';
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL KAS KELUAR</i></strong></td>\n' +
+                    '<td class="text-right" id="totKasKredit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>NILAI ARUS KAS BERSIH (NET CASH INFLOW)</i></strong></td>\n' +
+                    '<td class="text-right" id="totNet"></td>\n' +
+                    '</tr></table>'
+
+                $("#reportBulan").append(row);
+
+                // Bank
+                var debitbankinput = document.getElementsByClassName( 'debitbankvalue' ),
+                    debit_bank  = [].map.call(debitbankinput, function( input ) {
+                        return input.value;
                     });
-                    row += '<table class="table table-bordered" style="font-size: 12px;" id="tbl_report">';
 
-                    row += '<tr>\n' +
-                            '<td width="15%" class="text-center"><strong>Tanggal</strong></td>\n' +
-                            '<td class="text-center"><strong>Akun</strong></td>\n' +
-                            '<td class="text-center"><strong>Keterangan</strong></td>\n' +
-                            '<td class="text-center"><strong>Jumlah</strong></td>\n' +
-                            '</tr>';
-
-                    row += '<tr>\n' +
-                            '<td colspan="3"><strong>Saldo Awal</strong></td>\n' +
-                            '<td class="text-right"><strong>'+new Intl.NumberFormat('de-DE').format(results.saldo_awal)+'</strong></td>\n' +
-                            '</tr>';
-
-                    row += '<tr>\n' +
-                            '<td colspan="4"><strong>Bank Masuk</strong></td>\n' +
-                            '</tr>';
-
-                    row += '<tr>\n' +
-                            '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
-                            '</tr>'+
-                            '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="0">';
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>TOTAL BANK MASUK</i></strong></td>\n' +
-                        '<td class="text-right" id="totBankDebit"></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                        '<td colspan="4"><strong>Bank Keluar</strong></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                                '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
-                            '</tr>'+
-                            '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="0">';
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>TOTAL BANK KELUAR</i></strong></td>\n' +
-                        '<td class="text-right" id="totBankKredit"></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                            '<td colspan="4"><strong>Kas Masuk</strong></td>\n' +
-                            '</tr>';
-
-                    row += '<tr>\n' +
-                            '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
-                            '</tr>'+
-                            '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="0">';
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>TOTAL KAS MASUK</i></strong></td>\n' +
-                        '<td class="text-right" id="totKasDebit"></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                        '<td colspan="4"><strong>Kas Keluar</strong></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                            '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
-                            '</tr>'+
-                            '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="0">';
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>TOTAL KAS KELUAR</i></strong></td>\n' +
-                        '<td class="text-right" id="totKasKredit"></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>NILAI ARUS KAS BERSIH (NET CASH INFLOW)</i></strong></td>\n' +
-                        '<td class="text-right" id="totNet"></td>\n' +
-                        '</tr></table>'
-
-                    $("#reportBulan").append(row);
-
-                    // Bank
-                    var debitbankinput = document.getElementsByClassName( 'debitbankvalue' ),
-                        debit_bank  = [].map.call(debitbankinput, function( input ) {
-                            return input.value;
-                        });
-
-                    for (var i = 0; i < debit_bank.length; i++){
-                        totalDebitBank += parseInt(debit_bank[i]);
-                    }
-
-                    $("#totBankDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitBank)+'</strong>');
-
-                    var kreditbankinput = document.getElementsByClassName( 'kreditbankvalue' ),
-                        kredit_bank  = [].map.call(kreditbankinput, function( input ) {
-                            return input.value;
-                        });
-
-                    for (var i = 0; i < kredit_bank.length; i++){
-                        totalKreditBank += parseInt(kredit_bank[i]);
-                    }
-
-                    $("#totBankKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditBank)+'</strong>');
-
-                    // Kas
-                    var debitkasinput = document.getElementsByClassName( 'debitkasvalue' ),
-                        debit_kas  = [].map.call(debitkasinput, function( input ) {
-                            return input.value;
-                        });
-
-                    for (var i = 0; i < debit_kas.length; i++){
-                        totalDebitKas += parseInt(debit_kas[i]);
-                    }
-
-                    $("#totKasDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitKas)+'</strong>');
-
-                    var kreditkasinput = document.getElementsByClassName( 'kreditkasvalue' ),
-                        kredit_kas  = [].map.call(kreditkasinput, function( input ) {
-                            return input.value;
-                        });
-
-                    for (var i = 0; i < kredit_kas.length; i++){
-                        totalKreditKas += parseInt(kredit_kas[i]);
-                    }
-
-                    $("#totKasKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditKas)+'</strong>');
-
-                    var totNet = results.saldo_awal + ((parseInt(totalDebitBank) - parseInt(totalKreditBank)) + (parseInt(totalDebitKas) - parseInt(totalKreditKas)));
-
-                    $("#totNet").html('<strong>'+new Intl.NumberFormat('de-DE').format(totNet)+'</strong>');
-
-                    $("#periode").html('Periode '+ results.periode);
-                } else {
-                    row += '<table class="table table-bordered" style="font-size: 12px;" id="tbl_report">';
-
-                    row += '<tr>\n' +
-                            '<td width="15%" class="text-center"><strong>Tanggal</strong></td>\n' +
-                            '<td class="text-center"><strong>Akun</strong></td>\n' +
-                            '<td class="text-center"><strong>Keterangan</strong></td>\n' +
-                            '<td class="text-center"><strong>Jumlah</strong></td>\n' +
-                            '</tr>';
-
-                    row += '<tr>\n' +
-                            '<td colspan="3"><strong>Saldo Awal</strong></td>\n' +
-                            '<td class="text-right"><strong>'+new Intl.NumberFormat('de-DE').format(results.saldo_awal)+'</strong></td>\n' +
-                            '</tr>';
-
-                    row += '<tr>\n' +
-                            '<td colspan="4"><strong>Bank Masuk</strong></td>\n' +
-                            '</tr>';
-
-                    if (results.bank_debit.length != 0) {
-                        results.bank_debit.forEach(function(element) {
-                            row += '<tr>\n' +
-                                    '<td width="15%">'+element.c_tanggal+'</td>\n' +
-                                    '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
-                                    '<td>'+element.c_transaksi+'</td>\n' +
-                                    '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
-                                    '</tr>'+
-                                    '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
-                        });
-                    } else {
-                        row += '<tr>\n' +
-                                    '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
-                                    '</tr>'+
-                                    '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="0">';
-                    }
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>TOTAL BANK MASUK</i></strong></td>\n' +
-                        '<td class="text-right" id="totBankDebit"></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                        '<td colspan="4"><strong>Bank Keluar</strong></td>\n' +
-                        '</tr>';
-
-                    if (results.bank_kredit.length != 0) {
-                        results.bank_kredit.forEach(function(element) {
-                            row += '<tr>\n' +
-                                    '<td width="15%">'+element.c_tanggal+'</td>\n' +
-                                    '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
-                                    '<td>'+element.c_transaksi+'</td>\n' +
-                                    '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
-                                    '</tr>'+
-                                    '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
-                        });
-                    } else {
-                        row += '<tr>\n' +
-                                '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
-                            '</tr>'+
-                            '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="0">';
-                    }
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>TOTAL BANK KELUAR</i></strong></td>\n' +
-                        '<td class="text-right" id="totBankKredit"></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                            '<td colspan="4"><strong>Kas Masuk</strong></td>\n' +
-                            '</tr>';
-
-                    if (results.kas_debit.length != 0) {
-                        results.kas_debit.forEach(function(element) {
-                            row += '<tr>\n' +
-                                    '<td width="15%">'+element.c_tanggal+'</td>\n' +
-                                    '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
-                                    '<td>'+element.c_transaksi+'</td>\n' +
-                                    '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
-                                    '</tr>'+
-                                    '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
-
-                        });
-                    } else {
-                        row += '<tr>\n' +
-                            '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
-                            '</tr>'+
-                            '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="0">';
-                    }
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>TOTAL KAS MASUK</i></strong></td>\n' +
-                        '<td class="text-right" id="totKasDebit"></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                        '<td colspan="4"><strong>Kas Keluar</strong></td>\n' +
-                        '</tr>';
-
-                    if (results.kas_kredit.length != 0) {
-                        results.kas_kredit.forEach(function(element) {
-                            row += '<tr>\n' +
-                                    '<td width="15%">'+element.c_tanggal+'</td>\n' +
-                                    '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
-                                    '<td>'+element.c_transaksi+'</td>\n' +
-                                    '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
-                                    '</tr>'+
-                                    '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
-                        });
-                    } else {
-                        row += '<tr>\n' +
-                            '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
-                            '</tr>'+
-                            '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="0">';
-                    }
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>TOTAL KAS KELUAR</i></strong></td>\n' +
-                        '<td class="text-right" id="totKasKredit"></td>\n' +
-                        '</tr>';
-
-                    row += '<tr>\n' +
-                        '<td colspan="3" class="text-center"><strong><i>NILAI ARUS KAS BERSIH (NET CASH INFLOW)</i></strong></td>\n' +
-                        '<td class="text-right" id="totNet"></td>\n' +
-                        '</tr></table>'
-
-                    $("#reportBulan").append(row);
-
-                    // Bank
-                    var debitbankinput = document.getElementsByClassName( 'debitbankvalue' ),
-                        debit_bank  = [].map.call(debitbankinput, function( input ) {
-                            return input.value;
-                        });
-
-                    for (var i = 0; i < debit_bank.length; i++){
-                        totalDebitBank += parseInt(debit_bank[i]);
-                    }
-
-                    $("#totBankDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitBank)+'</strong>');
-
-                    var kreditbankinput = document.getElementsByClassName( 'kreditbankvalue' ),
-                        kredit_bank  = [].map.call(kreditbankinput, function( input ) {
-                            return input.value;
-                        });
-
-                    for (var i = 0; i < kredit_bank.length; i++){
-                        totalKreditBank += parseInt(kredit_bank[i]);
-                    }
-
-                    $("#totBankKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditBank)+'</strong>');
-
-                    // Kas
-                    var debitkasinput = document.getElementsByClassName( 'debitkasvalue' ),
-                        debit_kas  = [].map.call(debitkasinput, function( input ) {
-                            return input.value;
-                        });
-
-                    for (var i = 0; i < debit_kas.length; i++){
-                        totalDebitKas += parseInt(debit_kas[i]);
-                    }
-
-                    $("#totKasDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitKas)+'</strong>');
-
-                    var kreditkasinput = document.getElementsByClassName( 'kreditkasvalue' ),
-                        kredit_kas  = [].map.call(kreditkasinput, function( input ) {
-                            return input.value;
-                        });
-
-                    for (var i = 0; i < kredit_kas.length; i++){
-                        totalKreditKas += parseInt(kredit_kas[i]);
-                    }
-
-                    $("#totKasKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditKas)+'</strong>');
-
-                    var totNet = results.saldo_awal + ((parseInt(totalDebitBank) - parseInt(totalKreditBank)) + (parseInt(totalDebitKas) - parseInt(totalKreditKas)));
-
-                    $("#totNet").html('<strong>'+new Intl.NumberFormat('de-DE').format(totNet)+'</strong>');
-
-                    $("#periode").html('Periode '+ results.periode);
+                for (var i = 0; i < debit_bank.length; i++){
+                    totalDebitBank += parseInt(debit_bank[i]);
                 }
 
-            })
+                $("#totBankDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitBank)+'</strong>');
+
+                var kreditbankinput = document.getElementsByClassName( 'kreditbankvalue' ),
+                    kredit_bank  = [].map.call(kreditbankinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < kredit_bank.length; i++){
+                    totalKreditBank += parseInt(kredit_bank[i]);
+                }
+
+                $("#totBankKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditBank)+'</strong>');
+
+                // Kas
+                var debitkasinput = document.getElementsByClassName( 'debitkasvalue' ),
+                    debit_kas  = [].map.call(debitkasinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < debit_kas.length; i++){
+                    totalDebitKas += parseInt(debit_kas[i]);
+                }
+
+                $("#totKasDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitKas)+'</strong>');
+
+                var kreditkasinput = document.getElementsByClassName( 'kreditkasvalue' ),
+                    kredit_kas  = [].map.call(kreditkasinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < kredit_kas.length; i++){
+                    totalKreditKas += parseInt(kredit_kas[i]);
+                }
+
+                $("#totKasKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditKas)+'</strong>');
+
+                var totNet = results.saldo_awal + ((parseInt(totalDebitBank) - parseInt(totalKreditBank)) + (parseInt(totalDebitKas) - parseInt(totalKreditKas)));
+
+                $("#totNet").html('<strong>'+new Intl.NumberFormat('de-DE').format(totNet)+'</strong>');
+
+                $("#periode").html('Periode '+ results.periode);
+            } else {
+                row += '<table class="table table-bordered" style="font-size: 12px;" id="tbl_report">';
+
+                row += '<tr>\n' +
+                        '<td width="15%" class="text-center"><strong>Tanggal</strong></td>\n' +
+                        '<td class="text-center"><strong>Akun</strong></td>\n' +
+                        '<td class="text-center"><strong>Keterangan</strong></td>\n' +
+                        '<td class="text-center"><strong>Jumlah</strong></td>\n' +
+                        '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="3"><strong>Saldo Awal</strong></td>\n' +
+                        '<td class="text-right"><strong>'+new Intl.NumberFormat('de-DE').format(results.saldo_awal)+'</strong></td>\n' +
+                        '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="4"><strong>Bank Masuk</strong></td>\n' +
+                        '</tr>';
+
+                if (results.bank_debit.length != 0) {
+                    results.bank_debit.forEach(function(element) {
+                        row += '<tr>\n' +
+                                '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                '<td>'+element.c_transaksi+'</td>\n' +
+                                '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+                    });
+                } else {
+                    row += '<tr>\n' +
+                                '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="0">';
+                }
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL BANK MASUK</i></strong></td>\n' +
+                    '<td class="text-right" id="totBankDebit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                    '<td colspan="4"><strong>Bank Keluar</strong></td>\n' +
+                    '</tr>';
+
+                if (results.bank_kredit.length != 0) {
+                    results.bank_kredit.forEach(function(element) {
+                        row += '<tr>\n' +
+                                '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                '<td>'+element.c_transaksi+'</td>\n' +
+                                '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+                    });
+                } else {
+                    row += '<tr>\n' +
+                            '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="0">';
+                }
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL BANK KELUAR</i></strong></td>\n' +
+                    '<td class="text-right" id="totBankKredit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="4"><strong>Kas Masuk</strong></td>\n' +
+                        '</tr>';
+
+                if (results.kas_debit.length != 0) {
+                    results.kas_debit.forEach(function(element) {
+                        row += '<tr>\n' +
+                                '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                '<td>'+element.c_transaksi+'</td>\n' +
+                                '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+
+                    });
+                } else {
+                    row += '<tr>\n' +
+                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="0">';
+                }
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL KAS MASUK</i></strong></td>\n' +
+                    '<td class="text-right" id="totKasDebit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                    '<td colspan="4"><strong>Kas Keluar</strong></td>\n' +
+                    '</tr>';
+
+                if (results.kas_kredit.length != 0) {
+                    results.kas_kredit.forEach(function(element) {
+                        row += '<tr>\n' +
+                                '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                '<td>'+element.c_transaksi+'</td>\n' +
+                                '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+                    });
+                } else {
+                    row += '<tr>\n' +
+                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="0">';
+                }
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL KAS KELUAR</i></strong></td>\n' +
+                    '<td class="text-right" id="totKasKredit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>NILAI ARUS KAS BERSIH (NET CASH INFLOW)</i></strong></td>\n' +
+                    '<td class="text-right" id="totNet"></td>\n' +
+                    '</tr></table>'
+
+                $("#reportBulan").append(row);
+
+                // Bank
+                var debitbankinput = document.getElementsByClassName( 'debitbankvalue' ),
+                    debit_bank  = [].map.call(debitbankinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < debit_bank.length; i++){
+                    totalDebitBank += parseInt(debit_bank[i]);
+                }
+
+                $("#totBankDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitBank)+'</strong>');
+
+                var kreditbankinput = document.getElementsByClassName( 'kreditbankvalue' ),
+                    kredit_bank  = [].map.call(kreditbankinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < kredit_bank.length; i++){
+                    totalKreditBank += parseInt(kredit_bank[i]);
+                }
+
+                $("#totBankKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditBank)+'</strong>');
+
+                // Kas
+                var debitkasinput = document.getElementsByClassName( 'debitkasvalue' ),
+                    debit_kas  = [].map.call(debitkasinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < debit_kas.length; i++){
+                    totalDebitKas += parseInt(debit_kas[i]);
+                }
+
+                $("#totKasDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitKas)+'</strong>');
+
+                var kreditkasinput = document.getElementsByClassName( 'kreditkasvalue' ),
+                    kredit_kas  = [].map.call(kreditkasinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < kredit_kas.length; i++){
+                    totalKreditKas += parseInt(kredit_kas[i]);
+                }
+
+                $("#totKasKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditKas)+'</strong>');
+
+                var totNet = results.saldo_awal + ((parseInt(totalDebitBank) - parseInt(totalKreditBank)) + (parseInt(totalDebitKas) - parseInt(totalKreditKas)));
+
+                $("#totNet").html('<strong>'+new Intl.NumberFormat('de-DE').format(totNet)+'</strong>');
+
+                $("#periode").html('Periode '+ results.periode);
+            }
+
         })
+    })
+
+    $('#pertahun_cashflow').on('change', function(e){
+        var row = '';
+        var totalDebitBank = 0;
+        var totalKreditBank = 0;
+        var totalDebitKas = 0;
+        var totalKreditKas = 0;
+        if ($("#tbl_report").length > 0){
+            $("#tbl_report").remove();
+        }
+        $("#perbulan_cashflow").val('');
+        $.ajax({
+            url: baseUrl+'/laporan/cashflow/tahun/'+$(this).val(),
+            dataType: 'json',
+            beforeSend: function() {
+                // setting a timeout
+                $("#per_bulan").css('display', 'none');
+            }
+        }).done(function (results){
+            $("#per_bulan").css('display', 'block');
+            if (results.bank_debit.length == 0 && results.bank_kredit.length == 0 && results.kas_debit.length == 0 && results.kas_kredit.length == 0) {
+                alertWarning('Oops', 'Tidak ada transaksi pada tahun '+$("#pertahun_cashflow").val());
+            } else {
+                row += '<table class="table table-bordered" style="font-size: 12px;" id="tbl_report">';
+
+                row += '<tr>\n' +
+                        '<td width="15%" class="text-center"><strong>Tanggal</strong></td>\n' +
+                        '<td class="text-center"><strong>Akun</strong></td>\n' +
+                        '<td class="text-center"><strong>Keterangan</strong></td>\n' +
+                        '<td class="text-center"><strong>Jumlah</strong></td>\n' +
+                        '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="3"><strong>Saldo Awal</strong></td>\n' +
+                        '<td class="text-right"><strong>'+new Intl.NumberFormat('de-DE').format(results.saldo_awal)+'</strong></td>\n' +
+                        '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="4"><strong>Bank Masuk</strong></td>\n' +
+                        '</tr>';
+
+                if (results.bank_debit.length != 0) {
+                    results.bank_debit.forEach(function(element) {
+                        row += '<tr>\n' +
+                                '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                '<td>'+element.c_transaksi+'</td>\n' +
+                                '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+
+                    });
+                } else {
+                    row += '<tr>\n' +
+                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="0">';
+                }
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL BANK MASUK</i></strong></td>\n' +
+                    '<td class="text-right" id="totBankDebit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                    '<td colspan="4"><strong>Bank Keluar</strong></td>\n' +
+                    '</tr>';
+
+                if (results.bank_kredit.length != 0) {
+                    results.bank_kredit.forEach(function(element) {
+                        row += '<tr>\n' +
+                                '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                '<td>'+element.c_transaksi+'</td>\n' +
+                                '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+                    });
+                } else {
+                    row += '<tr>\n' +
+                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="0">';
+                }
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL BANK KELUAR</i></strong></td>\n' +
+                    '<td class="text-right" id="totBankKredit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                        '<td colspan="4"><strong>Kas Masuk</strong></td>\n' +
+                        '</tr>';
+
+                if (results.kas_debit.length != 0) {
+                    results.kas_debit.forEach(function(element) {
+                        row += '<tr>\n' +
+                                '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                '<td>'+element.c_transaksi+'</td>\n' +
+                                '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+                    });
+                } else {
+                    row += '<tr>\n' +
+                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="0">';
+                }
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL KAS MASUK</i></strong></td>\n' +
+                    '<td class="text-right" id="totKasDebit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                    '<td colspan="4"><strong>Kas Keluar</strong></td>\n' +
+                    '</tr>';
+
+                if (results.kas_kredit.length != 0) {
+                    results.kas_kredit.forEach(function(element) {
+                        row += '<tr>\n' +
+                                '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                '<td>'+element.c_transaksi+'</td>\n' +
+                                '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+                    });
+                } else {
+                    row += '<tr>\n' +
+                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                        '</tr>'+
+                        '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="0">';
+                }
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>TOTAL KAS KELUAR</i></strong></td>\n' +
+                    '<td class="text-right" id="totKasKredit"></td>\n' +
+                    '</tr>';
+
+                row += '<tr>\n' +
+                    '<td colspan="3" class="text-center"><strong><i>NILAI ARUS KAS BERSIH (NET CASH INFLOW)</i></strong></td>\n' +
+                    '<td class="text-right" id="totNet"></td>\n' +
+                    '</tr></table>'
+
+                $("#reportBulan").append(row);
+
+                // Bank
+                var debitbankinput = document.getElementsByClassName( 'debitbankvalue' ),
+                    debit_bank  = [].map.call(debitbankinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < debit_bank.length; i++){
+                    totalDebitBank += parseInt(debit_bank[i]);
+                }
+
+                $("#totBankDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitBank)+'</strong>');
+
+                var kreditbankinput = document.getElementsByClassName( 'kreditbankvalue' ),
+                    kredit_bank  = [].map.call(kreditbankinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < kredit_bank.length; i++){
+                    totalKreditBank += parseInt(kredit_bank[i]);
+                }
+
+                $("#totBankKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditBank)+'</strong>');
+
+                // Kas
+                var debitkasinput = document.getElementsByClassName( 'debitkasvalue' ),
+                    debit_kas  = [].map.call(debitkasinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < debit_kas.length; i++){
+                    totalDebitKas += parseInt(debit_kas[i]);
+                }
+
+                $("#totKasDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitKas)+'</strong>');
+
+                var kreditkasinput = document.getElementsByClassName( 'kreditkasvalue' ),
+                    kredit_kas  = [].map.call(kreditkasinput, function( input ) {
+                        return input.value;
+                    });
+
+                for (var i = 0; i < kredit_kas.length; i++){
+                    totalKreditKas += parseInt(kredit_kas[i]);
+                }
+
+                $("#totKasKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditKas)+'</strong>');
+
+                var totNet = (parseInt(totalDebitBank) - parseInt(totalKreditBank)) + (parseInt(totalDebitKas) - parseInt(totalKreditKas));
+
+                $("#totNet").html('<strong>'+new Intl.NumberFormat('de-DE').format(totNet)+'</strong>');
+
+                $("#periode").html('Periode '+ $("#pertahun_cashflow").val().toString());
+            }
+
+        })
+    })
+
+    function exportExcel() {
+        var bulan = null, tahun = null
+        if ($("#perbulan_cashflow").val() == "" && $("#pertahun_cashflow").val() == "") {
+            alertWarning('Oops', 'Masukkan bulan atau tahun transaksi');
+        }
+
+        if ($("#perbulan_cashflow").val() != "") {
+            bulan = $("#perbulan_cashflow").val();
+        } else if ($("#pertahun_cashflow").val() != "") {
+            tahun = $("#pertahun_cashflow").val();
+        }
+
+        window.open(baseUrl+'/laporan/cashflow/excel/'+bulan+'/'+tahun);
     }
 
-    function changeTahun() {
-        $('#pertahun').on('change', function(e){
+    function exportPDF() {
+        var bulan = null, tahun = null
+        if ($("#perbulan_cashflow").val() == "" && $("#pertahun_cashflow").val() == "") {
+            alertWarning('Oops', 'Masukkan bulan atau tahun transaksi');
+        }
+
+        if ($("#perbulan_cashflow").val() != "") {
+            bulan = $("#perbulan_cashflow").val();
+        } else if ($("#pertahun_cashflow").val() != "") {
+            tahun = $("#pertahun_cashflow").val();
+        }
+
+        window.open(baseUrl+'/laporan/cashflow/pdf/'+bulan+'/'+tahun);
+    }
+
+    function printDiv(divName) {
+        var report = document.getElementById('tbl_report');
+        if (report == null) {
+            alertWarning('Oops', 'Masukkan bulan atau tahun transaksi');
+        }
+        $("#non-printable").hide();
+        var printContents = document.getElementById(divName).innerHTML;
+        var originalContents = document.body.innerHTML;
+
+        document.body.innerHTML = printContents;
+
+        window.print();
+
+        document.body.innerHTML = originalContents;
+
+    }
+
+    var beforePrint = function() {
+        console.log('Functionality to run before printing.');
+    };
+
+    var afterPrint = function() {
+        console.log('Functionality to run after printing');
+        $("#non-printable").show();
+
+        $('#perbulan_cashflow').datepicker({
+            autoclose: true,
+            format: 'MM yyyy',
+            viewMode: 'months',
+            minViewMode: 'months'
+        })
+
+        $('#pertahun_cashflow').datepicker({
+            autoclose: true,
+            format: 'yyyy',
+            viewMode: 'years',
+            minViewMode: 'years'
+        })
+
+        $('#perbulan_cashflow').on('change', function(e){
+                var row = '';
+                var totalDebitBank = 0;
+                var totalKreditBank = 0;
+                var totalDebitKas = 0;
+                var totalKreditKas = 0;
+                if ($("#tbl_report").length > 0){
+                    $("#tbl_report").remove();
+                }
+                $("#pertahun_cashflow").val('');
+                $.ajax({
+                    url: baseUrl+'/laporan/cashflow/bulan/'+$(this).val(),
+                    dataType: 'json',
+                    beforeSend: function() {
+                        // setting a timeout
+                        $("#per_bulan").css('display', 'none');
+                    }
+                }).done(function (results){
+                    $("#per_bulan").css('display', 'block');
+                    if (results.bank_debit.length == 0 && results.bank_kredit.length == 0 && results.kas_debit.length == 0 && results.kas_kredit.length == 0) {
+
+                        alertWarning('Oops', 'Tidak ada transaksi pada bulan '+$("#perbulan_cashflow").val());
+
+                        row += '<table class="table table-bordered" style="font-size: 12px;" id="tbl_report">';
+
+                        row += '<tr>\n' +
+                                '<td width="15%" class="text-center"><strong>Tanggal</strong></td>\n' +
+                                '<td class="text-center"><strong>Akun</strong></td>\n' +
+                                '<td class="text-center"><strong>Keterangan</strong></td>\n' +
+                                '<td class="text-center"><strong>Jumlah</strong></td>\n' +
+                                '</tr>';
+
+                        row += '<tr>\n' +
+                                '<td colspan="3"><strong>Saldo Awal</strong></td>\n' +
+                                '<td class="text-right"><strong>'+new Intl.NumberFormat('de-DE').format(results.saldo_awal)+'</strong></td>\n' +
+                                '</tr>';
+
+                        row += '<tr>\n' +
+                                '<td colspan="4"><strong>Bank Masuk</strong></td>\n' +
+                                '</tr>';
+
+                        row += '<tr>\n' +
+                                '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="0">';
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>TOTAL BANK MASUK</i></strong></td>\n' +
+                            '<td class="text-right" id="totBankDebit"></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                            '<td colspan="4"><strong>Bank Keluar</strong></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                                    '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="0">';
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>TOTAL BANK KELUAR</i></strong></td>\n' +
+                            '<td class="text-right" id="totBankKredit"></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                                '<td colspan="4"><strong>Kas Masuk</strong></td>\n' +
+                                '</tr>';
+
+                        row += '<tr>\n' +
+                                '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="0">';
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>TOTAL KAS MASUK</i></strong></td>\n' +
+                            '<td class="text-right" id="totKasDebit"></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                            '<td colspan="4"><strong>Kas Keluar</strong></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                                '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="0">';
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>TOTAL KAS KELUAR</i></strong></td>\n' +
+                            '<td class="text-right" id="totKasKredit"></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>NILAI ARUS KAS BERSIH (NET CASH INFLOW)</i></strong></td>\n' +
+                            '<td class="text-right" id="totNet"></td>\n' +
+                            '</tr></table>'
+
+                        $("#reportBulan").append(row);
+
+                        // Bank
+                        var debitbankinput = document.getElementsByClassName( 'debitbankvalue' ),
+                            debit_bank  = [].map.call(debitbankinput, function( input ) {
+                                return input.value;
+                            });
+
+                        for (var i = 0; i < debit_bank.length; i++){
+                            totalDebitBank += parseInt(debit_bank[i]);
+                        }
+
+                        $("#totBankDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitBank)+'</strong>');
+
+                        var kreditbankinput = document.getElementsByClassName( 'kreditbankvalue' ),
+                            kredit_bank  = [].map.call(kreditbankinput, function( input ) {
+                                return input.value;
+                            });
+
+                        for (var i = 0; i < kredit_bank.length; i++){
+                            totalKreditBank += parseInt(kredit_bank[i]);
+                        }
+
+                        $("#totBankKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditBank)+'</strong>');
+
+                        // Kas
+                        var debitkasinput = document.getElementsByClassName( 'debitkasvalue' ),
+                            debit_kas  = [].map.call(debitkasinput, function( input ) {
+                                return input.value;
+                            });
+
+                        for (var i = 0; i < debit_kas.length; i++){
+                            totalDebitKas += parseInt(debit_kas[i]);
+                        }
+
+                        $("#totKasDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitKas)+'</strong>');
+
+                        var kreditkasinput = document.getElementsByClassName( 'kreditkasvalue' ),
+                            kredit_kas  = [].map.call(kreditkasinput, function( input ) {
+                                return input.value;
+                            });
+
+                        for (var i = 0; i < kredit_kas.length; i++){
+                            totalKreditKas += parseInt(kredit_kas[i]);
+                        }
+
+                        $("#totKasKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditKas)+'</strong>');
+
+                        var totNet = results.saldo_awal + ((parseInt(totalDebitBank) - parseInt(totalKreditBank)) + (parseInt(totalDebitKas) - parseInt(totalKreditKas)));
+
+                        $("#totNet").html('<strong>'+new Intl.NumberFormat('de-DE').format(totNet)+'</strong>');
+
+                        $("#periode").html('Periode '+ results.periode);
+                    } else {
+                        row += '<table class="table table-bordered" style="font-size: 12px;" id="tbl_report">';
+
+                        row += '<tr>\n' +
+                                '<td width="15%" class="text-center"><strong>Tanggal</strong></td>\n' +
+                                '<td class="text-center"><strong>Akun</strong></td>\n' +
+                                '<td class="text-center"><strong>Keterangan</strong></td>\n' +
+                                '<td class="text-center"><strong>Jumlah</strong></td>\n' +
+                                '</tr>';
+
+                        row += '<tr>\n' +
+                                '<td colspan="3"><strong>Saldo Awal</strong></td>\n' +
+                                '<td class="text-right"><strong>'+new Intl.NumberFormat('de-DE').format(results.saldo_awal)+'</strong></td>\n' +
+                                '</tr>';
+
+                        row += '<tr>\n' +
+                                '<td colspan="4"><strong>Bank Masuk</strong></td>\n' +
+                                '</tr>';
+
+                        if (results.bank_debit.length != 0) {
+                            results.bank_debit.forEach(function(element) {
+                                row += '<tr>\n' +
+                                        '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                        '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                        '<td>'+element.c_transaksi+'</td>\n' +
+                                        '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                        '</tr>'+
+                                        '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+                            });
+                        } else {
+                            row += '<tr>\n' +
+                                        '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                                        '</tr>'+
+                                        '<input type="hidden" name="debit_bank[]" class="debitbankvalue" value="0">';
+                        }
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>TOTAL BANK MASUK</i></strong></td>\n' +
+                            '<td class="text-right" id="totBankDebit"></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                            '<td colspan="4"><strong>Bank Keluar</strong></td>\n' +
+                            '</tr>';
+
+                        if (results.bank_kredit.length != 0) {
+                            results.bank_kredit.forEach(function(element) {
+                                row += '<tr>\n' +
+                                        '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                        '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                        '<td>'+element.c_transaksi+'</td>\n' +
+                                        '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                        '</tr>'+
+                                        '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+                            });
+                        } else {
+                            row += '<tr>\n' +
+                                    '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="kredit_bank[]" class="kreditbankvalue" value="0">';
+                        }
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>TOTAL BANK KELUAR</i></strong></td>\n' +
+                            '<td class="text-right" id="totBankKredit"></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                                '<td colspan="4"><strong>Kas Masuk</strong></td>\n' +
+                                '</tr>';
+
+                        if (results.kas_debit.length != 0) {
+                            results.kas_debit.forEach(function(element) {
+                                row += '<tr>\n' +
+                                        '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                        '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                        '<td>'+element.c_transaksi+'</td>\n' +
+                                        '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                        '</tr>'+
+                                        '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+
+                            });
+                        } else {
+                            row += '<tr>\n' +
+                                '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="debit_kas[]" class="debitkasvalue" value="0">';
+                        }
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>TOTAL KAS MASUK</i></strong></td>\n' +
+                            '<td class="text-right" id="totKasDebit"></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                            '<td colspan="4"><strong>Kas Keluar</strong></td>\n' +
+                            '</tr>';
+
+                        if (results.kas_kredit.length != 0) {
+                            results.kas_kredit.forEach(function(element) {
+                                row += '<tr>\n' +
+                                        '<td width="15%">'+element.c_tanggal+'</td>\n' +
+                                        '<td>'+'('+element.akun.kode_akun+') '+element.akun.nama_akun+'</td>\n' +
+                                        '<td>'+element.c_transaksi+'</td>\n' +
+                                        '<td class="text-right">'+new Intl.NumberFormat('de-DE').format(element.c_jumlah)+'</td>\n' +
+                                        '</tr>'+
+                                        '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="'+new Intl.NumberFormat('de-DE').format(element.c_jumlah).toString().replace(".", "").replace(".", "").replace(".", "")+'">';
+                            });
+                        } else {
+                            row += '<tr>\n' +
+                                '<td colspan="4" class="text-center">Tidak ada transaksi</td>\n' +
+                                '</tr>'+
+                                '<input type="hidden" name="kredit_kas[]" class="kreditkasvalue" value="0">';
+                        }
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>TOTAL KAS KELUAR</i></strong></td>\n' +
+                            '<td class="text-right" id="totKasKredit"></td>\n' +
+                            '</tr>';
+
+                        row += '<tr>\n' +
+                            '<td colspan="3" class="text-center"><strong><i>NILAI ARUS KAS BERSIH (NET CASH INFLOW)</i></strong></td>\n' +
+                            '<td class="text-right" id="totNet"></td>\n' +
+                            '</tr></table>'
+
+                        $("#reportBulan").append(row);
+
+                        // Bank
+                        var debitbankinput = document.getElementsByClassName( 'debitbankvalue' ),
+                            debit_bank  = [].map.call(debitbankinput, function( input ) {
+                                return input.value;
+                            });
+
+                        for (var i = 0; i < debit_bank.length; i++){
+                            totalDebitBank += parseInt(debit_bank[i]);
+                        }
+
+                        $("#totBankDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitBank)+'</strong>');
+
+                        var kreditbankinput = document.getElementsByClassName( 'kreditbankvalue' ),
+                            kredit_bank  = [].map.call(kreditbankinput, function( input ) {
+                                return input.value;
+                            });
+
+                        for (var i = 0; i < kredit_bank.length; i++){
+                            totalKreditBank += parseInt(kredit_bank[i]);
+                        }
+
+                        $("#totBankKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditBank)+'</strong>');
+
+                        // Kas
+                        var debitkasinput = document.getElementsByClassName( 'debitkasvalue' ),
+                            debit_kas  = [].map.call(debitkasinput, function( input ) {
+                                return input.value;
+                            });
+
+                        for (var i = 0; i < debit_kas.length; i++){
+                            totalDebitKas += parseInt(debit_kas[i]);
+                        }
+
+                        $("#totKasDebit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalDebitKas)+'</strong>');
+
+                        var kreditkasinput = document.getElementsByClassName( 'kreditkasvalue' ),
+                            kredit_kas  = [].map.call(kreditkasinput, function( input ) {
+                                return input.value;
+                            });
+
+                        for (var i = 0; i < kredit_kas.length; i++){
+                            totalKreditKas += parseInt(kredit_kas[i]);
+                        }
+
+                        $("#totKasKredit").html('<strong>'+new Intl.NumberFormat('de-DE').format(totalKreditKas)+'</strong>');
+
+                        var totNet = results.saldo_awal + ((parseInt(totalDebitBank) - parseInt(totalKreditBank)) + (parseInt(totalDebitKas) - parseInt(totalKreditKas)));
+
+                        $("#totNet").html('<strong>'+new Intl.NumberFormat('de-DE').format(totNet)+'</strong>');
+
+                        $("#periode").html('Periode '+ results.periode);
+                    }
+
+                })
+        })
+
+        $('#pertahun_cashflow').on('change', function(e){
             var row = '';
             var totalDebitBank = 0;
             var totalKreditBank = 0;
@@ -569,7 +1168,7 @@
             if ($("#tbl_report").length > 0){
                 $("#tbl_report").remove();
             }
-            $("#perbulan").val('');
+            $("#perbulan_cashflow").val('');
             $.ajax({
                 url: baseUrl+'/laporan/cashflow/tahun/'+$(this).val(),
                 dataType: 'json',
@@ -580,11 +1179,7 @@
             }).done(function (results){
                 $("#per_bulan").css('display', 'block');
                 if (results.bank_debit.length == 0 && results.bank_kredit.length == 0 && results.kas_debit.length == 0 && results.kas_kredit.length == 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Tidak ada transaksi pada tahun '+$("#pertahun").val()
-                    });
+                    alertWarning('Oops', 'Tidak ada transaksi pada tahun '+$("#pertahun_cashflow").val());
                 } else {
                     row += '<table class="table table-bordered" style="font-size: 12px;" id="tbl_report">';
 
@@ -762,96 +1357,11 @@
 
                     $("#totNet").html('<strong>'+new Intl.NumberFormat('de-DE').format(totNet)+'</strong>');
 
-                    $("#periode").html('Periode '+ $("#pertahun").val().toString());
+                    $("#periode").html('Periode '+ $("#pertahun_cashflow").val().toString());
                 }
 
             })
         })
-    }
-
-    function exportExcel() {
-        var bulan = null, tahun = null
-        if ($("#perbulan").val() == "" && $("#pertahun").val() == "") {
-            Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Masukkan bulan atau tahun transaksi'
-                    });
-        }
-
-        if ($("#perbulan").val() != "") {
-            bulan = $("#perbulan").val();
-        } else if ($("#pertahun").val() != "") {
-            tahun = $("#pertahun").val();
-        }
-
-        window.open(baseUrl+'/laporan/cashflow/excel/'+bulan+'/'+tahun);
-    }
-
-    function exportPDF() {
-        var bulan = null, tahun = null
-        if ($("#perbulan").val() == "" && $("#pertahun").val() == "") {
-            Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Masukkan bulan atau tahun transaksi'
-                    });
-        }
-
-        if ($("#perbulan").val() != "") {
-            bulan = $("#perbulan").val();
-        } else if ($("#pertahun").val() != "") {
-            tahun = $("#pertahun").val();
-        }
-
-        window.open(baseUrl+'/laporan/cashflow/pdf/'+bulan+'/'+tahun);
-    }
-
-    function printDiv(divName) {
-        var report = document.getElementById('tbl_report');
-        if (report == null) {
-            Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Masukkan bulan atau tahun transaksi'
-                    });
-        }
-        $("#non-printable").hide();
-        var printContents = document.getElementById(divName).innerHTML;
-        var originalContents = document.body.innerHTML;
-
-        document.body.innerHTML = printContents;
-
-        window.print();
-
-        document.body.innerHTML = originalContents;
-
-    }
-
-    var beforePrint = function() {
-        console.log('Functionality to run before printing.');
-    };
-
-    var afterPrint = function() {
-        console.log('Functionality to run after printing');
-        $("#non-printable").show();
-
-        $('#perbulan').datepicker({
-            autoclose: true,
-            format: 'MM yyyy',
-            viewMode: 'months',
-            minViewMode: 'months'
-        })
-
-        $('#pertahun').datepicker({
-            autoclose: true,
-            format: 'yyyy',
-            viewMode: 'years',
-            minViewMode: 'years'
-        })
-
-        changeBulan();
-        changeTahun();
     };
 
     if (window.matchMedia) {

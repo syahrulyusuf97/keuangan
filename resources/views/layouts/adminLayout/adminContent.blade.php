@@ -7,32 +7,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <!-- Bootstrap 3.3.7 -->
-  <link rel="icon" type="image/png" href="{{ asset('public/images/icon/keuanganku.png') }}" />
-  <link rel="stylesheet" href="{{ asset('public/css/bootstrap/bootstrap.min.css') }}">
+  <link rel="icon" type="image/png" href="{{ asset('images/icon/keuanganku.png') }}" />
+  <link rel="stylesheet" href="{{ asset('css/bootstrap/bootstrap.min.css') }}">
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="{{ asset('public/css/font-awesome/css/font-awesome.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/font-awesome/css/font-awesome.min.css') }}">
   <!-- Ionicons -->
-  <link rel="stylesheet" href="{{ asset('public/css/Ionicons/css/ionicons.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/Ionicons/css/ionicons.min.css') }}">
   <!-- DataTables -->
-  <link rel="stylesheet" href="{{ asset('public/css/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
   {{--Chart morris--}}
-  <link rel="stylesheet" href="{{ asset('public/css/morris/morris.css') }}">
-  <link rel="stylesheet" href="{{ asset('public/css/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/morris/morris.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css') }}">
   <!-- Theme style -->
-  <link rel="stylesheet" href="{{ asset('public/css/adminLTE/AdminLTE.css') }}">
-  <!-- <link rel="stylesheet" href="{{ asset('public/css/adminLTE/Keuangan.css') }}"> -->
-  <link rel="stylesheet" href="{{ asset('public/css/skins/_all-skins.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/adminLTE/AdminLTE.css') }}">
+  <!-- <link rel="stylesheet" href="{{ asset('css/adminLTE/Keuangan.css') }}"> -->
+  <link rel="stylesheet" href="{{ asset('css/skins/_all-skins.min.css') }}">
   <!-- Date Picker -->
-  <link rel="stylesheet" href="{{ asset('public/css/bootstrap/bootstrap-datepicker.min.css') }}">
-  <link rel="stylesheet" href="{{ asset('public/css/style/style.css') }}">
-  <link rel="stylesheet" href="{{ asset('public/css/sweetalert2/sweetalert2.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/bootstrap/bootstrap-datepicker.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/style/style.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/sweetalert2/sweetalert2.css') }}">
   <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic"> -->
-  <link rel="stylesheet" href="{{ asset('public/fonts/fonts-google-apis/fonts.css') }}">
+  <link rel="stylesheet" href="{{ asset('fonts/fonts-google-apis/fonts.css') }}">
   <!-- <script data-ad-client="ca-pub-1006524802991381" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
   <script data-ad-client="ca-pub-5316550212400820" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 </head>
 <body class="hold-transition skin-blue fixed sidebar-mini">
-  <div class="cover-spin"></div>
+  <div class="loading">Loading&#8230;</div>
   <div class="wrapper">
 
     @include('layouts.adminLayout.adminHeader')
@@ -49,46 +49,46 @@
   </div>
 
 <!-- jQuery 3 -->
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
+<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
 <!-- jQuery UI 1.11.4 -->
-<script src="{{ asset('public/js/jQuery/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('js/jQuery/jquery-ui.min.js') }}"></script>
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <script>
   $.widget.bridge('uibutton', $.ui.button);
 </script>
 <!-- Bootstrap 3.3.7 -->
-<script src="{{ asset('public/js/bootstrap/bootstrap.min.js') }}"></script>
+<script src="{{ asset('js/bootstrap/bootstrap.min.js') }}"></script>
 <!-- DataTables -->
-<script src="{{ asset('public/js/jQuery/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('public/js/bootstrap/dataTables.bootstrap.min.js') }}"></script>
+<script src="{{ asset('js/jQuery/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('js/bootstrap/dataTables.bootstrap.min.js') }}"></script>
 <!-- daterangepicker -->
-<script src="{{ asset('public/js/moment/moment.min.js') }}"></script>
-<script src="{{ asset('public/js/bootstrap/daterangepicker.js') }}"></script>
+<script src="{{ asset('js/moment/moment.min.js') }}"></script>
+<script src="{{ asset('js/bootstrap/daterangepicker.js') }}"></script>
 <!-- datepicker -->
-<script src="{{ asset('public/js/bootstrap/bootstrap-datepicker.min.js') }}"></script>
+<script src="{{ asset('js/bootstrap/bootstrap-datepicker.min.js') }}"></script>
 <!-- Slimscroll -->
-<script src="{{ asset('public/js/jQuery/jquery.slimscroll.min.js') }}"></script>
+<script src="{{ asset('js/jQuery/jquery.slimscroll.min.js') }}"></script>
 <!-- FastClick -->
-<script src="{{ asset('public/js/fastclick/fastclick.js') }}"></script>
-<script src="{{ asset('public/css/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min.js') }}"></script>
+<script src="{{ asset('js/fastclick/fastclick.js') }}"></script>
+<script src="{{ asset('css/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min.js') }}"></script>
 <!-- AdminLTE App -->
-<!-- <script src="{{ asset('public/js/adminLTE/adminlte.min.js') }}"></script> -->
-<script src="{{ asset('public/js/adminLTE/adminlte.js') }}"></script>
-<!-- <script src="{{ asset('public/js/adminLTE/app.js') }}"></script> -->
+<!-- <script src="{{ asset('js/adminLTE/adminlte.min.js') }}"></script> -->
+<script src="{{ asset('js/adminLTE/adminlte.js') }}"></script>
+<!-- <script src="{{ asset('js/adminLTE/app.js') }}"></script> -->
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<script src="{{ asset('public/js/adminLTE/dashboard.js') }}"></script>
+<script src="{{ asset('js/adminLTE/dashboard.js') }}"></script>
 <!-- AdminLTE for demo purposes -->
-<script src="{{ asset('public/js/adminLTE/demo.js') }}"></script>
+<script src="{{ asset('js/adminLTE/demo.js') }}"></script>
 
-<script src="{{ asset('public/js/chart/Chart.js') }}"></script>
-<script src="{{ asset('public/js/morris/morris.min.js') }}"></script>
-<script src="{{ asset('public/js/raphael/raphael.min.js') }}"></script>
-<script src="{{ asset('public/js/dobpicker.js') }}"></script>
+<script src="{{ asset('js/chart/Chart.js') }}"></script>
+<script src="{{ asset('js/morris/morris.min.js') }}"></script>
+<script src="{{ asset('js/raphael/raphael.min.js') }}"></script>
+<script src="{{ asset('js/dobpicker.js') }}"></script>
 <!-- Chartjs -->
-<script src="{{ asset('public/js/chart/Chart2-9-3.min.js') }}"></script>
-<script src="{{ asset('public/js/chart/utils.js') }}"></script>
-<!-- <script src="{{ asset('public/js/apps.js') }}"></script> -->
-<script src="{{ asset('public/js/sweetalert2/sweetalert2.js') }}"></script>
+<script src="{{ asset('js/chart/Chart2-9-3.min.js') }}"></script>
+<script src="{{ asset('js/chart/utils.js') }}"></script>
+<!-- <script src="{{ asset('js/apps.js') }}"></script> -->
+<script src="{{ asset('js/sweetalert2/sweetalert2.js') }}"></script>
 
 <script type="text/javascript"  charset="utf-8">
 // Place this code snippet near the footer of your page before the close of the /body tag
@@ -99,32 +99,22 @@ eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a
 
 <script type="text/javascript">
   var baseUrl = '{{ url('/') }}';
-  var h_s = $(window).height()-140;
-  var h_mh = $('.main-header').height()*0.5;
-  $(document).ready(function(){
-    $(".sidebar-k-menu").slimScroll({
-        height: h_s-h_mh+'px'
-      });
-  })
 
-  $(".sidebar-k-toggle").click(function(e){
-    e.preventDefault();
-    if ($("body").hasClass("sidebar-k-open")) {
-      $("body").removeClass('sidebar-k-open');
-    } else {
-      $("body").addClass('sidebar-k-open');
-    }
-  })
-
-  $(document).ajaxSend(function(){
+  if(Turbolinks.supported) {
+      Turbolinks.start()
+  } else {
+      console.warn("browser kamu tidak mendukung `Turbolinks`")
+  }
+    
+  function showLoading(){
     // show loading
-    $(".cover-spin").fadeIn(200);
-  });
+    $(".loading").fadeIn(200);
+  }
 
-  $(document).ajaxComplete(function(){
+  function hideLoading(){
     // close loading
-    $(".cover-spin").fadeOut(200);
-  });
+    $(".loading").fadeOut(200);
+  }
 
   // configurasi datepicker
   $.fn.datepicker.dates['id'] = {

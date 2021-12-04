@@ -33,6 +33,10 @@
     .turbolinks-progress-bar {
       background-color: red;
     }
+
+    .swal2-popup {
+      font-size: 1.6rem !important;
+    }
   </style>
   @yield('extra_style')
   <!-- jQuery 3 -->

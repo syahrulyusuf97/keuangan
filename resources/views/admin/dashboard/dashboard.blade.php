@@ -76,7 +76,7 @@
 	</div>
 </section>
 
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
+<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
 	
 <script type="text/javascript">
 	

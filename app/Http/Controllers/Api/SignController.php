@@ -14,6 +14,7 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use App\Http\Controllers\ActivityController as Activity;
 use Carbon\Carbon;
 use Validator;
+use Helper;
 
 class SignController extends Controller
 {
@@ -43,55 +44,77 @@ class SignController extends Controller
             $validator = Validator::make($request->all(), [
                 'username'      => 'required',
                 'password'      => 'required',
-                'remember_me'   => 'boolean'
+                'remember'      => 'boolean'
             ]);
 
             if ($validator->fails()) {
                 $response = [
-                    'status'    => "failed",
-                    'message'   => $validator->errors()
+                    'success' => false,
+                    'message' => $validator->errors(),
+                    'error_code' => 1207,
+                    'data' => []
                 ];
-                return response()->json($response);            
             }
 
     		$data = $request->input();
-    		if (Auth::attempt(['username'=>$data['username'], 'password'=>$data['password'], 'is_active'=>1, 'level'=>2])) {
-    			# code...
-    			$user = $request->user();
-                $tokenResult = $user->createToken('Personal Access Token');
-                $token = $tokenResult->token;
-                if ($request->remember_me)
-                    $token->expires_at = Carbon::now()->addWeeks(1);
-                $token->save();
 
-				User::where('id', $user->id)->update([
-				    'login_mobile' => Carbon::now('Asia/Jakarta')
-                ]);
+            $user_exists = User::where('username', $data['username'])->exists();
 
-                Activity::log($user->id, 'Login', 'Login', 'IP Address: '. $request->ip() . ' Device: '. $request->header('User-Agent'), null, Carbon::now('Asia/Jakarta'));
+            if ($user_exists) {
+                if (Auth::attempt(['username'=>$data['username'], 'password'=>$data['password'], 'is_active'=>1, 'level'=>2])) {
+                    # code...
+                    $user = $request->user();
+                    $tokenResult = $user->createToken('Personal Access Token');
+                    $token = $tokenResult->token;
+                    if ($request->remember) {
+                        $token->expires_at = Carbon::now('Asia/Jakarta')->addWeeks(1);
+                    } else {
+                        $token->expires_at = Carbon::now('Asia/Jakarta')->addDays(1);
+                    }
+                    $token->save();
 
+                    User::where('id', $user->id)->update([
+                        'login_mobile' => Carbon::now('Asia/Jakarta')
+                    ]);
+
+                    Activity::log($user->id, 'Login', 'Login', 'IP Address: '. $request->ip() . ' Device: '. $request->header('User-Agent'), null, Carbon::now('Asia/Jakarta'));
+
+                    $response = [
+                        'success' => true,
+                        'message' => 'User Found',
+                        'error_code' => null,
+                        'data' => [
+                            'token_access'  => $tokenResult->accessToken,
+                            'token_type'    => 'Bearer',
+                            'expires_at'    => Carbon::parse($tokenResult->token->expires_at)->toDateTimeString()
+                        ]                    
+                    ];
+                } else {
+                    $response = [
+                        'success' => false,
+                        'message' => Helper::errorCode(1208),
+                        'error_code' => 1208,
+                        'data' => []
+                    ];
+                }
+            } else {
                 $response = [
-                    'status'        => 'success',
-                    'token'  => $tokenResult->accessToken,
-                    'token_type'    => 'Bearer',
-                    'expires_at'    => Carbon::parse($tokenResult->token->expires_at)->toDateTimeString()
+                    'success' => false,
+                    'message' => Helper::errorCode(1206),
+                    'error_code' => 1206,
+                    'data' => []
                 ];
-
-                return response()->json($response);
-    		} else {
-                $response = [
-                    'status'    => 'failed',
-                    'message'   => 'Unauthorized'
-                ];
-                return response()->json($response);
             }
     	} else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success' => false,
+                'message' => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data' => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function registrasi(Request $request) {
@@ -544,14 +567,18 @@ class SignController extends Controller
 
         if($logout){
             $response = [
-                'status' => 'success',
-                'message' => 'Successfully logged out'
+                'success' => true,
+                'message' => 'Successfully logged out',
+                'error_code' => null,
+                'data' => []
             ];
             return response()->json($response);
         } else {
             $response = [
-                'status' => 'failed',
-                'message' => 'Failed logged out'
+                'success' => false,
+                'message' => Helper::errorCode(1323),
+                'error_code' => 1323,
+                'data' => []
             ];
             return response()->json($response);
         }

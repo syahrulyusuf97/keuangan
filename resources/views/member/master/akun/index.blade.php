@@ -164,6 +164,7 @@
 		$('#master_akun_dashboard').dataTable({
 			"processing": true,
 			"serverSide": true,
+			"destroy": true,
 			"ajax": "{{ route('akun') }}",
 			"columns":[
 				{"data": "kode"},

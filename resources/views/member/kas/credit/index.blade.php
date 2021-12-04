@@ -348,6 +348,7 @@
 		table_kas_kredit = $('#kas_credit_dashboard').dataTable({
 			"processing": true,
 			"serverSide": true,
+			"destroy": true,
 			"ajax": "{{ route('credit') }}",
 			"columns":[
 				{"data": "tanggal"},

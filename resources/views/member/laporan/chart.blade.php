@@ -52,14 +52,14 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="perbulan" class="col-sm-2 control-label">Bulan</label>
+                                <label for="perbulan_chart" class="col-sm-2 control-label">Bulan</label>
 
                                 <div class="col-sm-10">
                                     <div class="input-group date">
                                         <div class="input-group-addon">
                                             <i class="fa fa-calendar"></i>
                                         </div>
-                                        <input type="text" class="form-control pull-right" id="perbulan">
+                                        <input type="text" class="form-control pull-right" id="perbulan_chart">
                                     </div>
                                 </div>
                             </div>
@@ -99,7 +99,7 @@
                                         <div class="input-group-addon">
                                             <i class="fa fa-calendar"></i>
                                         </div>
-                                        <input type="text" class="form-control pull-right" id="pertahun">
+                                        <input type="text" class="form-control pull-right" id="pertahun_chart">
                                     </div>
                                 </div>
                             </div>
@@ -295,7 +295,7 @@
         warna_t_kd = [], warna_t_kk = [], warna_t_bd = [], warna_t_bk = [];
 
     $(document).on('turbolinks:load', function(){
-        $('#perbulan').datepicker({
+        $('#perbulan_chart').datepicker({
             autoclose: true,
             format: 'MM yyyy',
             viewMode: 'months',
@@ -303,7 +303,7 @@
             language: 'id'
         })
 
-        $('#pertahun').datepicker({
+        $('#pertahun_chart').datepicker({
             autoclose: true,
             format: 'yyyy',
             viewMode: 'years',
@@ -312,8 +312,8 @@
 
         $('#btn_per_bln').click(function(e){
             e.preventDefault();
-            if ($("#perbulan").val() == "") {
-                $("#perbulan").focus();
+            if ($("#perbulan_chart").val() == "") {
+                $("#perbulan_chart").focus();
             } else {
                 perBulan();
             }
@@ -321,43 +321,15 @@
 
         $('#btn_per_thn').click(function(e){
             e.preventDefault();
-            if ($("#pertahun").val() == "") {
-                $("#pertahun").focus();
+            if ($("#pertahun_chart").val() == "") {
+                $("#pertahun_chart").focus();
             } else {
                 perTahun();
             }
         })
 
-        // $('#akun_bulan').on('change', function(e){
-        //     e.preventDefault();
-        //     if ($("#perbulan").val() == "") {
-        //         $("#perbulan").focus();
-        //         Swal.fire({
-        //                 icon: 'error',
-        //                 title: 'Oops...',
-        //                 text: 'Masukkan periode bulan transaksi'
-        //             });
-        //     } else {
-        //         $("#perbulan").trigger('change');
-        //     }
-        // })
-
-        // $('#akun_tahun').on('change', function(e){
-        //     e.preventDefault();
-        //     if ($("#pertahun").val() == "") {
-        //         $("#pertahun").focus();
-        //         Swal.fire({
-        //                 icon: 'error',
-        //                 title: 'Oops...',
-        //                 text: 'Masukkan periode tahun transaksi'
-        //             });
-        //     } else {
-        //         $("#pertahun").trigger('change');
-        //     }
-        // })
-
         function perBulan() {
-            $("#pertahun").val('');
+            $("#pertahun_chart").val('');
             $("#per_bulan").show();
             $("#per_tahun").hide();
 
@@ -370,11 +342,11 @@
             if ($("#akun_bulan").val() == "Kas") {
                 
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/bulan/debit/kas/'+$("#perbulan").val(),
+                    url: baseUrl+'/laporan/chart/bulan/debit/kas/'+$("#perbulan_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     if (results.length == 0) {
-                        $(".l-m").text("Laporan Kas Masuk Bulan "+$("#perbulan").val());
+                        $(".l-m").text("Laporan Kas Masuk Bulan "+$("#perbulan_chart").val());
                         $("#line-chart-debit").html('<h1 class="text-center">Tidak ada transaksi</h1>');
                         $("#total_debit_bulan").text(new Intl.NumberFormat('de-DE').format(0));
                        // Swal.fire({
@@ -383,7 +355,7 @@
                        //      text: 'Tidak ada transaksi debit pada bulan '+$("#perbulan").val()
                        //  });
                     } else {
-                        $(".l-m").text("Laporan Kas Masuk Bulan "+$("#perbulan").val());
+                        $(".l-m").text("Laporan Kas Masuk Bulan "+$("#perbulan_chart").val());
                         var linedebit = new Morris.Line({
                             element: 'line-chart-debit',
                             resize: true,
@@ -405,20 +377,20 @@
                 })
 
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/bulan/kredit/kas/'+$("#perbulan").val(),
+                    url: baseUrl+'/laporan/chart/bulan/kredit/kas/'+$("#perbulan_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     if (results.length == 0) {
-                        $(".l-k").text("Laporan Kas Keluar Bulan "+$("#perbulan").val());
+                        $(".l-k").text("Laporan Kas Keluar Bulan "+$("#perbulan_chart").val());
                         $("#line-chart-kredit").html('<h1 class="text-center">Tidak ada transaksi</h1>');
                         $("#total_credit_bulan").text(new Intl.NumberFormat('de-DE').format(0));
                         // Swal.fire({
                         //     icon: 'error',
                         //     title: 'Oops...',
-                        //     text: 'Tidak ada transaksi kredit pada bulan '+$("#perbulan").val()
+                        //     text: 'Tidak ada transaksi kredit pada bulan '+$("#perbulan_chart").val()
                         // });
                     } else {
-                        $(".l-k").text("Laporan Kas Keluar Bulan "+$("#perbulan").val());
+                        $(".l-k").text("Laporan Kas Keluar Bulan "+$("#perbulan_chart").val());
                         var linekredit = new Morris.Line({
                             element: 'line-chart-kredit',
                             resize: true,
@@ -441,12 +413,12 @@
 
                 // pie
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/kategori-kas-debit-bulan/'+$("#perbulan").val(),
+                    url: baseUrl+'/laporan/chart/kategori-kas-debit-bulan/'+$("#perbulan_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     $("#tb_m").find('tr').remove();
                     if (results.length == 0) {
-                        $(".l-ktg-m").text("Lap. Kas Masuk (Kategori) Bulan "+$("#perbulan").val());
+                        $(".l-ktg-m").text("Lap. Kas Masuk (Kategori) Bulan "+$("#perbulan_chart").val());
                         $("#dnt-ch-m").attr("style", "display:none");
                         $("#dnt-ch-m-none").attr("style", "display:block").html('<h1 class="text-center">Tidak ada transaksi</h1>');
                         // var ctx = document.getElementById('dnt-ch-m').getContext('2d');
@@ -455,7 +427,7 @@
                     } else {
                         $("#dnt-ch-m").attr("style", "display:block; height: 200px;");
                         $("#dnt-ch-m-none").attr("style", "display:none");
-                        $(".l-ktg-m").text("Lap. Kas Masuk (Kategori) Bulan "+$("#perbulan").val());
+                        $(".l-ktg-m").text("Lap. Kas Masuk (Kategori) Bulan "+$("#perbulan_chart").val());
 
                         var row = "";
                         var total = 0;
@@ -515,12 +487,12 @@
                 });
 
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/kategori-kas-kredit-bulan/'+$("#perbulan").val(),
+                    url: baseUrl+'/laporan/chart/kategori-kas-kredit-bulan/'+$("#perbulan_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     $("#tb_k").find('tr').remove();
                     if (results.length == 0) {
-                        $(".l-ktg-k").text("Lap. Kas Keluar (Kategori) Bulan "+$("#perbulan").val());
+                        $(".l-ktg-k").text("Lap. Kas Keluar (Kategori) Bulan "+$("#perbulan_chart").val());
                         // var ctx = document.getElementById('dnt-ch-k').getContext('2d');
                         // ctx.font = "30px Arial";
                         // ctx.fillText("Tidak ada transaksi", 10, 50);
@@ -529,7 +501,7 @@
                     } else {
                         $("#dnt-ch-k").attr("style", "display:block; height: 200px;");
                         $("#dnt-ch-k-none").attr("style", "display:none");
-                        $(".l-ktg-k").text("Lap. Kas Keluar (Kategori) Bulan "+$("#perbulan").val());
+                        $(".l-ktg-k").text("Lap. Kas Keluar (Kategori) Bulan "+$("#perbulan_chart").val());
 
                         var row = "";
                         var total = 0;
@@ -590,11 +562,11 @@
                 });
             } else {
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/bulan/debit/bank/'+$("#perbulan").val(),
+                    url: baseUrl+'/laporan/chart/bulan/debit/bank/'+$("#perbulan_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     if (results.length == 0) {
-                        $(".l-m").text("Laporan Bank Masuk Bulan "+$("#perbulan").val());
+                        $(".l-m").text("Laporan Bank Masuk Bulan "+$("#perbulan_chart").val());
                         $("#line-chart-debit").html('<h1 class="text-center">Tidak ada transaksi</h1>');
                         $("#total_debit_bulan").text(new Intl.NumberFormat('de-DE').format(0));
                        // Swal.fire({
@@ -603,7 +575,7 @@
                        //      text: 'Tidak ada transaksi debit pada bulan '+$("#perbulan").val()
                        //  });
                     } else {
-                        $(".l-m").text("Laporan Bank Masuk Bulan "+$("#perbulan").val());
+                        $(".l-m").text("Laporan Bank Masuk Bulan "+$("#perbulan_chart").val());
                         var linedebit = new Morris.Line({
                             element: 'line-chart-debit',
                             resize: true,
@@ -625,20 +597,20 @@
                 })
 
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/bulan/kredit/bank/'+$("#perbulan").val(),
+                    url: baseUrl+'/laporan/chart/bulan/kredit/bank/'+$("#perbulan_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     if (results.length == 0) {
-                        $(".l-k").text("Laporan Bank Masuk Bulan "+$("#perbulan").val());
+                        $(".l-k").text("Laporan Bank Masuk Bulan "+$("#perbulan_chart").val());
                         $("#line-chart-kredit").html('<h1 class="text-center">Tidak ada transaksi</h1>');
                         $("#total_credit_bulan").text(new Intl.NumberFormat('de-DE').format(0));
                         // Swal.fire({
                         //     icon: 'error',
                         //     title: 'Oops...',
-                        //     text: 'Tidak ada transaksi kredit pada bulan '+$("#perbulan").val()
+                        //     text: 'Tidak ada transaksi kredit pada bulan '+$("#perbulan_chart").val()
                         // });
                     } else {
-                        $(".l-k").text("Laporan Bank Keluar Bulan "+$("#perbulan").val());
+                        $(".l-k").text("Laporan Bank Keluar Bulan "+$("#perbulan_chart").val());
                         var linekredit = new Morris.Line({
                             element: 'line-chart-kredit',
                             resize: true,
@@ -661,12 +633,12 @@
 
                 // pie
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/kategori-bank-debit-bulan/'+$("#perbulan").val(),
+                    url: baseUrl+'/laporan/chart/kategori-bank-debit-bulan/'+$("#perbulan_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     $("#tb_m").find('tr').remove();
                     if (results.length == 0) {
-                        $(".l-ktg-m").text("Lap. Bank Masuk (Kategori) Bulan "+$("#perbulan").val());
+                        $(".l-ktg-m").text("Lap. Bank Masuk (Kategori) Bulan "+$("#perbulan_chart").val());
                         // var ctx = document.getElementById('dnt-ch-m').getContext('2d');
                         // ctx.font = "30px Arial";
                         // ctx.fillText("Tidak ada transaksi", 10, 50);
@@ -675,7 +647,7 @@
                     } else {
                         $("#dnt-ch-m").attr("style", "display:block; height: 200px;");
                         $("#dnt-ch-m-none").attr("style", "display:none");
-                        $(".l-ktg-m").text("Lap. Bank Masuk (Kategori) Bulan "+$("#perbulan").val());
+                        $(".l-ktg-m").text("Lap. Bank Masuk (Kategori) Bulan "+$("#perbulan_chart").val());
 
                         var row = "";
                         var total = 0;
@@ -736,12 +708,12 @@
                 });
 
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/kategori-bank-kredit-bulan/'+$("#perbulan").val(),
+                    url: baseUrl+'/laporan/chart/kategori-bank-kredit-bulan/'+$("#perbulan_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     $("#tb_k").find('tr').remove();
                     if (results.length == 0) {
-                        $(".l-ktg-k").text("Lap. Bank Keluar (Kategori) Bulan "+$("#perbulan").val());
+                        $(".l-ktg-k").text("Lap. Bank Keluar (Kategori) Bulan "+$("#perbulan_chart").val());
                         // var ctx = document.getElementById('dnt-ch-k').getContext('2d');
                         // ctx.font = "30px Arial";
                         // ctx.fillText("Tidak ada transaksi", 10, 50);
@@ -750,7 +722,7 @@
                     } else {
                         $("#dnt-ch-k").attr("style", "display:block; height: 200px;");
                         $("#dnt-ch-k-none").attr("style", "display:none");
-                        $(".l-ktg-k").text("Lap. Bank Keluar (Kategori) Bulan "+$("#perbulan").val());
+                        $(".l-ktg-k").text("Lap. Bank Keluar (Kategori) Bulan "+$("#perbulan_chart").val());
 
                         var row = "";
                         var total = 0;
@@ -813,7 +785,7 @@
         }
 
         function perTahun() {
-            $("#perbulan").val('');
+            $("#perbulan_chart").val('');
             $("#per_tahun").show();
             $("#per_bulan").hide();
 
@@ -824,11 +796,11 @@
 
             if ($("#akun_tahun").val() == "Kas") {
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/tahun/kas/'+$("#pertahun").val(),
+                    url: baseUrl+'/laporan/chart/tahun/kas/'+$("#pertahun_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     if (results.length == 0) {
-                        $(".l-c").text("Laporan Keuangan Dari Akun Kas Tahun "+$("#pertahun").val());
+                        $(".l-c").text("Laporan Keuangan Dari Akun Kas Tahun "+$("#pertahun_chart").val());
                         $("#bar-chart").html('<h1 class="text-center">Tidak ada transaksi</h1>');
                         $("#total_debit_tahun").text(new Intl.NumberFormat('de-DE').format(0));
                         $("#total_credit_tahun").text(new Intl.NumberFormat('de-DE').format(0));
@@ -838,7 +810,7 @@
                         //     text: 'Tidak ada transaksi pada tahun '+$("#pertahun").val()
                         // });
                     } else {
-                        $(".l-c").text("Laporan Keuangan Dari Akun Kas Tahun "+$("#pertahun").val());
+                        $(".l-c").text("Laporan Keuangan Dari Akun Kas Tahun "+$("#pertahun_chart").val());
                         var bar = new Morris.Bar({
                             element: 'bar-chart',
                             resize: true,
@@ -864,12 +836,12 @@
 
                 // pie
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/kategori-kas-debit-tahun/'+$("#pertahun").val(),
+                    url: baseUrl+'/laporan/chart/kategori-kas-debit-tahun/'+$("#pertahun_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     $("#tb_ktg_m_t").find('tr').remove();
                     if (results.length == 0) {
-                        $(".l-ktg-m-t").text("Lap. Kas Masuk (Kategori) Tahun "+$("#pertahun").val());
+                        $(".l-ktg-m-t").text("Lap. Kas Masuk (Kategori) Tahun "+$("#pertahun_chart").val());
                         // var ctx = document.getElementById('dnt-ch-m-t').getContext('2d');
                         // ctx.font = "30px Arial";
                         // ctx.fillText("Tidak ada transaksi", 10, 50);
@@ -878,7 +850,7 @@
                     } else {
                         $("#dnt-ch-m-t").attr("style", "display:block; height: 200px;");
                         $("#dnt-ch-m-t-none").attr("style", "display:none");
-                        $(".l-ktg-m-t").text("Lap. Kas Masuk (Kategori) Tahun "+$("#pertahun").val());
+                        $(".l-ktg-m-t").text("Lap. Kas Masuk (Kategori) Tahun "+$("#pertahun_chart").val());
                         var row = "";
                         var total = 0;
                         var tot_percent = 0;
@@ -938,12 +910,12 @@
                 });
 
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/kategori-kas-kredit-tahun/'+$("#pertahun").val(),
+                    url: baseUrl+'/laporan/chart/kategori-kas-kredit-tahun/'+$("#pertahun_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     $("#tb_ktg_k_t").find('tr').remove();
                     if (results.length == 0) {
-                        $(".l-ktg-k-t").text("Lap. Kas Keluar (Kategori) Tahun "+$("#pertahun").val());
+                        $(".l-ktg-k-t").text("Lap. Kas Keluar (Kategori) Tahun "+$("#pertahun_chart").val());
                         // var ctx = document.getElementById('dnt-ch-k-t').getContext('2d');
                         // ctx.font = "30px Arial";
                         // ctx.fillText("Tidak ada transaksi", 10, 50);
@@ -952,7 +924,7 @@
                     } else {
                         $("#dnt-ch-k-t").attr("style", "display:block; height: 200px;");
                         $("#dnt-ch-k-t-none").attr("style", "display:none");
-                        $(".l-ktg-k-t").text("Lap. Kas Keluar (Kategori) Tahun "+$("#pertahun").val());
+                        $(".l-ktg-k-t").text("Lap. Kas Keluar (Kategori) Tahun "+$("#pertahun_chart").val());
                         var row = "";
                         var total = 0;
                         var tot_percent = 0;
@@ -1012,11 +984,11 @@
                 }); 
             } else {
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/tahun/bank/'+$("#pertahun").val(),
+                    url: baseUrl+'/laporan/chart/tahun/bank/'+$("#pertahun_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     if (results.length == 0) {
-                        $(".l-c").text("Laporan Keuangan Dari Akun Bank Tahun "+$("#pertahun").val());
+                        $(".l-c").text("Laporan Keuangan Dari Akun Bank Tahun "+$("#pertahun_chart").val());
                         $("#bar-chart").html('<h1 class="text-center">Tidak ada transaksi</h1>');
                         $("#total_debit_tahun").text(new Intl.NumberFormat('de-DE').format(0));
                         $("#total_credit_tahun").text(new Intl.NumberFormat('de-DE').format(0));
@@ -1026,7 +998,7 @@
                         //     text: 'Tidak ada transaksi pada tahun '+$("#pertahun").val()
                         // });
                     } else {
-                        $(".l-c").text("Laporan Keuangan Dari Akun Bank Tahun "+$("#pertahun").val());
+                        $(".l-c").text("Laporan Keuangan Dari Akun Bank Tahun "+$("#pertahun_chart").val());
                         var bar = new Morris.Bar({
                             element: 'bar-chart',
                             resize: true,
@@ -1052,12 +1024,12 @@
 
                 // pie
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/kategori-bank-debit-tahun/'+$("#pertahun").val(),
+                    url: baseUrl+'/laporan/chart/kategori-bank-debit-tahun/'+$("#pertahun_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     $("#tb_ktg_m_t").find('tr').remove();
                     if (results.length == 0) {
-                        $(".l-ktg-m-t").text("Lap. Bank Masuk (Kategori) Tahun "+$("#pertahun").val());
+                        $(".l-ktg-m-t").text("Lap. Bank Masuk (Kategori) Tahun "+$("#pertahun_chart").val());
                         // var ctx = document.getElementById('dnt-ch-m-t').getContext('2d');
                         // ctx.font = "30px Arial";
                         // ctx.fillText("Tidak ada transaksi", 10, 50);
@@ -1066,7 +1038,7 @@
                     } else {
                         $("#dnt-ch-m-t").attr("style", "display:block; height: 200px;");
                         $("#dnt-ch-m-t-none").attr("style", "display:none");
-                        $(".l-ktg-m-t").text("Lap. Bank Masuk (Kategori) Tahun "+$("#pertahun").val());
+                        $(".l-ktg-m-t").text("Lap. Bank Masuk (Kategori) Tahun "+$("#pertahun_chart").val());
                         var row = "";
                         var total = 0;
                         var tot_percent = 0;
@@ -1126,12 +1098,12 @@
                 });
 
                 $.ajax({
-                    url: baseUrl+'/laporan/chart/kategori-bank-kredit-tahun/'+$("#pertahun").val(),
+                    url: baseUrl+'/laporan/chart/kategori-bank-kredit-tahun/'+$("#pertahun_chart").val(),
                     dataType: 'json',
                 }).done(function (results){
                     $("#tb_ktg_k_t").find('tr').remove();
                     if (results.length == 0) {
-                        $(".l-ktg-k-t").text("Lap. Bank Keluar (Kategori) Tahun "+$("#pertahun").val());
+                        $(".l-ktg-k-t").text("Lap. Bank Keluar (Kategori) Tahun "+$("#pertahun_chart").val());
                         // var ctx = document.getElementById('dnt-ch-k-t').getContext('2d');
                         // ctx.font = "30px Arial";
                         // ctx.fillText("Tidak ada transaksi", 10, 50);
@@ -1140,7 +1112,7 @@
                     } else {
                         $("#dnt-ch-k-t").attr("style", "display:block; height: 200px;");
                         $("#dnt-ch-k-t-none").attr("style", "display:none");
-                        $(".l-ktg-k-t").text("Lap. Bank Keluar (Kategori) Tahun "+$("#pertahun").val());
+                        $(".l-ktg-k-t").text("Lap. Bank Keluar (Kategori) Tahun "+$("#pertahun_chart").val());
                         var row = "";
                         var total = 0;
                         var tot_percent = 0;

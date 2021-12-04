@@ -23,7 +23,8 @@ function alertSuccess(title, text) {
 	Swal.fire({
 	  type: 'success',
 	  title: title,
-	  text: text
+	  text: text,
+	  timer: 2000
 	})
 }
 
@@ -31,7 +32,8 @@ function alertError(title, text) {
 	Swal.fire({
 	  type: 'error',
 	  title: title,
-	  text: text
+	  text: text,
+	  timer: 2000
 	})
 }
 
@@ -39,7 +41,8 @@ function alertWarning(title, text) {
 	Swal.fire({
 	  type: 'warning',
 	  title: title,
-	  text: text
+	  text: text,
+	  timer: 2000
 	})
 }
 

@@ -50,7 +50,7 @@
 							<div class="col-lg-10 col-md-10 col-sm-10 col-xs-12">
 								<input type="file" name="image" id="image" accept="image/*" class="form-control" @if($edit=='false') required @endif>
 								@if($edit=='true') 
-								<a href="javascript:void(0)" onclick="showImage('{{asset('public/images/index/'.$data->image)}}')">{{$data->image}}</a>
+								<a href="javascript:void(0)" onclick="showImage('{{asset('images/index/'.$data->image)}}')">{{$data->image}}</a>
 								@endif
 							</div>
 						</div>
@@ -92,8 +92,8 @@
 		<!-- /.modal-dialog -->
 </div>
 
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
-<script src="{{ asset('public/vendor/ckeditor/ckeditor.js') }}"></script>
+<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
+<script src="{{ asset('vendor/ckeditor/ckeditor.js') }}"></script>
 <script type="text/javascript">
 	$(function () {
     // Replace the <textarea id="editor1"> with a CKEditor

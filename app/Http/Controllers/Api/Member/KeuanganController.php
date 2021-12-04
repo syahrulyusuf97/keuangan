@@ -22,72 +22,73 @@ class KeuanganController extends Controller
     {
         if ($request->isMethod('get')) {
             try{
-                $kategori = Kategori::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_transaksi', $jenis_transaksi);
-                $option = [];
-                if ($kategori->count() > 0) {
-                    foreach ($kategori->get() as $key => $value) {
-                        $option[] = [
-                            'id'            => Crypt::encrypt($value->id),
-                            'nama_kategori' => $value->nama
-                        ];
-                    }
-                }
+                $kategori = Kategori::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_transaksi', $jenis_transaksi)->get()->map(function($items, $key) {
+                    $data['id'] = Crypt::encrypt($items->id);
+                    $data['category_name'] = $items->nama;
+                    return $data;
+                });
 
                 $response = [
-                    'status' => "success",
-                    'data'   => $option
+                    'success' => true,
+                    'message' => 'data available',
+                    'error_code' => null,
+                    'data'   => $kategori
                 ];
             }catch(\Exception $e){
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
+                    'success'    => false,
+                    'message'   => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data' => []
                 ];
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'   => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data' => []
             ];
-            return response()->json($response);
         }
+        return response()->json($response);
     }
 
     public function getAkun(Request $request, $jenis_akun)
     {
         if ($request->isMethod('get')) {
             try{
-                $akun = Akun::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_akun', $jenis_akun);
-                $option = [];
-                if ($akun->count() > 0) {
-                    foreach ($akun->get() as $key => $value) {
-                        $option[] = [
-                            'id'         => Crypt::encrypt($value->id),
-                            'jenis_akun' => $value->jenis_akun,
-                            'kode_akun'  => $value->kode_akun,
-                            'nama_akun'  => $value->nama_akun
-                        ];
-                    }
-                }
+                $akun = Akun::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_akun', $jenis_akun)->get()->map(function($items, $key) {
+                    $data['id'] = Crypt::encrypt($items->id);
+                    $data['account_type'] = $items->jenis_akun;
+                    $data['account_code'] = $items->kode_akun;
+                    $data['account_name'] = $items->nama_akun;
+                    return $data;
+                });
 
                 $response = [
-                    'status' => "success",
-                    'data'   => $option
+                    'success' => true,
+                    'message' => 'data available',
+                    'error_code' => null,
+                    'data'   => $akun
                 ];
             }catch(\Exception $e){
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
+                    'success'    => false,
+                    'message'   => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data' => []
                 ];
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'   => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data' => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     // Start Kas
@@ -670,48 +671,145 @@ class KeuanganController extends Controller
         }
     }
 
-    public function getBankDebet(Request $request)
+    public function getBankDebet_(Request $request)
     {
         if ($request->isMethod('get')) {
+            $limit = $request->limit ?? 5;
+
             try{
-                $data = Cash::with(['akun'])
+                $itemsTransformed = Cash::with(['akun'])
                 ->where('c_iduser', Auth::user()->id)
                 ->where('c_flagakun', 'Bank')
                 ->where('c_jenis', 'D')
-                ->orderBy('c_tanggal', 'desc');
+                ->orderBy('c_tanggal', 'desc')
+                ->paginate($limit);
 
-                $data_response = [];
-
-                if ($data->count() > 0) {
-                    foreach ($data->get() as $key => $value) {
-                        $data_response[] = [
-                            'id'        => Crypt::encrypt($value->c_id),
-                            'tanggal'   => $value->c_tanggal,
-                            'keterangan'   => $value->c_transaksi,
-                            'jumlah'    => $value->c_jumlah,
-                            'ke_akun'   => "(".$value->akun->kode_akun.") ".$value->akun->nama_akun
-                        ];
-                    }
-                }
+                $itemsTransformed->setCollection(
+                    $itemsTransformed->getCollection()->transform(function ($items) {
+                        // $data['id']                  = encrypt($items->c_id);
+                        $data['id']                  = $items->c_id;
+                        $data['description_of_transaction'] = $items->c_transaksi;
+                        $data['debit_amount']        = $items->c_jumlah;
+                        $data['type_of_transaction'] = $items->c_jenis;
+                        $data['date_of_transaction'] = $items->c_tanggal;
+                        $data['category_id']         = encrypt($items->c_kategori);
+                        $data['to_account_bank_id']  = encrypt($items->c_akun);
+                        $data['flag_of_transaction'] = $items->c_flag;
+                        $data['flag_of_account']     = $items->c_flagakun;
+                        $data['to_account_code']     = $items->akun->kode_akun;
+                        $data['to_account_name']     = $items->akun->nama_akun;
+                        $data['account_type']        = $items->akun->jenis_akun;
+                        $data['user_id']             = encrypt($items->c_iduser);
+                        $data['created_at']          = Carbon::parse($items->created_at)->format("Y-m-d H:i:s");
+                        $data['updated_at']          = Carbon::parse($items->updated_at)->format("Y-m-d H:i:s");
+                        return $data;
+                    })
+                );
 
                 $response = [
-                    'status' => "success",
-                    'data'   => $data_response
+                    'success' => true,
+                    'message' => 'data available',
+                    'error_code' => null,
+                    'data'   => $itemsTransformed
                 ];
             }catch(\Exception $e){
                 $response = [
-                    'status'    => "failed",
-                    'message'   => 'A network error occurred. Please try again!'
+                    'success'    => false,
+                    'message'   => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data' => []
                 ];
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'   => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data' => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
+    }
+
+    public function getBankDebet(Request $request)
+    {
+        if ($request->isMethod('get')) {
+            $limit = $request->limit ?? 5;
+            $offset = $request->offset ?? 0;
+            $sort = $request->sort ?? 'desc';
+
+            try{
+                $bank_debit_count = Cash::with(['akun'])
+                ->where('c_iduser', Auth::user()->id)
+                ->where('c_flagakun', 'Bank')
+                ->where('c_jenis', 'D')
+                ->selectRaw("count(distinct(c_id)) as total")
+		        ->first();
+
+                $bank_debit = Cash::with(['akun'])
+                ->where('c_iduser', Auth::user()->id)
+                ->where('c_flagakun', 'Bank')
+                ->where('c_jenis', 'D');
+
+                $total_filtered = $bank_debit->count();
+
+                $bank_debit_results = $bank_debit
+                ->limit($limit)
+                ->offset($offset)
+                ->orderBy('c_tanggal', 'desc')
+                ->get()
+                ->map(function ($items, $key) {
+                    $data['id']                  = encrypt($items->c_id);
+                    $data['description_of_transaction'] = $items->c_transaksi;
+                    $data['debit_amount']        = $items->c_jumlah;
+                    $data['type_of_transaction'] = $items->c_jenis;
+                    $data['date_of_transaction'] = $items->c_tanggal;
+                    $data['category_id']         = encrypt($items->c_kategori);
+                    $data['to_account_bank_id']  = encrypt($items->c_akun);
+                    $data['flag_of_transaction'] = $items->c_flag;
+                    $data['flag_of_account']     = $items->c_flagakun;
+                    $data['to_account_code']     = $items->akun->kode_akun;
+                    $data['to_account_name']     = $items->akun->nama_akun;
+                    $data['account_type']        = $items->akun->jenis_akun;
+                    $data['user_id']             = encrypt($items->c_iduser);
+                    $data['created_at']          = Carbon::parse($items->created_at)->format("Y-m-d H:i:s");
+                    $data['updated_at']          = Carbon::parse($items->updated_at)->format("Y-m-d H:i:s");
+                    return $data;
+                });
+
+                $results = [
+                    'records_total' => $bank_debit_count->total,
+                    'records_filtered' => $total_filtered,
+                    'records_limit' => $limit,
+                    'records_offset' => $offset,
+                    'records' => $bank_debit_results
+                ];
+
+                $response = [
+                    'success' => true,
+                    'message' => 'data available',
+                    'error_code' => null,
+                    'data'   => $results
+                ];
+            }catch(\Exception $e){
+                $response = [
+                    'success'    => false,
+                    'message'   => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data' => []
+                ];
+            }
+        } else {
+            $response = [
+                'success'    => false,
+                'message'   => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data' => []
+            ];
+        }
+
+        return response()->json($response);
     }
 
     public function deleteBankDebet(Request $request, $id = null)

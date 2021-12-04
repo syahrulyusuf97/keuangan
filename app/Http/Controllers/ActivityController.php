@@ -8,6 +8,7 @@ use App\Cash;
 use DB;
 use Auth;
 use Response;
+use Helper;
 use Carbon\Carbon;
 \Carbon\Carbon::setLocale('id');
 
@@ -92,7 +93,9 @@ class ActivityController extends Controller
     public function filterHistoryAktivitas($tanggal)
     {
         if ($tanggal != "null") {
-            $tanggal = date('Y-m-d', strtotime($tanggal));
+            $tgl_explode = explode(" ", $tanggal);
+            $tgl = $tgl_explode[0].'-'.Helper::month($tgl_explode[1]).'-'.$tgl_explode[2];
+            $tanggal = date('Y-m-d', strtotime($tgl));
             $date = DB::table('activity')
                 ->where('iduser', Auth::user()->id)
                 ->where(DB::raw('substr(date, 1, 10)'), '=', $tanggal)

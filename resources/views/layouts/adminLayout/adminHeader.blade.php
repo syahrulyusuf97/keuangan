@@ -18,9 +18,9 @@
 				<li class="dropdown user user-menu">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 						@if(auth()->user()->img == "")
-							<img src="{{ asset('public/images/default.jpg') }}" class="user-image" alt="User Image">
+							<img src="{{ asset('images/default.jpg') }}" class="user-image" alt="User Image">
 						@else
-							<img src="{{ asset('public/images/'.auth()->user()->img) }}" class="user-image" alt="User Image">
+							<img src="{{ asset('images/'.auth()->user()->img) }}" class="user-image" alt="User Image">
 						@endif
 						<span class="hidden-xs">
 							{{ auth()->user()->name }}
@@ -30,9 +30,9 @@
 						<!-- User image -->
 						<li class="user-header">
 							@if(auth()->user()->img == "")
-								<img src="{{ asset('public/images/default.jpg') }}" class="img-circle" alt="User Image">
+								<img src="{{ asset('images/default.jpg') }}" class="img-circle" alt="User Image">
 							@else
-								<img src="{{ asset('public/images/'. auth()->user()->img) }}" class="img-circle" alt="User Image">
+								<img src="{{ asset('images/'. auth()->user()->img) }}" class="img-circle" alt="User Image">
 							@endif
 
 							<p>

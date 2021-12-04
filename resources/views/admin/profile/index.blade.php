@@ -37,9 +37,9 @@
             <div class="col-md-12 box box-primary">
                 <div class="col-md-4 box-body box-profile">
                     @if(auth()->user()->img == "")
-                      <img src="{{ asset('public/images/default.jpg') }}" alt="Foto profil" title="Sunting foto profil" class="profile-user-img img-responsive img-circle img-profile" onclick="editFoto()">
+                      <img src="{{ asset('images/default.jpg') }}" alt="Foto profil" title="Sunting foto profil" class="profile-user-img img-responsive img-circle img-profile" onclick="editFoto()">
                     @else
-                      <img src="{{ asset('public/images/'. auth()->user()->img) }}" alt="Foto profil" title="Sunting foto profil" class="profile-user-img img-responsive img-circle img-profile" onclick="editFoto()">
+                      <img src="{{ asset('images/'. auth()->user()->img) }}" alt="Foto profil" title="Sunting foto profil" class="profile-user-img img-responsive img-circle img-profile" onclick="editFoto()">
                     @endif
                     
                     <h3 class="profile-username text-center text-capitalize">@if(Session::has('adminName')){!! auth()->user()->name !!}@endif</h3>
@@ -237,9 +237,9 @@
                         <div class="row">
                             <div class="col-md-4">
                                 @if(auth()->user()->img == "")
-                                  <img src="{{ asset('public/images/default.jpg') }}" alt="Foto profil" class="profile-user-img img-responsive img-circle">
+                                  <img src="{{ asset('images/default.jpg') }}" alt="Foto profil" class="profile-user-img img-responsive img-circle">
                                 @else
-                                  <img src="{{ asset('public/images/'. auth()->user()->img) }}" alt="Foto profil" class="profile-user-img img-responsive img-circle">
+                                  <img src="{{ asset('images/'. auth()->user()->img) }}" alt="Foto profil" class="profile-user-img img-responsive img-circle">
                                 @endif
                                 <input type="hidden" name="current_img" value="{{auth()->user()->img}}">
                             </div>
@@ -249,7 +249,7 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <img src="{{ asset('public/images/default.jpg') }}" id="newimage" alt="Foto profil pengganti" title="Sunting foto profil" class="profile-user-img img-responsive img-circle">
+                                <img src="{{ asset('images/default.jpg') }}" id="newimage" alt="Foto profil pengganti" title="Sunting foto profil" class="profile-user-img img-responsive img-circle">
                             </div>
                         </div>
                     </div>
@@ -266,7 +266,7 @@
 </section>
 
 <!-- jQuery 3 -->
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
+<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
 
 <script type="text/javascript">
     $(document).ready(function () {

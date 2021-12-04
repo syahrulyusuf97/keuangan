@@ -165,6 +165,7 @@ return [
         App\Providers\AgentServiceProvider::class,
         Mews\Captcha\CaptchaServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
+        FruitCake\Cors\CorsServiceProvider::class,
 
     ],
 

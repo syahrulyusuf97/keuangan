@@ -349,6 +349,7 @@
 		table_kas_debet = $('#kas_debet_dashboard').dataTable({
 			"processing": true,
 			"serverSide": true,
+			"destroy": true,
 			"ajax": "{{ route('debit') }}",
 			"columns":[
 				{"data": "tanggal"},

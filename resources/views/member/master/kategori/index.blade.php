@@ -203,6 +203,7 @@
 		$('#master_kategori_dashboard').dataTable({
 			"processing": true,
 			"serverSide": true,
+			"destroy": true,
 			"ajax": "{{ route('kategori') }}",
 			"columns":[
 				{"data": "jenis_transaksi"},
