@@ -33,12 +33,6 @@
                         </a>
                     </span>
                     <span class="fa-stack">
-                        <a href="https://twitter.com/syahrulyusuf14" target="_blank">
-                            <i class="fas fa-circle fa-stack-2x"></i>
-                            <i class="fab fa-twitter fa-stack-1x"></i>
-                        </a>
-                    </span>
-                    <span class="fa-stack">
                         <a href="https://www.instagram.com/syahrulyusuf97/" target="_blank">
                             <i class="fas fa-circle fa-stack-2x"></i>
                             <i class="fab fa-instagram fa-stack-1x"></i>

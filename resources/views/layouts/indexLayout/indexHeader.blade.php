@@ -15,7 +15,7 @@
     <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link page-scroll" href="{{url('/')}}/#header" data-turbolinks="true">Beranda <span class="sr-only">(current)</span></a>
+                <a class="nav-link page-scroll" href="{{url('/')}}" data-turbolinks="true">Beranda <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link page-scroll" href="{{url('/article/')}}" data-turbolinks="true">Artikel</a>
