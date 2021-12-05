@@ -35,7 +35,7 @@ class LinkResetPWD extends Mailable
     public function build()
     {
         // return $this->view('emails.linkResetPWD');
-        return $this->from('noreply@syahrulyusuf.tk')
+        return $this->from('noreply@keuanganku.my.id')
                     ->subject('Reset Password')
                     ->view('emails.linkResetPWD');
     }
