@@ -15,6 +15,7 @@ use DB;
 use Response;
 use Auth;
 use Helper;
+use Validator;
 
 class KeuanganController extends Controller
 {    
@@ -23,7 +24,8 @@ class KeuanganController extends Controller
         if ($request->isMethod('get')) {
             try{
                 $kategori = Kategori::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_transaksi', $jenis_transaksi)->get()->map(function($items, $key) {
-                    $data['id'] = Crypt::encrypt($items->id);
+                    // $data['id'] = Crypt::encrypt($items->id);
+                    $data['id'] = $items->id;
                     $data['category_name'] = $items->nama;
                     return $data;
                 });
@@ -58,7 +60,8 @@ class KeuanganController extends Controller
         if ($request->isMethod('get')) {
             try{
                 $akun = Akun::where('iduser', Auth::user()->id)->where('enabled', 1)->where('jenis_akun', $jenis_akun)->get()->map(function($items, $key) {
-                    $data['id'] = Crypt::encrypt($items->id);
+                    // $data['id'] = Crypt::encrypt($items->id);
+                    $data['id'] = $items->id;
                     $data['account_type'] = $items->jenis_akun;
                     $data['account_code'] = $items->kode_akun;
                     $data['account_name'] = $items->nama_akun;
@@ -91,721 +94,731 @@ class KeuanganController extends Controller
         return response()->json($response);
     }
 
-    // Start Kas
-    public function saveKasDebet(Request $request)
+    public function akumulasiTotal(Request $request)
     {
-        if ($request->isMethod('post')) {
-            try {
-                $ke_akun   = Crypt::decrypt($request->ke_akun);
-                $kategori = Crypt::decrypt($request->kategori);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
+        $params          = $request->params == "" ? "BulanLalu" : $request->params;
+        $flag_akun       = $request->flag_akun;
+        $jenis           = $request->jenis;
+        $tanggal         = $request->tanggal;
+        $tanggal_awal    = $request->tanggal_awal;
+        $tanggal_akhir   = $request->tanggal_akhir;
+        $month           = $request->bulan;
+        $tahun           = $request->tahun;
+        $result          = array();
+        $row             = array();
+        $last_month      = date('Y-m', strtotime('-1 months'));
+        $last_month_year = explode("-", $last_month)[0];
+        $last_month_month = explode("-", $last_month)[1];
+        $last_year       = date('Y', strtotime('-1 year'));
 
-            $keterangan = $request->keterangan;
-            $jumlah     = $request->jumlah;
-            $tanggal    = date('Y-m-d', strtotime($request->tanggal));
-
-            DB::beginTransaction();
+        if ($params == "BulanLalu") {
             try{
-                $debit = new Cash;
-                $debit->c_transaksi     = $keterangan;
-                $debit->c_jumlah        = $jumlah;
-                $debit->c_jenis         = "D";
-                $debit->c_tanggal       = $tanggal;
-                $debit->c_kategori      = $kategori;
-                $debit->c_akun          = $ke_akun;
-                $debit->c_flag          = "Pemasukan";
-                $debit->c_flagakun      = "Kas";
-                $debit->c_iduser        = Auth::user()->id;
-                $debit->created_at      = Carbon::now('Asia/Jakarta');
-                $debit->updated_at      = Carbon::now('Asia/Jakarta');
-                $debit->save();
+                $total_debit = Cash::where('c_iduser', Auth::user()->id)
+                            ->where('c_flagakun', $flag_akun)
+                            ->where('c_jenis', $jenis)
+                            ->whereYear('c_tanggal', '=', $last_month_year)
+                            ->whereMonth('c_tanggal', '=', $last_month_month)
+                            ->sum('c_jumlah');
 
-                $nama_keakun = Akun::where('iduser', Auth::user()->id)->where('id', $ke_akun)->first();
+                $data        = Cash::where('c_iduser', Auth::user()->id)
+                            ->where('c_flagakun', $flag_akun)
+                            ->where('c_jenis', $jenis)
+                            ->whereYear('c_tanggal', '=', $last_month_year)
+                            ->whereMonth('c_tanggal', '=', $last_month_month)
+                            ->get();
 
-                Activity::log(Auth::user()->id, 'Create', 'membuat kas masuk', date('d-m-Y', strtotime($request->tanggal)) . ' ' .$keterangan . ' "' .number_format($jumlah, 0, ',', '.') . '" ke akun ' . '('.$nama_keakun->kode_akun.') '.$nama_keakun->nama_akun, null, Carbon::now('Asia/Jakarta'));
-
-                DB::commit();
-                $response = [
-                    'status'    => "success",
-                    'message'   => 'Kas masuk berhasil disimpan'
-                ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => 'Kas masuk gagal disimpan'
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function getKasDebet(Request $request)
-    {
-        if ($request->isMethod('get')) {
-            try{
-                $kas_debet = Cash::with(['akun'])
-                ->where('c_iduser', Auth::user()->id)
-                ->where('c_flagakun', 'Kas')
-                ->where('c_jenis', 'D')
-                ->orderBy('c_tanggal', 'desc');
-
-                $data = [];
-
-                if ($kas_debet->count() > 0) {
-                    foreach ($kas_debet->get() as $key => $value) {
-                        $data[] = [
-                            "id"      => Crypt::encrypt($value->c_id),
-                            "tanggal" => $value->c_tanggal,
-                            "keterangan"=> $value->c_transaksi,
-                            "jumlah"  => $value->c_jumlah,
-                            "ke_akun" => "(".$value->akun->kode_akun.") ".$value->akun->nama_akun
-                        ];
-                    }
-                }
-
-                $response = [
-                    'status' => "success",
-                    'data'   => $data
-                ];
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => 'A network error occurred. Please try again!'
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function deleteKasDebet(Request $request, $id=null)
-    {
-        if ($request->isMethod('delete')) {
-            try {
-                $id = Crypt::decrypt($id);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            DB::beginTransaction();
-            try{
-                $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
-                Activity::log(Auth::user()->id, 'Delete', 'menghapus kas masuk', date('d-m-Y', strtotime($cash->c_tanggal)) .' '. $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', null, Carbon::now('Asia/Jakarta'));
-                Cash::where(['c_id'=> $id])->delete();
-                DB::commit();
-
-                $response = [
-                    'status'    => "success",
-                    'message'   => "Berhasil menghapus kas masuk"
-                ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Gagal menghapus kas masuk"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function getCurrentKasDebet(Request $request, $id=null)
-    {
-        if ($request->isMethod('get')) {
-            try {
-                $id = Crypt::decrypt($id);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            try{
-                $cash = Cash::with(['akun'])->where('c_id', '=', $id);
-
-                $results = [];
-                if ($cash->count() > 0) {
-                    $results = array(
-                        'id'            => Crypt::encrypt($cash->first()->c_id),
-                        'tanggal'       => $cash->first()->c_tanggal,
-                        'keterangan'    => $cash->first()->c_transaksi,
-                        'jumlah'        => $cash->first()->c_jumlah,
-                        'kategori'      => $cash->first()->c_kategori,
-                        'ke_akun'        => $cash->first()->akun->kode_akun
+                foreach ($data as $value) {
+                    $row = array(
+                        'tanggal'       => $value->c_tanggal,
+                        'keterangan'    => $value->c_transaksi,
+                        'jumlah'        => $value->c_jumlah
                     );
+
+                    $result[] = $row;
                 }
 
-                $response = [
-                    'status' => "success",
-                    'data'   => $results
-                ];
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function updateKasDebet(Request $request)
-    {
-        if ($request->isMethod('put')) {
-            try {
-                $id         = Crypt::decrypt($request->id);
-                $ke_akun    = Crypt::decrypt($request->ke_akun);
-                $kategori   = Crypt::decrypt($request->kategori);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            $tanggal    = date('Y-m-d', strtotime($request->tanggal));
-            $jumlah     = $request->jumlah;
-            $keterangan = $request->keterangan;
-
-            DB::beginTransaction();
-            try{
-                $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
-
-                $nama_keakun = Akun::where('iduser', Auth::user()->id)->where('id', $ke_akun)->first();
-
-                Activity::log(Auth::user()->id, 'Update', 'memperbarui kas masuk', 'Diperbarui menjadi ' . date('d-m-Y', strtotime($request->tanggal)) . ' ' . $keterangan . ' "' .number_format($jumlah, 0, ',', '.') .' akun "'.'('.$nama_keakun->kode_akun.') '.$nama_keakun->nama_akun.'"', 'Transaksi sebelumnya ' . date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' . $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', Carbon::now('Asia/Jakarta'));
-
-                Cash::where(['c_id'=>$id])->update([
-                    'c_transaksi'   => $keterangan,
-                    'c_jumlah'      => $jumlah,
-                    'c_tanggal'     => $tanggal,
-                    'c_kategori'    => $kategori,
-                    'c_akun'        => $ke_akun,
-                    'c_flagakun'    => 'Kas',
-                    'updated_at'    => Carbon::now('Asia/Jakarta')
-                ]);
-
-                DB::commit();
-
-                $response = [
-                    'status'    => "success",
-                    'message'   => "Berhasil memperbarui kas masuk"
-                ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Gagal memperbarui kas masuk"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function saveKasKredit(Request $request)
-    {
-        if ($request->isMethod('post')) {
-            $jumlah     = $request->jumlah;
-            $tanggal    = date('Y-m-d', strtotime($request->tanggal));
-            $dari_akun  = $request->dari_akun;
-            $kategori   = $request->kategori;
-            $keperluan  = $request->keperluan;
-
-            try {
-                $dari_akun  = Crypt::decrypt($dari_akun);
-                $kategori   = Crypt::decrypt($kategori);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            DB::beginTransaction();
-            try{
-                $credit = new Cash;
-                $credit->c_transaksi = $keperluan;
-                $credit->c_jumlah    = $jumlah;
-                $credit->c_jenis     = "K";
-                $credit->c_tanggal   = $tanggal;
-                $credit->c_kategori  = $kategori;
-                $credit->c_akun      = $dari_akun;
-                $credit->c_flag      = "Pengeluaran";
-                $credit->c_flagakun  = 'Kas';
-                $credit->c_iduser    = Auth::user()->id;
-                $credit->created_at  = Carbon::now('Asia/Jakarta');
-                $credit->updated_at  = Carbon::now('Asia/Jakarta');
-                $credit->save();
-
-                $nama_dariakun = Akun::where('iduser', Auth::user()->id)->where('id', $dari_akun)->first();
-
-                Activity::log(Auth::user()->id, 'Create', 'membuat kas keluar', date('d-m-Y', strtotime($request->tanggal)) . ' ' .$keperluan . ' "' .number_format($jumlah, 0, ',', '.') . '" dari akun ' . '('.$nama_dariakun->kode_akun.') '.$nama_dariakun->nama_akun, null, Carbon::now('Asia/Jakarta'));
-
-                DB::commit();
-
-                $response = [
-                    'status'    => "success",
-                    'message'   => "Kas keluar berhasil disimpan"
-                ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Kas keluar gagal disimpan"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function getKasKredit(Request $request)
-    {
-        if ($request->isMethod('get')) {
-            try{
-                $cash = Cash::with(['akun'])
-                ->where('c_iduser', Auth::user()->id)
-                ->where('c_flagakun', 'Kas')
-                ->where('c_jenis', 'K')
-                ->orderBy('c_tanggal', 'desc');
-
-                $data_response = [];
-
-                if ($cash->count() > 0) {
-                    foreach ($cash->get() as $key => $value) {
-                        $data_response[] = [
-                            'id'        => Crypt::encrypt($value->c_id),
-                            'tanggal'   => $value->c_tanggal,
-                            'keperluan'   => $value->c_transaksi,
-                            'jumlah'    => $value->c_jumlah,
-                            'dari_akun' => '('.$value->akun->kode_akun.') '.$value->akun->nama_akun
-                        ];
-                    }
-                }
-
-                $response = [
-                    'status' => "success",
-                    'data'   => $data_response
-                ];
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => 'A network error occurred. Please try again!'
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function deleteKasKredit(Request $request, $id = null)
-    {
-        if ($request->isMethod('delete')) {
-            try {
-                $id = Crypt::decrypt($id);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            DB::beginTransaction();
-            try{
-                $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
-                Activity::log(Auth::user()->id, 'Delete', 'menghapus kas keluar', date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' .$cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', null, Carbon::now('Asia/Jakarta'));
-                Cash::where(['c_id'=> $id])->delete();
-                DB::commit();
-                $response = [
-                    'status'    => "success",
-                    'message'   => "Kas keluar berhasil dihapus"
-                ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Kas keluar gagal dihapus"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function getCurrentKasKredit(Request $request, $id = null)
-    {
-        if ($request->isMethod('get')) {
-            try {
-                $id = Crypt::decrypt($id);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            try{
-                $data = Cash::where('c_id', '=', $id);
-                $results = [];
-
-                if ($data->count() > 0) {
-                    $results = array(
-                        'id'            => Crypt::encrypt($data->first()->c_id),
-                        'tanggal'       => $data->first()->c_tanggal,
-                        'keperluan'     => $data->first()->c_transaksi,
-                        'jumlah'        => $data->first()->c_jumlah,
-                        'kategori'      => $data->first()->c_kategori,
-                        'dari_akun'      => $data->first()->akun->kode_akun
-                    );
-                }
-
-                $response = [
-                    'status' => "success",
-                    'data'   => $results
-                ];
-
-                return response()->json($response);
-                    
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => 'A network error occurred. Please try again!'
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function updateKasKredit(Request $request)
-    {
-        if ($request->isMethod('put')) {
-            $keperluan  = $request->keperluan;
-            $jumlah     = $request->jumlah;
-            $tanggal    = date('Y-m-d', strtotime($request->tanggal));
-            $dari_akun  = $request->dari_akun;
-            $kategori   = $request->kategori;
-            $id         = $request->id;
-
-            try {
-                $id         = Crypt::decrypt($id);
-                $dari_akun  = Crypt::decrypt($dari_akun);
-                $kategori   = Crypt::decrypt($kategori);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            DB::beginTransaction();
-            try{
-                $nama_dariakun = Akun::where('iduser', Auth::user()->id)->where('id', $dari_akun)->first();
-
-                $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
-
-                Activity::log(Auth::user()->id, 'Update', 'memperbarui kas keluar', 'Diperbarui menjadi ' . date('d-m-Y', strtotime($request->tanggal)) . ' ' . $keperluan . ' "' .number_format($jumlah, 0, ',', '.') .' akun "'.'('.$nama_dariakun->kode_akun.') '.$nama_dariakun->nama_akun.'"', 'Transaksi sebelumnya ' . date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' . $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', Carbon::now('Asia/Jakarta'));
-
-                Cash::where(['c_id'=>$id])->update([
-                    'c_transaksi'   => $keperluan,
-                    'c_jumlah'      => $jumlah,
-                    'c_tanggal'     => $tanggal,
-                    'c_kategori'    => $kategori,
-                    'c_akun'        => $dari_akun,
-                    'c_flagakun'    => 'Kas',
-                    'updated_at'    => Carbon::now('Asia/Jakarta')
-                ]);
-
-                DB::commit();
-
-                $response = [
-                    'status'    => "success",
-                    'message'   => "Berhasil memperbarui kas keluar"
-                ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Gagal memperbarui kas keluar"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-    // End Kas
-
-    // Start Bank
-    public function saveBankDebet(Request $request)
-    {
-        if ($request->isMethod('post')) {
-            $keterangan = $request->keterangan;
-            $tanggal    = date('Y-m-d', strtotime($request->tanggal));
-            $jumlah     = $request->jumlah;
-            $kategori   = $request->kategori;
-            $ke_akun    = $request->ke_akun;
-
-            try {
-                $ke_akun     = Crypt::decrypt($ke_akun);
-                $kategori   = Crypt::decrypt($kategori);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            DB::beginTransaction();
-            try{
-                $debit = new Cash;
-                $debit->c_transaksi     = $keterangan;
-                $debit->c_jumlah        = $jumlah;
-                $debit->c_jenis         = "D";
-                $debit->c_tanggal       = $tanggal;
-                $debit->c_kategori      = $kategori;
-                $debit->c_akun          = $ke_akun;
-                $debit->c_flag          = "Pemasukan";
-                $debit->c_flagakun      = "Bank";
-                $debit->c_iduser        = Auth::user()->id;
-                $debit->created_at      = Carbon::now('Asia/Jakarta');
-                $debit->updated_at      = Carbon::now('Asia/Jakarta');
-                $debit->save();
-
-                $nama_keakun = Akun::where('iduser', Auth::user()->id)->where('id', $ke_akun)->first();
-
-                Activity::log(Auth::user()->id, 'Create', 'membuat bank masuk', date('d-m-Y', strtotime($request->tanggal)) . ' ' .$keterangan . ' "' .number_format($jumlah, 0, ',', '.') . '" ke akun ' . '('.$nama_keakun->kode_akun.') '.$nama_keakun->nama_akun, null, Carbon::now('Asia/Jakarta'));
-
-                DB::commit();
-
-                $response = [
-                    'status'    => "success",
-                    'message'   => "Bank masuk berhasil disimpan"
-                ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Bank masuk gagal disimpan"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function getBankDebet_(Request $request)
-    {
-        if ($request->isMethod('get')) {
-            $limit = $request->limit ?? 5;
-
-            try{
-                $itemsTransformed = Cash::with(['akun'])
-                ->where('c_iduser', Auth::user()->id)
-                ->where('c_flagakun', 'Bank')
-                ->where('c_jenis', 'D')
-                ->orderBy('c_tanggal', 'desc')
-                ->paginate($limit);
-
-                $itemsTransformed->setCollection(
-                    $itemsTransformed->getCollection()->transform(function ($items) {
-                        // $data['id']                  = encrypt($items->c_id);
-                        $data['id']                  = $items->c_id;
-                        $data['description_of_transaction'] = $items->c_transaksi;
-                        $data['debit_amount']        = $items->c_jumlah;
-                        $data['type_of_transaction'] = $items->c_jenis;
-                        $data['date_of_transaction'] = $items->c_tanggal;
-                        $data['category_id']         = encrypt($items->c_kategori);
-                        $data['to_account_bank_id']  = encrypt($items->c_akun);
-                        $data['flag_of_transaction'] = $items->c_flag;
-                        $data['flag_of_account']     = $items->c_flagakun;
-                        $data['to_account_code']     = $items->akun->kode_akun;
-                        $data['to_account_name']     = $items->akun->nama_akun;
-                        $data['account_type']        = $items->akun->jenis_akun;
-                        $data['user_id']             = encrypt($items->c_iduser);
-                        $data['created_at']          = Carbon::parse($items->created_at)->format("Y-m-d H:i:s");
-                        $data['updated_at']          = Carbon::parse($items->updated_at)->format("Y-m-d H:i:s");
-                        return $data;
-                    })
-                );
+                $result_array = array('option'=>$params, 'periode'=>$last_month, 'flag_akun'=>$flag_akun, 'type'=>$jenis, 'total'=>$total_debit, 'detail'=>$result);
 
                 $response = [
                     'success' => true,
                     'message' => 'data available',
                     'error_code' => null,
-                    'data'   => $itemsTransformed
+                    'data'   => $result_array
                 ];
-            }catch(\Exception $e){
+            }catch(Exception $e){
                 $response = [
-                    'success'    => false,
-                    'message'   => Helper::errorCode(1401),
-                    'error_code' => 1401,
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan sistem',
+                    'error_code' => null,
+                    'data'   => []
+                ];
+            }
+
+            return Response::json($response);
+        } elseif ($params == "TahunLalu") {
+            try{
+                $total_debit = Cash::where('c_iduser', Auth::user()->id)
+                            ->where('c_flagakun', $flag_akun)
+                            ->where('c_jenis', $jenis)
+                            ->whereYear('c_tanggal', '=', $last_year)
+                            ->sum('c_jumlah');
+
+                $data        = Cash::where('c_iduser', Auth::user()->id)
+                                ->where('c_flagakun', $flag_akun)
+                                ->where('c_jenis', $jenis)
+                                ->whereYear('c_tanggal', '=', $last_year)
+                                ->get();
+
+                foreach ($data as $value) {
+                    $row = array(
+                        'tanggal' => $value->c_tanggal,
+                        'keterangan' => $value->c_transaksi,
+                        'jumlah' => $value->c_jumlah
+                    );
+
+                    $result[] = $row;
+                }
+
+                $result_array = array('option'=>$params, 'periode'=>$last_year, 'flag_akun'=>$flag_akun, 'type'=>$jenis, 'total'=>$total_debit, 'detail'=>$result);
+
+                $response = [
+                    'success' => true,
+                    'message' => 'data available',
+                    'error_code' => null,
+                    'data'   => $result_array
+                ];
+            }catch(Exception $e){
+                $response = [
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan sistem',
+                    'error_code' => null,
+                    'data'   => []
+                ];
+            }
+
+            return Response::json($response);
+        } elseif ($params == "Pertanggal") {
+            try{
+                $total_debit = Cash::where('c_iduser', Auth::user()->id)
+                            ->where('c_flagakun', $flag_akun)
+                            ->where('c_jenis', $jenis)
+                            ->where('c_tanggal', '=', $tanggal)
+                            ->sum('c_jumlah');
+
+                $data        = Cash::where('c_iduser', Auth::user()->id)
+                                ->where('c_flagakun', $flag_akun)
+                                ->where('c_jenis', $jenis)
+                                ->where('c_tanggal', '=', $tanggal)
+                                ->get();
+
+                foreach ($data as $value) {
+                    $row = array(
+                        'tanggal' => $value->c_tanggal,
+                        'keterangan' => $value->c_transaksi,
+                        'jumlah' => $value->c_jumlah
+                    );
+
+                    $result[] = $row;
+                }
+
+                $result_array = array('option'=>$params, 'periode'=>$tanggal, 'flag_akun'=>$flag_akun, 'type'=>$jenis, 'total'=>$total_debit, 'detail'=>$result);
+
+                $response = [
+                    'success' => true,
+                    'message' => 'data available',
+                    'error_code' => null,
+                    'data'   => $result_array
+                ];
+            }catch(Exception $e){
+                $response = [
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan sistem',
+                    'error_code' => null,
+                    'data'   => []
+                ];
+            }
+
+            return Response::json($response);
+        } elseif ($params == "Perbulan") {
+            $ex_params = explode("-", $month);
+            $tahun = $ex_params[0];
+            $bulan = $ex_params[1];
+
+            try{
+                $total_debit = Cash::where('c_iduser', Auth::user()->id)
+                            ->where('c_flagakun', $flag_akun)
+                            ->where('c_jenis', $jenis)
+                            ->whereYear('c_tanggal', '=', $tahun)
+                            ->whereMonth('c_tanggal', '=', $bulan)
+                            ->sum('c_jumlah');
+
+                $data        = Cash::where('c_iduser', Auth::user()->id)
+                                ->where('c_flagakun', $flag_akun)
+                                ->where('c_jenis', $jenis)
+                                ->whereYear('c_tanggal', '=', $tahun)
+                                ->whereMonth('c_tanggal', '=', $bulan)
+                                ->get();
+
+                foreach ($data as $value) {
+                    $row = array(
+                        'tanggal' => $value->c_tanggal,
+                        'keterangan' => $value->c_transaksi,
+                        'jumlah' => $value->c_jumlah
+                    );
+
+                    $result[] = $row;
+                }
+
+                $result_array = array('option'=>$params, 'periode'=>$month, 'flag_akun'=>$flag_akun, 'type'=>$jenis, 'total'=>$total_debit, 'detail'=>$result);
+
+                $response = [
+                    'success' => true,
+                    'message' => 'data available',
+                    'error_code' => null,
+                    'data'   => $result_array
+                ];
+            }catch(Exception $e){
+                $response = [
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan sistem',
+                    'error_code' => null,
+                    'data'   => []
+                ];
+            }
+
+            return Response::json($response);
+        } elseif ($params == "Pertahun") {
+            try{
+                $total_debit = Cash::where('c_iduser', Auth::user()->id)
+                            ->where('c_flagakun', $flag_akun)
+                            ->where('c_jenis', $jenis)
+                            ->whereYear('c_tanggal', '=', $tahun)
+                            ->sum('c_jumlah');
+
+                $data        = Cash::where('c_iduser', Auth::user()->id)
+                            ->where('c_flagakun', $flag_akun)
+                            ->where('c_jenis', $jenis)
+                            ->whereYear('c_tanggal', '=', $tahun)
+                            ->get();
+
+                foreach ($data as $value) {
+                    $row = array(
+                        'tanggal' => $value->c_tanggal,
+                        'keterangan' => $value->c_transaksi,
+                        'jumlah' => $value->c_jumlah
+                    );
+
+                    $result[] = $row;
+                }
+
+                $result_array = array('option'=>$params, 'periode'=>$tahun, 'flag_akun'=>$flag_akun, 'type'=>$jenis, 'total'=>$total_debit, 'detail'=>$result);
+
+                $response = [
+                    'success' => true,
+                    'message' => 'data available',
+                    'error_code' => null,
+                    'data'   => $result_array
+                ];
+            }catch(Exception $e){
+                $response = [
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan sistem',
+                    'error_code' => null,
+                    'data'   => []
+                ];
+            }
+
+            return Response::json($response);
+        } elseif ($params == "RangeTanggal") {
+
+            $rules_of_validator = [
+                'tanggal_awal'  => 'required',
+                'tanggal_akhir' => 'required'
+            ];
+
+            $message_of_validator = [
+                'tanggal_awal.required'  => 'Tanggal awal tidak boleh kosong',
+                'tanggal_akhir.required' => 'Tanggal akhir tidak boleh kosong'
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
+                $response = [
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
                     'data' => []
                 ];
+            } else {
+                try{
+                    $total_debit = Cash::where('c_iduser', Auth::user()->id)
+                                ->where('c_flagakun', $flag_akun)
+                                ->where('c_jenis', $jenis)
+                                ->where('c_tanggal', '>=', $tanggal_awal)
+                                ->where('c_tanggal', '<=', $tanggal_akhir)
+                                ->sum('c_jumlah');
+    
+                    $data        = Cash::where('c_iduser', Auth::user()->id)
+                                    ->where('c_flagakun', $flag_akun)
+                                    ->where('c_jenis', $jenis)
+                                    ->where('c_tanggal', '>=', $tanggal_awal)
+                                    ->where('c_tanggal', '<=', $tanggal_akhir)
+                                    ->get();
+    
+                    foreach ($data as $value) {
+                        $row = array(
+                            'tanggal' => $value->c_tanggal,
+                            'keterangan' => $value->c_transaksi,
+                            'jumlah' => $value->c_jumlah
+                        );
+    
+                        $result[] = $row;
+                    }
+    
+                    $result_array = array('option'=>$params, 'periode'=>$tanggal_awal.' s/d '.$tanggal_akhir, 'flag_akun'=>$flag_akun, 'type'=>$jenis, 'total'=>$total_debit, 'detail'=>$result);
+    
+                    $response = [
+                        'success' => true,
+                        'message' => 'data available',
+                        'error_code' => null,
+                        'data'   => $result_array
+                    ];
+                }catch(Exception $e){
+                    $response = [
+                        'success' => false,
+                        'message' => 'Terjadi kesalahan sistem',
+                        'error_code' => null,
+                        'data'   => []
+                    ];
+                }
+            }
+
+            return Response::json($response);
+        } else {
+            $response = [
+                'success' => false,
+                'message' => 'Data tidak tersidia',
+                'error_code' => null,
+                'data'   => []
+            ];
+        }
+    }
+
+    public function getDataTransaction(Request $request)
+    {
+        if ($request->isMethod('get')) {
+            $limit     = $request->limit ?? 5;
+            $offset    = $request->offset ?? 0;
+            $sort      = $request->sort ?? 'desc';
+            $flag_akun = $request->flag_akun;
+            $jenis     = $request->jenis;
+
+            // SEARCH
+            $search_description_of_transaction = $request->description_of_transaction;
+            $search_amount                     = $request->amount;
+            $search_date_of_transaction        = $request->date_of_transaction ? Carbon::parse($request->date_of_transaction)->format('Y-m-d') : null;
+            $search_category_id                = Helper::tryDecrypt($request->category_id);
+            $search_account_bank_id            = (Helper::tryDecrypt($request->account_bank_id)) ? Helper::tryDecrypt($request->account_bank_id) : $request->account_bank_id;
+            $search_first_date                 = $request->first_date ? Carbon::parse($request->first_date)->format('Y-m-d') : null;
+            $search_last_date                  = $request->last_date ? Carbon::parse($request->last_date)->format('Y-m-d') : null;
+            $is_date_range                     = ($search_first_date && $search_last_date);
+            $is_first_date                     = ($search_first_date && !$search_last_date);
+            $is_last_date                      = (!$search_first_date && $search_last_date);
+
+            $rules_of_validator = [
+                'flag_akun'  => 'required',
+                'jenis' => 'required'
+            ];
+
+            $message_of_validator = [
+                'flag_akun.required'  => 'Flag akun tidak boleh kosong',
+                'jenis.required' => 'Jenis tidak boleh kosong'
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
+                $response = [
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
+                ];
+            } else {
+                try{
+                    $data_transaction_count = Cash::where('c_iduser', Auth::user()->id)
+                    ->where('c_flagakun', $flag_akun)
+                    ->where('c_jenis', $jenis)
+                    ->selectRaw("count(distinct(c_id)) as total")
+                    ->first();
+                    
+                    $data_transaction = Cash::with(['akun'])
+                    ->where('c_iduser', Auth::user()->id)
+                    ->where('c_flagakun', $flag_akun)
+                    ->where('c_jenis', $jenis)
+                    ->when($search_description_of_transaction, function($query) use ($search_description_of_transaction) {
+                        $query->where('c_transaksi', 'like', '%'.$search_description_of_transaction.'%');
+                    })
+                    ->when($search_amount, function($query) use ($search_amount) {
+                        $query->where('c_jumlah', 'like', '%'.$search_amount.'%');
+                    })
+                    ->when($search_date_of_transaction, function($query) use ($search_date_of_transaction) {
+                        $query->where('c_tanggal', $search_date_of_transaction);
+                    })
+                    ->when($is_date_range, function($query) use ($search_first_date, $search_last_date) {
+                        $query->where('c_tanggal', '>=', $search_first_date)->where('c_tanggal', '<=', $search_last_date);
+                    })
+                    ->when($is_first_date, function($query) use ($search_first_date) {
+                        $query->where('c_tanggal', $search_first_date);
+                    })
+                    ->when($is_last_date, function($query) use ($search_last_date) {
+                        $query->where('c_tanggal', $search_last_date);
+                    })
+                    ->when($search_category_id, function($query) use ($search_category_id) {
+                        $query->where('c_kategori', $search_category_id);
+                    })
+                    ->when($search_account_bank_id, function($query) use ($search_account_bank_id) {
+                        $query->where('c_akun', $search_account_bank_id);
+                    });
+
+                    $total_filtered = $data_transaction->count();
+                    
+                    $data_transaction_results = $data_transaction
+                    ->limit($limit)
+                    ->offset($offset)
+                    ->orderBy('c_tanggal', 'desc')
+                    ->get()
+                    ->map(function ($items, $key) {
+                        $data['id']                         = encrypt($items->c_id);
+                        $data['description_of_transaction'] = $items->c_transaksi;
+                        $data['amount']                     = $items->c_jumlah;
+                        $data['type_of_transaction']        = $items->c_jenis;
+                        $data['date_of_transaction']        = $items->c_tanggal;
+                        // $data['category_id']                = encrypt($items->c_kategori);
+                        $data['category_id']                = $items->c_kategori;
+                        // $data['account_bank_id']         = encrypt($items->c_akun);
+                        $data['account_bank_id']            = $items->c_akun;
+                        $data['flag_of_transaction']        = $items->c_flag;
+                        $data['flag_of_account']            = $items->c_flagakun;
+                        $data['account_code']               = $items->akun->kode_akun;
+                        $data['account_name']               = $items->akun->nama_akun;
+                        $data['account_code_name']          = "(".$items->akun->kode_akun.") ".$items->akun->nama_akun;
+                        $data['account_type']               = $items->akun->jenis_akun;
+                        $data['user_id']                    = encrypt($items->c_iduser);
+                        $data['created_at']                 = Carbon::parse($items->created_at)->format("Y-m-d H:i:s");
+                        $data['updated_at']                 = Carbon::parse($items->updated_at)->format("Y-m-d H:i:s");
+                        return $data;
+                    });
+
+                    $results = [
+                        'records_total'    => $data_transaction_count->total,
+                        'records_filtered' => $total_filtered,
+                        'records_limit'    => $limit,
+                        'records_offset'   => $offset,
+                        'records'          => $data_transaction_results
+                    ];
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => 'data available',
+                        'error_code' => null,
+                        'data'       => $results
+                    ];
+                }catch(\Exception $e){
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
             }
         } else {
             $response = [
                 'success'    => false,
-                'message'   => Helper::errorCode(1106),
+                'message'    => Helper::errorCode(1106),
                 'error_code' => 1106,
-                'data' => []
+                'data'       => []
             ];
         }
 
         return response()->json($response);
     }
 
-    public function getBankDebet(Request $request)
+    public function getCurrentTransaction(Request $request, $id = null)
     {
         if ($request->isMethod('get')) {
-            $limit = $request->limit ?? 5;
-            $offset = $request->offset ?? 0;
-            $sort = $request->sort ?? 'desc';
-
-            try{
-                $bank_debit_count = Cash::with(['akun'])
-                ->where('c_iduser', Auth::user()->id)
-                ->where('c_flagakun', 'Bank')
-                ->where('c_jenis', 'D')
-                ->selectRaw("count(distinct(c_id)) as total")
-		        ->first();
-
-                $bank_debit = Cash::with(['akun'])
-                ->where('c_iduser', Auth::user()->id)
-                ->where('c_flagakun', 'Bank')
-                ->where('c_jenis', 'D');
-
-                $total_filtered = $bank_debit->count();
-
-                $bank_debit_results = $bank_debit
-                ->limit($limit)
-                ->offset($offset)
-                ->orderBy('c_tanggal', 'desc')
-                ->get()
-                ->map(function ($items, $key) {
-                    $data['id']                  = encrypt($items->c_id);
-                    $data['description_of_transaction'] = $items->c_transaksi;
-                    $data['debit_amount']        = $items->c_jumlah;
-                    $data['type_of_transaction'] = $items->c_jenis;
-                    $data['date_of_transaction'] = $items->c_tanggal;
-                    $data['category_id']         = encrypt($items->c_kategori);
-                    $data['to_account_bank_id']  = encrypt($items->c_akun);
-                    $data['flag_of_transaction'] = $items->c_flag;
-                    $data['flag_of_account']     = $items->c_flagakun;
-                    $data['to_account_code']     = $items->akun->kode_akun;
-                    $data['to_account_name']     = $items->akun->nama_akun;
-                    $data['account_type']        = $items->akun->jenis_akun;
-                    $data['user_id']             = encrypt($items->c_iduser);
-                    $data['created_at']          = Carbon::parse($items->created_at)->format("Y-m-d H:i:s");
-                    $data['updated_at']          = Carbon::parse($items->updated_at)->format("Y-m-d H:i:s");
-                    return $data;
-                });
-
-                $results = [
-                    'records_total' => $bank_debit_count->total,
-                    'records_filtered' => $total_filtered,
-                    'records_limit' => $limit,
-                    'records_offset' => $offset,
-                    'records' => $bank_debit_results
-                ];
-
-                $response = [
-                    'success' => true,
-                    'message' => 'data available',
-                    'error_code' => null,
-                    'data'   => $results
-                ];
-            }catch(\Exception $e){
+            try {
+                $id = Crypt::decrypt($id);
+            } catch (DecryptException $e) {
                 $response = [
                     'success'    => false,
-                    'message'   => Helper::errorCode(1401),
-                    'error_code' => 1401,
-                    'data' => []
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
+                ];
+
+                return response()->json($response);
+            }
+
+            $data = Cash::with(['akun', 'kategori'])
+            ->where('c_iduser', Auth::user()->id)
+            ->where('c_id', $id);
+
+            if ($data->count() > 0) {
+                $results = array(
+                    'id' => Crypt::encrypt($data->first()->c_id),
+                    'kategori_id' => $data->first()->c_kategori,
+                    'kategori' => $data->first()->kategori->nama,
+                    'keterangan' => $data->first()->c_transaksi,
+                    'jumlah' => $data->first()->c_jumlah,
+                    'tanggal' => $data->first()->c_tanggal,
+                    'akun_id' => $data->first()->c_akun,
+                    'akun' => "(".$data->first()->akun->kode_akun.") ".$data->first()->akun->nama_akun,
+                );
+
+                $response = [
+                    'success'    => true,
+                    'message'    => "Data available",
+                    'error_code' => null,
+                    'data'       => $results
+                ];
+            } else {
+                $response = [
+                    'success'    => false,
+                    'message'    => "Data tidak ditemukan",
+                    'error_code' => null,
+                    'data'       => []
                 ];
             }
         } else {
             $response = [
                 'success'    => false,
-                'message'   => Helper::errorCode(1106),
+                'message'    => Helper::errorCode(1106),
                 'error_code' => 1106,
-                'data' => []
+                'data'       => []
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    // Start Bank
+    public function saveBankDebet(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            $rules_of_validator = [
+                'kategori'   => 'required',
+                'keterangan' => 'required',
+                'jumlah'     => 'required',
+                'tanggal'    => 'required',
+                'ke_akun'    => 'required',
+            ];
+
+            $message_of_validator = [
+                'kategori.required'     => 'Kategori tidak boleh kosong',
+                'keterangan.required'   => 'Keterangan tidak boleh kosong',
+                'jumlah.required'       => 'Jumlah tidak boleh kosong',
+                'tanggal.required'      => 'Tanggal tidak boleh kosong',
+                'ke_akun.required'      => 'Ke akun tidak boleh kosong',
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
+                $response = [
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
+                ];
+            } else {
+                $kategori   = $request->kategori;
+                $keterangan = $request->keterangan;
+                $jumlah     = $request->jumlah;
+                $tanggal    = date('Y-m-d', strtotime($request->tanggal));
+                $ke_akun    = $request->ke_akun;
+                
+                // try {
+                //     $ke_akun     = Crypt::decrypt($ke_akun);
+                //     $kategori   = Crypt::decrypt($kategori);
+                // } catch (DecryptException $e) {
+                //     $response = [
+                //         'success'    => false,
+                //         'message'    => Helper::errorCode(1402),
+                //         'error_code' => 1402,
+                //         'data'       => []
+                //     ];
+
+                //     return response()->json($response);
+                // }
+
+                DB::beginTransaction();
+                try{
+                    $debit = new Cash;
+                    $debit->c_transaksi     = $keterangan;
+                    $debit->c_jumlah        = $jumlah;
+                    $debit->c_jenis         = "D";
+                    $debit->c_tanggal       = $tanggal;
+                    $debit->c_kategori      = $kategori;
+                    $debit->c_akun          = $ke_akun;
+                    $debit->c_flag          = "Pemasukan";
+                    $debit->c_flagakun      = "Bank";
+                    $debit->c_iduser        = Auth::user()->id;
+                    $debit->created_at      = Carbon::now('Asia/Jakarta');
+                    $debit->updated_at      = Carbon::now('Asia/Jakarta');
+                    $debit->save();
+
+                    $nama_keakun = Akun::where('iduser', Auth::user()->id)->where('id', $ke_akun)->first();
+
+                    Activity::log(Auth::user()->id, 'Create', 'membuat bank masuk', date('d-m-Y', strtotime($request->tanggal)) . ' ' .$keterangan . ' "' .number_format($jumlah, 0, ',', '.') . '" ke akun ' . '('.$nama_keakun->kode_akun.') '.$nama_keakun->nama_akun, null, Carbon::now('Asia/Jakarta'));
+
+                    DB::commit();
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Bank masuk berhasil disimpan",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
+            }
+        } else {
+            $response = [
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function updateBankDebet(Request $request)
+    {
+        if ($request->isMethod('put')) {
+            $kategori   = $request->kategori;
+            $keterangan = $request->keterangan;
+            $jumlah     = $request->jumlah;
+            $tanggal    = date('Y-m-d', strtotime($request->tanggal));
+            $ke_akun    = $request->ke_akun;
+            $id         = $request->id;
+
+            try {
+                $id         = Crypt::decrypt($id);
+                // $ke_akun    = Crypt::decrypt($ke_akun);
+                // $kategori   = Crypt::decrypt($kategori);
+            } catch (DecryptException $e) {
+                $response = [
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
+                ];
+                return response()->json($response);
+            }
+
+            $rules_of_validator = [
+                'kategori'   => 'required',
+                'keterangan' => 'required',
+                'jumlah'     => 'required',
+                'tanggal'    => 'required',
+                'ke_akun'    => 'required',
+            ];
+
+            $message_of_validator = [
+                'kategori.required'     => 'Kategori tidak boleh kosong',
+                'keterangan.required'   => 'Keterangan tidak boleh kosong',
+                'jumlah.required'       => 'Jumlah tidak boleh kosong',
+                'tanggal.required'      => 'Tanggal tidak boleh kosong',
+                'ke_akun.required'      => 'Ke akun tidak boleh kosong',
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
+                $response = [
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
+                ];
+            } else {
+                DB::beginTransaction();
+                try{
+                    $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
+
+                    $nama_keakun = Akun::where('iduser', Auth::user()->id)->where('id', $ke_akun)->first();
+
+                    Activity::log(Auth::user()->id, 'Update', 'memperbarui bank masuk', 'Diperbarui menjadi ' . date('d-m-Y', strtotime($request->tanggal)) . ' ' . $keterangan . ' "' .number_format($jumlah, 0, ',', '.') .' akun "'.'('.$nama_keakun->kode_akun.') '.$nama_keakun->nama_akun.'"', 'Transaksi sebelumnya ' . date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' . $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', Carbon::now('Asia/Jakarta'));
+
+                    Cash::where(['c_id'=>$id])->update([
+                        'c_transaksi'   => $keterangan,
+                        'c_jumlah'      => $jumlah,
+                        'c_tanggal'     => $tanggal,
+                        'c_kategori'    => $kategori,
+                        'c_akun'        => $ke_akun,
+                        'updated_at'    => Carbon::now('Asia/Jakarta')
+                    ]);
+
+                    DB::commit();
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Berhasil memperbarui bank masuk",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
+            }
+        } else {
+            $response = [
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
         }
 
@@ -814,264 +827,260 @@ class KeuanganController extends Controller
 
     public function deleteBankDebet(Request $request, $id = null)
     {
-        if ($request->isMethod('delete()')) {
+        if ($request->isMethod('delete')) {
             try {
                 $id = Crypt::decrypt($id);
             } catch (DecryptException $e) {
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
                 ];
+
                 return response()->json($response);
             }
 
             DB::beginTransaction();
             try{
                 $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
+
                 Activity::log(Auth::user()->id, 'Delete', 'menghapus bank masuk', date('d-m-Y', strtotime($cash->c_tanggal)) .' '. $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', null, Carbon::now('Asia/Jakarta'));
+
                 Cash::where(['c_id'=> $id])->delete();
-                DB::commit();
-                $response = [
-                    'status'    => "success",
-                    'message'   => "Berhasil menghapus bank masuk"
-                ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Gagal menghapus bank masuk"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function getCurrentBankDebet(Request $request, $id = null)
-    {
-        if ($request->isMethod('get')) {
-            try {
-                $id = Crypt::decrypt($id);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            try{
-                $data = Cash::with(['akun'])->where('c_id', '=', $id);
-        
-                $results = [];
-
-                if ($data->count() > 0) {
-                    $results = array(
-                        'id'            => Crypt::encrypt($data->first()->c_id),
-                        'tanggal'       => $data->first()->c_tanggal,
-                        'keterangan'    => $data->first()->c_transaksi,
-                        'jumlah'        => $data->first()->c_jumlah,
-                        'kategori'      => $data->first()->c_kategori,
-                        'keakun'        => $data->first()->akun->kode_akun
-                    );
-                }
-
-                $response = [
-                    'status' => "success",
-                    'data'   => $results
-                ];
-
-                return response()->json($response);
-                    
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => 'A network error occurred. Please try again!'
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    public function updateBankDebet(Request $request)
-    {
-        if ($request->isMethod('put')) {
-            $keterangan = $request->keterangan;
-            $tanggal    = date('Y-m-d', strtotime($request->tanggal));
-            $jumlah     = $request->jumlah;
-            $ke_akun    = $request->ke_akun;
-            $kategori   = $request->kategori;
-            $id         = $request->id;
-
-            try {
-                $id         = Crypt::decrypt($id);
-                $ke_akun    = Crypt::decrypt($ke_akun);
-                $kategori   = Crypt::decrypt($kategori);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
-
-            DB::beginTransaction();
-            try{
-                $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
-
-                $nama_keakun = Akun::where('iduser', Auth::user()->id)->where('id', $ke_akun)->first();
-
-                Activity::log(Auth::user()->id, 'Update', 'memperbarui bank masuk', 'Diperbarui menjadi ' . date('d-m-Y', strtotime($request->tanggal)) . ' ' . $keterangan . ' "' .number_format($jumlah, 0, ',', '.') .' akun "'.'('.$nama_keakun->kode_akun.') '.$nama_keakun->nama_akun.'"', 'Transaksi sebelumnya ' . date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' . $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', Carbon::now('Asia/Jakarta'));
-
-                Cash::where(['c_id'=>$id])->update([
-                    'c_transaksi'   => $keterangan,
-                    'c_jumlah'      => $jumlah,
-                    'c_tanggal'     => $tanggal,
-                    'c_kategori'    => $kategori,
-                    'c_akun'        => $ke_akun,
-                    'c_flagakun'    => 'Bank',
-                    'updated_at'    => Carbon::now('Asia/Jakarta')
-                ]);
 
                 DB::commit();
 
                 $response = [
-                    'status'    => "success",
-                    'message'   => "Berhasil memperbarui bank masuk"
+                    'success'    => true,
+                    'message'    => "Berhasil menghapus bank masuk",
+                    'error_code' => null,
+                    'data'       => []
                 ];
             }catch (\Exception $e){
                 DB::rollback();
                 $response = [
-                    'status'    => "success",
-                    'message'   => "Gagal memperbarui bank masuk"
+                    'success'    => false,
+                    'message'    => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data'       => []
                 ];
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function saveBankKredit(Request $request)
     {
         if ($request->isMethod('post')) {
+            $rules_of_validator = [
+                'kategori'  => 'required',
+                'keperluan' => 'required',
+                'jumlah'    => 'required',
+                'tanggal'   => 'required',
+                'dari_akun' => 'required',
+            ];
+
+            $message_of_validator = [
+                'kategori.required'  => 'Kategori tidak boleh kosong',
+                'keperluan.required' => 'Keperluan tidak boleh kosong',
+                'jumlah.required'    => 'Jumlah tidak boleh kosong',
+                'tanggal.required'   => 'Tanggal tidak boleh kosong',
+                'dari_akun.required' => 'Dari akun tidak boleh kosong',
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
+                $response = [
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
+                ];
+            } else {
+                $kategori   = $request->kategori;
+                $keperluan  = $request->keperluan;
+                $jumlah     = $request->jumlah;
+                $tanggal    = date('Y-m-d', strtotime($request->tanggal));
+                $dari_akun  = $request->dari_akun;
+
+                // try {
+                //     $dari_akun = Crypt::decrypt($dari_akun);
+                //     $kategori = Crypt::decrypt($kategori);
+                // } catch (DecryptException $e) {
+                //     $response = [
+                //         'status'    => "failed",
+                //         'message'   => "A network error occurred. Please try again!"
+                //     ];
+                //     return response()->json($response);
+                // }
+
+                DB::beginTransaction();
+                try{
+                    $credit = new Cash;
+                    $credit->c_transaksi = $keperluan;
+                    $credit->c_jumlah    = $jumlah;
+                    $credit->c_jenis     = "K";
+                    $credit->c_tanggal   = $tanggal;
+                    $credit->c_kategori  = $kategori;
+                    $credit->c_akun      = $dari_akun;
+                    $credit->c_flag      = "Pengeluaran";
+                    $credit->c_flagakun  = 'Bank';
+                    $credit->c_iduser    = Auth::user()->id;
+                    $credit->created_at  = Carbon::now('Asia/Jakarta');
+                    $credit->updated_at  = Carbon::now('Asia/Jakarta');
+                    $credit->save();
+
+                    $nama_dariakun = Akun::where('iduser', Auth::user()->id)->where('id', $dari_akun)->first();
+
+                    Activity::log(Auth::user()->id, 'Create', 'membuat bank keluar', date('d-m-Y', strtotime($request->tanggal)) . ' ' .$keperluan . ' "' .number_format($jumlah, 0, ',', '.') . '" dari akun ' . '('.$nama_dariakun->kode_akun.') '.$nama_dariakun->nama_akun, null, Carbon::now('Asia/Jakarta'));
+
+                    DB::commit();
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Bank keluar berhasil disimpan",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
+            }
+        } else {
+            $response = [
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function updateBankKredit(Request $request)
+    {
+        if ($request->isMethod('put')) {
+            $kategori   = $request->kategori;
+            $keperluan  = $request->keperluan;
             $jumlah     = $request->jumlah;
             $tanggal    = date('Y-m-d', strtotime($request->tanggal));
             $dari_akun  = $request->dari_akun;
-            $kategori   = $request->kategori;
-            $keperluan  = $request->keperluan;
+            $id         = $request->id;
 
             try {
-                $dari_akun = Crypt::decrypt($dari_akun);
-                $kategori = Crypt::decrypt($kategori);
+                $id         = Crypt::decrypt($id);
+                // $dari_akun  = Crypt::decrypt($dari_akun);
+                // $kategori   = Crypt::decrypt($kategori);
             } catch (DecryptException $e) {
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
                 ];
                 return response()->json($response);
             }
 
-            DB::beginTransaction();
-            try{
-                $credit = new Cash;
-                $credit->c_transaksi = $keperluan;
-                $credit->c_jumlah    = $jumlah;
-                $credit->c_jenis     = "K";
-                $credit->c_tanggal   = $tanggal;
-                $credit->c_kategori  = $kategori;
-                $credit->c_akun      = $dari_akun;
-                $credit->c_flag      = "Pengeluaran";
-                $credit->c_flagakun  = 'Bank';
-                $credit->c_iduser    = Auth::user()->id;
-                $credit->created_at  = Carbon::now('Asia/Jakarta');
-                $credit->updated_at  = Carbon::now('Asia/Jakarta');
-                $credit->save();
-
-                $nama_dariakun = Akun::where('iduser', Auth::user()->id)->where('id', $dari_akun)->first();
-
-                Activity::log(Auth::user()->id, 'Create', 'membuat bank keluar', date('d-m-Y', strtotime($request->tanggal)) . ' ' .$keperluan . ' "' .number_format($jumlah, 0, ',', '.') . '" dari akun ' . '('.$nama_dariakun->kode_akun.') '.$nama_dariakun->nama_akun, null, Carbon::now('Asia/Jakarta'));
-
-                DB::commit();
-
-                $response = [
-                    'status'    => "success",
-                    'message'   => "Bank keluar berhasil disimpan"
-                ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Bank keluar gagal disimpan"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+            $rules_of_validator = [
+                'kategori'  => 'required',
+                'keperluan' => 'required',
+                'jumlah'    => 'required',
+                'tanggal'   => 'required',
+                'dari_akun' => 'required',
             ];
-            return response()->json($response);
-        }
-    }
 
-    public function getBankKredit(Request $request)
-    {
-        if ($request->isMethod('get')) {
-            try{
-                $cash = Cash::with(['akun'])
-                ->where('c_iduser', Auth::user()->id)
-                ->where('c_flagakun', 'Bank')
-                ->where('c_jenis', 'K')
-                ->orderBy('c_tanggal', 'desc');
+            $message_of_validator = [
+                'kategori.required'  => 'Kategori tidak boleh kosong',
+                'keperluan.required' => 'Keperluan tidak boleh kosong',
+                'jumlah.required'    => 'Jumlah tidak boleh kosong',
+                'tanggal.required'   => 'Tanggal tidak boleh kosong',
+                'dari_akun.required' => 'Dari akun tidak boleh kosong',
+            ];
 
-                $data_response = [];
-
-                if ($cash->count() > 0) {
-                    foreach ($cash->get() as $key => $value) {
-                        $data_response[] = [
-                            'id'        => Crypt::encrypt($value->c_id),
-                            'tanggal'   => $value->c_tanggal,
-                            'keperluan' => $value->c_transaksi,
-                            'jumlah'    => $value->c_jumlah,
-                            'dari_akun' => '('.$value->akun->kode_akun.') '.$value->akun->nama_akun
-                        ];
-                    }
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
                 }
+                
+                $response = [
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
+                ];
+            } else {
+                DB::beginTransaction();
+                try{
+                    $nama_dariakun = Akun::where('iduser', Auth::user()->id)->where('id', $dari_akun)->first();
 
-                $response = [
-                    'status' => "success",
-                    'data'   => $data_response
-                ];
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => 'A network error occurred. Please try again!'
-                ];
+                    $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
+
+                    Activity::log(Auth::user()->id, 'Update', 'memperbarui bank keluar', 'Diperbarui menjadi ' . date('d-m-Y', strtotime($request->tanggal)) . ' ' . $keperluan . ' "' .number_format($jumlah, 0, ',', '.') .' akun "'.'('.$nama_dariakun->kode_akun.') '.$nama_dariakun->nama_akun.'"', 'Transaksi sebelumnya ' . date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' . $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', Carbon::now('Asia/Jakarta'));
+
+                    Cash::where(['c_id'=>$id])->update([
+                        'c_transaksi'   => $keperluan,
+                        'c_jumlah'      => $jumlah,
+                        'c_tanggal'     => $tanggal,
+                        'c_kategori'    => $kategori,
+                        'c_akun'        => $dari_akun,
+                        'updated_at'    => Carbon::now('Asia/Jakarta')
+                    ]);
+
+                    DB::commit();
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Berhasil memperbarui bank keluar",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function deleteBankKredit(Request $request, $id = null)
@@ -1081,151 +1090,571 @@ class KeuanganController extends Controller
                 $id = Crypt::decrypt($id);
             } catch (DecryptException $e) {
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
                 ];
+
                 return response()->json($response);
             }
 
             DB::beginTransaction();
             try{
                 $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
+
                 Activity::log(Auth::user()->id, 'Delete', 'menghapus bank keluar', date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' .$cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', null, Carbon::now('Asia/Jakarta'));
+
                 Cash::where(['c_id'=> $id])->delete();
+
                 DB::commit();
+
                 $response = [
-                    'status'    => "success",
-                    'message'   => "Bank keluar berhasil dihapus"
+                    'success'    => true,
+                    'message'    => "Berhasil menghapus bank keluar",
+                    'error_code' => null,
+                    'data'       => []
                 ];
             }catch (\Exception $e){
                 DB::rollback();
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "Bank keluar gagal dihapus"
+                    'success'    => false,
+                    'message'    => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data'       => []
                 ];
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
-    }
 
-    public function getCurrentBankKredit(Request $request, $id = null)
+        return response()->json($response);
+    }
+    // End Bank
+
+    // Start Kas
+    public function saveKasDebet(Request $request)
     {
-        if ($request->isMethod('get')) {
-            try {
-                $id = Crypt::decrypt($id);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-                return response()->json($response);
-            }
+        if ($request->isMethod('post')) {
+            $rules_of_validator = [
+                'kategori'   => 'required',
+                'keterangan' => 'required',
+                'jumlah'     => 'required',
+                'tanggal'    => 'required',
+                'ke_akun'    => 'required',
+            ];
 
-            try{
-                $data = Cash::with(['akun'])->where('c_id', '=', $id);
-                $results = [];
+            $message_of_validator = [
+                'kategori.required'     => 'Kategori tidak boleh kosong',
+                'keterangan.required'   => 'Keterangan tidak boleh kosong',
+                'jumlah.required'       => 'Jumlah tidak boleh kosong',
+                'tanggal.required'      => 'Tanggal tidak boleh kosong',
+                'ke_akun.required'      => 'Ke akun tidak boleh kosong',
+            ];
 
-                if ($data->count() > 0) {
-                    $results = array(
-                        'id' => Crypt::encrypt($data->first()->c_id),
-                        'tanggal' => $data->first()->c_tanggal,
-                        'keperluan' => $data->first()->c_transaksi,
-                        'jumlah' => $data->first()->c_jumlah,
-                        'kategori' => $data->first()->c_kategori,
-                        'dariakun' => $data->first()->akun->kode_akun
-                    );
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
                 }
-
+                
                 $response = [
-                    'status' => "success",
-                    'data'   => $results
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
                 ];
+            } else {
+                $kategori   = $request->kategori;
+                $keterangan = $request->keterangan;
+                $jumlah     = $request->jumlah;
+                $tanggal    = date('Y-m-d', strtotime($request->tanggal));
+                $ke_akun    = $request->ke_akun;
+                
+                // try {
+                //     $ke_akun     = Crypt::decrypt($ke_akun);
+                //     $kategori   = Crypt::decrypt($kategori);
+                // } catch (DecryptException $e) {
+                //     $response = [
+                //         'success'    => false,
+                //         'message'    => Helper::errorCode(1402),
+                //         'error_code' => 1402,
+                //         'data'       => []
+                //     ];
 
-                return response()->json($response);
-                    
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => 'A network error occurred. Please try again!'
-                ];
+                //     return response()->json($response);
+                // }
+
+                DB::beginTransaction();
+                try{
+                    $debit = new Cash;
+                    $debit->c_transaksi     = $keterangan;
+                    $debit->c_jumlah        = $jumlah;
+                    $debit->c_jenis         = "D";
+                    $debit->c_tanggal       = $tanggal;
+                    $debit->c_kategori      = $kategori;
+                    $debit->c_akun          = $ke_akun;
+                    $debit->c_flag          = "Pemasukan";
+                    $debit->c_flagakun      = "Kas";
+                    $debit->c_iduser        = Auth::user()->id;
+                    $debit->created_at      = Carbon::now('Asia/Jakarta');
+                    $debit->updated_at      = Carbon::now('Asia/Jakarta');
+                    $debit->save();
+
+                    $nama_keakun = Akun::where('iduser', Auth::user()->id)->where('id', $ke_akun)->first();
+
+                    Activity::log(Auth::user()->id, 'Create', 'membuat kas masuk', date('d-m-Y', strtotime($request->tanggal)) . ' ' .$keterangan . ' "' .number_format($jumlah, 0, ',', '.') . '" ke akun ' . '('.$nama_keakun->kode_akun.') '.$nama_keakun->nama_akun, null, Carbon::now('Asia/Jakarta'));
+
+                    DB::commit();
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Kas masuk berhasil disimpan",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
-    public function updateBankKredit(Request $request)
+    public function updateKasDebet(Request $request)
     {
         if ($request->isMethod('put')) {
-            $keperluan  = $request->keperluan;
+            $kategori   = $request->kategori;
+            $keterangan = $request->keterangan;
             $jumlah     = $request->jumlah;
             $tanggal    = date('Y-m-d', strtotime($request->tanggal));
-            $dari_akun  = $request->dari_akun;
-            $kategori   = $request->kategori;
+            $ke_akun    = $request->ke_akun;
             $id         = $request->id;
 
             try {
                 $id         = Crypt::decrypt($id);
-                $dari_akun  = Crypt::decrypt($dari_akun);
-                $kategori   = Crypt::decrypt($kategori);
+                // $ke_akun    = Crypt::decrypt($ke_akun);
+                // $kategori   = Crypt::decrypt($kategori);
             } catch (DecryptException $e) {
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
                 ];
+                return response()->json($response);
+            }
+
+            $rules_of_validator = [
+                'kategori'   => 'required',
+                'keterangan' => 'required',
+                'jumlah'     => 'required',
+                'tanggal'    => 'required',
+                'ke_akun'    => 'required',
+            ];
+
+            $message_of_validator = [
+                'kategori.required'     => 'Kategori tidak boleh kosong',
+                'keterangan.required'   => 'Keterangan tidak boleh kosong',
+                'jumlah.required'       => 'Jumlah tidak boleh kosong',
+                'tanggal.required'      => 'Tanggal tidak boleh kosong',
+                'ke_akun.required'      => 'Ke akun tidak boleh kosong',
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
+                $response = [
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
+                ];
+            } else {
+                DB::beginTransaction();
+                try{
+                    $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
+
+                    $nama_keakun = Akun::where('iduser', Auth::user()->id)->where('id', $ke_akun)->first();
+
+                    Activity::log(Auth::user()->id, 'Update', 'memperbarui kas masuk', 'Diperbarui menjadi ' . date('d-m-Y', strtotime($request->tanggal)) . ' ' . $keterangan . ' "' .number_format($jumlah, 0, ',', '.') .' akun "'.'('.$nama_keakun->kode_akun.') '.$nama_keakun->nama_akun.'"', 'Transaksi sebelumnya ' . date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' . $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', Carbon::now('Asia/Jakarta'));
+
+                    Cash::where(['c_id'=>$id])->update([
+                        'c_transaksi'   => $keterangan,
+                        'c_jumlah'      => $jumlah,
+                        'c_tanggal'     => $tanggal,
+                        'c_kategori'    => $kategori,
+                        'c_akun'        => $ke_akun,
+                        'updated_at'    => Carbon::now('Asia/Jakarta')
+                    ]);
+
+                    DB::commit();
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Berhasil memperbarui kas masuk",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
+            }
+        } else {
+            $response = [
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function deleteKasDebet(Request $request, $id = null)
+    {
+        if ($request->isMethod('delete')) {
+            try {
+                $id = Crypt::decrypt($id);
+            } catch (DecryptException $e) {
+                $response = [
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
+                ];
+
                 return response()->json($response);
             }
 
             DB::beginTransaction();
             try{
-                $nama_dariakun = Akun::where('iduser', Auth::user()->id)->where('id', $dari_akun)->first();
-
                 $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
 
-                Activity::log(Auth::user()->id, 'Update', 'memperbarui bank keluar', 'Diperbarui menjadi ' . date('d-m-Y', strtotime($request->tanggal)) . ' ' . $keperluan . ' "' .number_format($jumlah, 0, ',', '.') .' akun "'.'('.$nama_dariakun->kode_akun.') '.$nama_dariakun->nama_akun.'"', 'Transaksi sebelumnya ' . date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' . $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', Carbon::now('Asia/Jakarta'));
+                Activity::log(Auth::user()->id, 'Delete', 'menghapus kas masuk', date('d-m-Y', strtotime($cash->c_tanggal)) .' '. $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', null, Carbon::now('Asia/Jakarta'));
 
-                Cash::where(['c_id'=>$id])->update([
-                    'c_transaksi'   => $keperluan,
-                    'c_jumlah'      => $jumlah,
-                    'c_tanggal'     => $tanggal,
-                    'c_kategori'    => $kategori,
-                    'c_akun'        => $dari_akun,
-                    'c_flagakun'    => 'Bank',
-                    'updated_at'    => Carbon::now('Asia/Jakarta')
-                ]);
+                Cash::where(['c_id'=> $id])->delete();
 
                 DB::commit();
 
                 $response = [
-                    'status'    => "success",
-                    'message'   => "Berhasil memperbarui bank keluar"
+                    'success'    => true,
+                    'message'    => "Berhasil menghapus kas masuk",
+                    'error_code' => null,
+                    'data'       => []
                 ];
             }catch (\Exception $e){
                 DB::rollback();
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "Gagal memperbarui bank keluar"
+                    'success'    => false,
+                    'message'    => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data'       => []
                 ];
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
-    // End Bank
+
+    public function saveKasKredit(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            $rules_of_validator = [
+                'kategori'  => 'required',
+                'keperluan' => 'required',
+                'jumlah'    => 'required',
+                'tanggal'   => 'required',
+                'dari_akun' => 'required',
+            ];
+
+            $message_of_validator = [
+                'kategori.required'  => 'Kategori tidak boleh kosong',
+                'keperluan.required' => 'Keperluan tidak boleh kosong',
+                'jumlah.required'    => 'Jumlah tidak boleh kosong',
+                'tanggal.required'   => 'Tanggal tidak boleh kosong',
+                'dari_akun.required' => 'Dari akun tidak boleh kosong',
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
+                $response = [
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
+                ];
+            } else {
+                $kategori   = $request->kategori;
+                $keperluan  = $request->keperluan;
+                $jumlah     = $request->jumlah;
+                $tanggal    = date('Y-m-d', strtotime($request->tanggal));
+                $dari_akun  = $request->dari_akun;
+
+                // try {
+                //     $dari_akun = Crypt::decrypt($dari_akun);
+                //     $kategori = Crypt::decrypt($kategori);
+                // } catch (DecryptException $e) {
+                //     $response = [
+                //         'status'    => "failed",
+                //         'message'   => "A network error occurred. Please try again!"
+                //     ];
+                //     return response()->json($response);
+                // }
+
+                DB::beginTransaction();
+                try{
+                    $credit = new Cash;
+                    $credit->c_transaksi = $keperluan;
+                    $credit->c_jumlah    = $jumlah;
+                    $credit->c_jenis     = "K";
+                    $credit->c_tanggal   = $tanggal;
+                    $credit->c_kategori  = $kategori;
+                    $credit->c_akun      = $dari_akun;
+                    $credit->c_flag      = "Pengeluaran";
+                    $credit->c_flagakun  = 'Kas';
+                    $credit->c_iduser    = Auth::user()->id;
+                    $credit->created_at  = Carbon::now('Asia/Jakarta');
+                    $credit->updated_at  = Carbon::now('Asia/Jakarta');
+                    $credit->save();
+
+                    $nama_dariakun = Akun::where('iduser', Auth::user()->id)->where('id', $dari_akun)->first();
+
+                    Activity::log(Auth::user()->id, 'Create', 'membuat kas keluar', date('d-m-Y', strtotime($request->tanggal)) . ' ' .$keperluan . ' "' .number_format($jumlah, 0, ',', '.') . '" dari akun ' . '('.$nama_dariakun->kode_akun.') '.$nama_dariakun->nama_akun, null, Carbon::now('Asia/Jakarta'));
+
+                    DB::commit();
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Kas keluar berhasil disimpan",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
+            }
+        } else {
+            $response = [
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function updateKasKredit(Request $request)
+    {
+        if ($request->isMethod('put')) {
+            $kategori   = $request->kategori;
+            $keperluan  = $request->keperluan;
+            $jumlah     = $request->jumlah;
+            $tanggal    = date('Y-m-d', strtotime($request->tanggal));
+            $dari_akun  = $request->dari_akun;
+            $id         = $request->id;
+
+            try {
+                $id         = Crypt::decrypt($id);
+                // $dari_akun  = Crypt::decrypt($dari_akun);
+                // $kategori   = Crypt::decrypt($kategori);
+            } catch (DecryptException $e) {
+                $response = [
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
+                ];
+                return response()->json($response);
+            }
+
+            $rules_of_validator = [
+                'kategori'  => 'required',
+                'keperluan' => 'required',
+                'jumlah'    => 'required',
+                'tanggal'   => 'required',
+                'dari_akun' => 'required',
+            ];
+
+            $message_of_validator = [
+                'kategori.required'  => 'Kategori tidak boleh kosong',
+                'keperluan.required' => 'Keperluan tidak boleh kosong',
+                'jumlah.required'    => 'Jumlah tidak boleh kosong',
+                'tanggal.required'   => 'Tanggal tidak boleh kosong',
+                'dari_akun.required' => 'Dari akun tidak boleh kosong',
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
+                $response = [
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
+                ];
+            } else {
+                DB::beginTransaction();
+                try{
+                    $nama_dariakun = Akun::where('iduser', Auth::user()->id)->where('id', $dari_akun)->first();
+
+                    $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
+
+                    Activity::log(Auth::user()->id, 'Update', 'memperbarui kas keluar', 'Diperbarui menjadi ' . date('d-m-Y', strtotime($request->tanggal)) . ' ' . $keperluan . ' "' .number_format($jumlah, 0, ',', '.') .' akun "'.'('.$nama_dariakun->kode_akun.') '.$nama_dariakun->nama_akun.'"', 'Transaksi sebelumnya ' . date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' . $cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', Carbon::now('Asia/Jakarta'));
+
+                    Cash::where(['c_id'=>$id])->update([
+                        'c_transaksi'   => $keperluan,
+                        'c_jumlah'      => $jumlah,
+                        'c_tanggal'     => $tanggal,
+                        'c_kategori'    => $kategori,
+                        'c_akun'        => $dari_akun,
+                        'updated_at'    => Carbon::now('Asia/Jakarta')
+                    ]);
+
+                    DB::commit();
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Berhasil memperbarui kas keluar",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
+            }
+        } else {
+            $response = [
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function deleteKasKredit(Request $request, $id = null)
+    {
+        if ($request->isMethod('delete')) {
+            try {
+                $id = Crypt::decrypt($id);
+            } catch (DecryptException $e) {
+                $response = [
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
+                ];
+
+                return response()->json($response);
+            }
+
+            DB::beginTransaction();
+            try{
+                $cash = Cash::with(['akun'])->where(['c_id'=> $id])->first();
+
+                Activity::log(Auth::user()->id, 'Delete', 'menghapus kas keluar', date('d-m-Y', strtotime($cash->c_tanggal)) . ' ' .$cash->c_transaksi . ' "' .number_format($cash->c_jumlah, 0, ',', '.') . '" akun "('.$cash->akun->kode_akun.') '.$cash->akun->nama_akun.'"', null, Carbon::now('Asia/Jakarta'));
+
+                Cash::where(['c_id'=> $id])->delete();
+
+                DB::commit();
+
+                $response = [
+                    'success'    => true,
+                    'message'    => "Berhasil menghapus kas keluar",
+                    'error_code' => null,
+                    'data'       => []
+                ];
+            }catch (\Exception $e){
+                DB::rollback();
+                $response = [
+                    'success'    => false,
+                    'message'    => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data'       => []
+                ];
+            }
+        } else {
+            $response = [
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
+            ];
+        }
+
+        return response()->json($response);
+    }
+    // End Kas
 }

@@ -14,6 +14,7 @@ use DB;
 use Response;
 use Auth;
 use Helper;
+use Validator;
 
 class AkunController extends Controller
 {
@@ -32,84 +33,154 @@ class AkunController extends Controller
     {
     	if ($request->isMethod('post')) {
     		# code...
-    		$data       = $request->all();
-            $jenis_akun = $data['jenis_akun'];
-            $nama_akun  = $data['nama_akun'];
-            $kode       = $jenis_akun == "Kas" ? "101" : "201";
-            $kode_akun  = Helper::accountCode('ms_akun', 'kode_akun', $jenis_akun, $kode, 1, 3, 2);
+            $rules_of_validator = [
+                'jenis_akun'=> 'required',
+                'nama_akun' => 'required',
+            ];
 
-    		DB::beginTransaction();
-    		try{
-                $akun = new Akun;
-                $akun->kode_akun  = $kode_akun;
-                $akun->nama_akun  = $nama_akun;
-                $akun->jenis_akun = $jenis_akun;
-                $akun->iduser     = Auth::user()->id;
-                $akun->created_at = Carbon::now('Asia/Jakarta');
-                $akun->updated_at = Carbon::now('Asia/Jakarta');
-                $akun->save();
+            $message_of_validator = [
+                'jenis_akun.required' => 'Jenis akun tidak boleh kosong',
+                'nama_akun.required'  => 'Nama akun tidak boleh kosong',
+            ];
 
-                Activity::log(Auth::user()->id, 'Create', 'membuat master akun', "(".$kode_akun.") ".$nama_akun, null, Carbon::now('Asia/Jakarta'));
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
 
-                DB::commit();
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
                 $response = [
-                    'status'    => "success",
-                    'message'   => "Master akun berhasil disimpan"
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
                 ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Master akun gagal disimpan"
-                ];
+            } else {
+                $data       = $request->all();
+                $jenis_akun = $data['jenis_akun'];
+                $nama_akun  = $data['nama_akun'];
+                $kode       = $jenis_akun == "Kas" ? "101" : "201";
+                $kode_akun  = Helper::accountCode('ms_akun', 'kode_akun', $jenis_akun, $kode, 1, 3, 2);
+
+                DB::beginTransaction();
+                try{
+                    $akun = new Akun;
+                    $akun->kode_akun  = $kode_akun;
+                    $akun->nama_akun  = $nama_akun;
+                    $akun->jenis_akun = $jenis_akun;
+                    $akun->iduser     = Auth::user()->id;
+                    $akun->created_at = Carbon::now('Asia/Jakarta');
+                    $akun->updated_at = Carbon::now('Asia/Jakarta');
+                    $akun->save();
+
+                    Activity::log(Auth::user()->id, 'Create', 'membuat master akun', "(".$kode_akun.") ".$nama_akun, null, Carbon::now('Asia/Jakarta'));
+
+                    DB::commit();
+
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Master akun berhasil disimpan",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
             }
-            return response()->json($response);
     	} else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function getAkun(Request $request)
     {
         if ($request->isMethod('get')) {
-            try{
-                $data = Akun::where('iduser', Auth::user()->id)->orderBy('kode_akun','asc');
-                $akun = [];
+            $limit     = $request->limit ?? 5;
+            $offset    = $request->offset ?? 0;
+            $sort      = $request->sort ?? 'desc';
 
-                if ($data->count() > 0) {
-                    foreach ($data->get() as $key => $value) {
-                        $akun[] = array(
-                            'id'         => Crypt::encrypt($value->id),
-                            'kode_akun'  => $value->kode_akun,
-                            'nama_akun'  => $value->nama_akun,
-                            'jenis_akun' => $value->jenis_akun,
-                        );
-                    }
-                }
+            $search_kode_akun  = $request->kode_akun;
+            $search_nama_akun  = $request->nama_akun;
+            $search_jenis_akun = $request->jenis_akun;
+
+            try{
+                $data_akun_count = Akun::where('iduser', Auth::user()->id)->count();
+
+                $data_akun = Akun::where('iduser', Auth::user()->id)
+                ->when($search_kode_akun, function($query) use ($search_kode_akun) {
+                    $query->where('kode_akun', 'like', '%'.$search_kode_akun.'%');
+                })
+                ->when($search_nama_akun, function($query) use ($search_nama_akun) {
+                    $query->where('nama_akun', 'like', '%'.$search_nama_akun.'%');
+                })
+                ->when($search_jenis_akun, function($query) use ($search_jenis_akun) {
+                    $query->where('jenis_akun', 'like', '%'.$search_jenis_akun.'%');
+                });
+
+                $total_filtered = $data_akun->count();
+
+                $data_akun_results = $data_akun
+                    ->limit($limit)
+                    ->offset($offset)
+                    ->orderBy('kode_akun', 'asc')
+                    ->get()
+                    ->map(function ($items, $key) {
+                        $data['id']        = encrypt($items->id);
+                        $data['kode_akun'] = $items->kode_akun;
+                        $data['nama_akun'] = $items->nama_akun;
+                        $data['jenis_akun']= $items->jenis_akun;
+
+                        return $data;
+                    });
+
+                $results = [
+                    'records_total'    => $data_akun_count,
+                    'records_filtered' => $total_filtered,
+                    'records_limit'    => $limit,
+                    'records_offset'   => $offset,
+                    'records'          => $data_akun_results
+                ];
 
                 $response = [
-                    'status' => 'success',
-                    'data'   => $akun
+                    'success'    => true,
+                    'message'    => 'data available',
+                    'error_code' => null,
+                    'data'       => $results
                 ];
             }catch(\Exception $e){
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
+                    'success'    => false,
+                    'message'    => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data'       => []
                 ];
             }
-
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function deleteAkun(Request $request, $id=null)
@@ -119,103 +190,164 @@ class AkunController extends Controller
                 $id = Crypt::decrypt($id);
             } catch (DecryptException $e) {
                 $response = [
-                    'status'    => 'error',
-                    'message'   => 'A network error occurred. Please try again!'
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
                 ];
+
                 return response()->json($response);
             }
-
-            DB::beginTransaction();
-            try{
-                $akun = Akun::where(['id'=> $id])->first();
-                Activity::log(Auth::user()->id, 'Delete', 'menghapus master akun', "(".$akun->kode_akun .') '. $akun->nama_akun, null, Carbon::now('Asia/Jakarta'));
-                Akun::where(['id'=> $id])->delete();
-                DB::commit();
+            
+            if ($this->checkAccountInCash($id)) {
                 $response = [
-                    'status'    => 'success',
-                    'message'   => 'Berhasil menghapus master akun'
+                    'success'    => false,
+                    'message'    => "Gagal menghapus master akun. Akun tersebut masih terpakai.",
+                    'error_code' => null,
+                    'data'       => []
                 ];
-            }catch(\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => 'failed',
-                    'message'   => 'Gagal menghapus master akun'
-                ];
+            } else {
+                DB::beginTransaction();
+                try{
+                    $akun = Akun::where(['id'=> $id])->first();
+                    Activity::log(Auth::user()->id, 'Delete', 'menghapus master akun', "(".$akun->kode_akun .') '. $akun->nama_akun, null, Carbon::now('Asia/Jakarta'));
+                    Akun::where(['id'=> $id])->delete();
+                    DB::commit();
+                    
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Berhasil menghapus master akun",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch(\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function statusAkun(Request $request)
     {
         if ($request->isMethod('put')) {
-            if (is_bool($request->status)) {
-                try {
-                    $id = Crypt::decrypt($request->id);
-                } catch (DecryptException $e) {
-                    $response = [
-                        'status'    => 'error',
-                        'message'   => 'A network error occurred. Please try again!'
-                    ];
-                    return response()->json($response);
-                }
+            $rules_of_validator = [
+                'status'=> 'required',
+            ];
 
-                DB::beginTransaction();
-                try{
-                    if ($request->status) {
-                        $akun = Akun::where(['id'=> $id])->first();
-                        Activity::log(Auth::user()->id, 'Update', 'mengaktifkan master akun', "(".$akun->kode_akun .') '. $akun->nama_akun, null, Carbon::now('Asia/Jakarta'));
-                        Akun::where(['id'=> $id])->update(['enabled'=>1]);
-                        DB::commit();
-                        $response = [
-                            'status'    => 'success',
-                            'message'   => 'Berhasil mengaktifkan master akun'
-                        ];
-                    } else {
-                        $akun = Akun::where(['id'=> $id])->first();
-                        Activity::log(Auth::user()->id, 'Update', 'menonaktifkan master akun', "(".$akun->kode_akun .') '. $akun->nama_akun, null, Carbon::now('Asia/Jakarta'));
-                        Akun::where(['id'=> $id])->update(['enabled'=>0]);
-                        DB::commit();
-                        $response = [
-                            'status'    => 'success',
-                            'message'   => 'Berhasil menonaktifkan master akun'
-                        ];
-                    }
-                }catch (\Exception $e){
-                    DB::rollback();
-                    if ($request->status) {
-                        $response = [
-                            'status'    => 'failed',
-                            'message'   => 'Gagal mengaktifkan master akun'
-                        ];
-                    } else {
-                        $response = [
-                            'status'    => 'failed',
-                            'message'   => 'Gagal menonaktifkan master akun'
-                        ];
-                    }
+            $message_of_validator = [
+                'status.required' => 'Status tidak boleh kosong',
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
                 }
-                return response()->json($response);
-            } else {
+                
                 $response = [
-                    'status'    => 'error',
-                    'message'   => 'Parameter status harus tipe boolean'
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
                 ];
-                return response()->json($response);
+            } else {
+                if (is_bool($request->status)) {
+                    try {
+                        $id = Crypt::decrypt($request->id);
+                    } catch (DecryptException $e) {
+                        $response = [
+                            'success'    => false,
+                            'message'    => "Data tidak valid",
+                            'error_code' => null,
+                            'data'       => []
+                        ];
+                        return response()->json($response);
+                    }
+
+                    DB::beginTransaction();
+                    try{
+                        if ($request->status) {
+                            $akun = Akun::where(['id'=> $id])->first();
+                            Activity::log(Auth::user()->id, 'Update', 'mengaktifkan master akun', "(".$akun->kode_akun .') '. $akun->nama_akun, null, Carbon::now('Asia/Jakarta'));
+                            Akun::where(['id'=> $id])->update(['enabled'=>1]);
+                            DB::commit();
+                            
+                            $response = [
+                                'success'    => true,
+                                'message'    => "Berhasil mengaktifkan master akun",
+                                'error_code' => null,
+                                'data'       => []
+                            ];
+                        } else {
+                            $akun = Akun::where(['id'=> $id])->first();
+                            Activity::log(Auth::user()->id, 'Update', 'menonaktifkan master akun', "(".$akun->kode_akun .') '. $akun->nama_akun, null, Carbon::now('Asia/Jakarta'));
+                            Akun::where(['id'=> $id])->update(['enabled'=>0]);
+                            DB::commit();
+                            
+                            $response = [
+                                'success'    => true,
+                                'message'    => "Berhasil menonaktifkan master akun",
+                                'error_code' => null,
+                                'data'       => []
+                            ];
+                        }
+                    }catch (\Exception $e){
+                        DB::rollback();
+                        // if ($request->status) {
+                        //     $response = [
+                        //         'status'    => 'failed',
+                        //         'message'   => 'Gagal mengaktifkan master akun'
+                        //     ];
+                        // } else {
+                        //     $response = [
+                        //         'status'    => 'failed',
+                        //         'message'   => 'Gagal menonaktifkan master akun'
+                        //     ];
+                        // }
+                        $response = [
+                            'success'    => false,
+                            'message'    => Helper::errorCode(1401),
+                            'error_code' => 1401,
+                            'data'       => []
+                        ];
+                    }
+                } else {
+                    $response = [
+                        'success'    => false,
+                        'message'    => 'Parameter status harus tipe boolean',
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }
             }
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function getCurrentAkun(Request $request, $id=null)
@@ -225,9 +357,12 @@ class AkunController extends Controller
                 $id = Crypt::decrypt($id);
             } catch (DecryptException $e) {
                 $response = [
-                    'status'    => 'error',
-                    'message'   => 'A network error occurred. Please try again!'
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
                 ];
+
                 return response()->json($response);
             }
 
@@ -242,71 +377,135 @@ class AkunController extends Controller
                 );
 
                 $response = [
-                    'status' => 'success',
-                    'data'   => $results
+                    'success'    => true,
+                    'message'    => "Data available",
+                    'error_code' => null,
+                    'data'       => $results
                 ];
             } else {
                 $response = [
-                    'status'    => 'failed',
-                    'message'   => 'Akun tidak ditemukan'
+                    'success'    => false,
+                    'message'    => "Akun tidak ditemukan",
+                    'error_code' => null,
+                    'data'       => []
                 ];
             }
-
-            return Response::json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
 
+        return Response::json($response);
+    }
+
+    public function getAllAkun($jenis_akun)
+    {
+        $data_akun = Akun::where('iduser', Auth::user()->id)
+        ->where('jenis_akun', $jenis_akun)
+        ->get()
+        ->map(function ($items, $key) {
+            $data['id']        = $items->id;
+            $data['kode_akun'] = $items->kode_akun;
+            $data['nama_akun'] = $items->nama_akun;
+            $data['akun'] = "(".$items->kode_akun.") ".$items->nama_akun;
+            $data['jenis_akun']= $items->jenis_akun;
+
+            return $data;
+        });
+
+        $response = [
+            'success'    => true,
+            'message'    => 'data available',
+            'error_code' => null,
+            'data'       => $data_akun
+        ];
+
+        return response()->json($response);
     }
 
     public function updateAkun(Request $request)
     {
         if ($request->isMethod('put')) {
-            $nama_akun  = $request->nama_akun;
-            $id         = $request->id;
+            $rules_of_validator = [
+                'nama_akun'=> 'required',
+            ];
 
-            try {
-                $id = Crypt::decrypt($id);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => 'error',
-                    'message'   => 'A network error occurred. Please try again!'
-                ];
-                return response()->json($response);
-            }
+            $message_of_validator = [
+                'nama_akun.required' => 'Nama akun tidak boleh kosong',
+            ];
 
-            DB::beginTransaction();
-            try{
-                $akun = Akun::where(['id'=> $id])->first();
-                Activity::log(Auth::user()->id, 'Update', 'memperbarui master akun', 'Diperbarui menjadi "' . $nama_akun.'"', 'Nama akun sebelumnya "' . $akun->nama_akun . '"', Carbon::now('Asia/Jakarta'));
-                Akun::where(['id'=>$id])->update([
-                    'nama_akun'   => $nama_akun,
-                    'updated_at'     => Carbon::now('Asia/Jakarta')
-                ]);
-                DB::commit();
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
                 $response = [
-                    'status'    => 'success',
-                    'message'   => 'Berhasil memperbarui master akun'
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
                 ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => 'failed',
-                    'message'   => 'Gagal memperbarui master akun'
-                ];
+            } else {
+                $nama_akun  = $request->nama_akun;
+                $id         = $request->id;
+
+                try {
+                    $id = Crypt::decrypt($id);
+                } catch (DecryptException $e) {
+                    $response = [
+                        'success'    => false,
+                        'message'    => "Data tidak valid",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+
+                    return response()->json($response);
+                }
+
+                DB::beginTransaction();
+                try{
+                    $akun = Akun::where(['id'=> $id])->first();
+                    Activity::log(Auth::user()->id, 'Update', 'memperbarui master akun', 'Diperbarui menjadi "' . $nama_akun.'"', 'Nama akun sebelumnya "' . $akun->nama_akun . '"', Carbon::now('Asia/Jakarta'));
+                    Akun::where(['id'=>$id])->update([
+                        'nama_akun'   => $nama_akun,
+                        'updated_at'     => Carbon::now('Asia/Jakarta')
+                    ]);
+                    DB::commit();
+                    
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Berhasil memperbarui master akun",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
 }

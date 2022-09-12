@@ -28,7 +28,7 @@ Route::group(['prefix' => 'v1'], function(){
           
             Route::group(['middleware' => 'auth:api'], function() {
                 Route::get('logout', 'SignController@logout');
-                // Route::get('user', 'SignController@user');
+                Route::get('user', 'SignController@user');
                 // Route::get('details', 'SignController@details');
             });
         });
@@ -41,6 +41,7 @@ Route::group(['prefix' => 'v1'], function(){
                 // Akun
                 Route::post('/save-akun', 'AkunController@saveAkun');
                 Route::get('/get-akun', 'AkunController@getAkun');
+                Route::get('/get-all-akun/{jenis_akun}', 'AkunController@getAllAkun');
                 Route::delete('/delete-akun/{id}', 'AkunController@deleteAkun');
                 Route::put('/status-akun', 'AkunController@statusAkun');
                 Route::get('/get-current-akun/{id}', 'AkunController@getCurrentAkun');
@@ -49,6 +50,7 @@ Route::group(['prefix' => 'v1'], function(){
                 // Kategori
                 Route::post('/save-kategori', 'KategoriController@saveKategori');
                 Route::get('/get-kategori', 'KategoriController@getKategori');
+                Route::get('/get-all-kategori/{jenis_transaksi}', 'KategoriController@getAllKategori');
                 Route::delete('/delete-kategori/{id}', 'KategoriController@deleteKategori');
                 Route::put('/status-kategori', 'KategoriController@statusKategori');
                 Route::get('/get-current-kategori/{id}', 'KategoriController@getCurrentKategori');
@@ -75,44 +77,38 @@ Route::group(['prefix' => 'v1'], function(){
             Route::group(['middleware' => 'auth:api'], function() {
                 Route::get('/get-kategori/{jenis_transaksi}', 'KeuanganController@getKategori');
                 Route::get('/get-akun/{jenis_akun}', 'KeuanganController@getAkun');
+                Route::get('/get-data-transaction', 'KeuanganController@getDataTransaction');
+                Route::get('/akumulasi-total', 'KeuanganController@akumulasiTotal');
 
-                // Kas
-                // Debet
-                Route::post('/save-kas-debet', 'KeuanganController@saveKasDebet');
-                Route::get('/get-kas-debet', 'KeuanganController@getKasDebet');
-                Route::delete('/delete-kas-debet/{id}', 'KeuanganController@deleteKasDebet');
-                Route::get('/get-current-kas-debet/{id}', 'KeuanganController@getCurrentKasDebet');
-                Route::put('/update-kas-debet', 'KeuanganController@updateKasDebet');
-
-                // Kredit
-                Route::post('/save-kas-kredit', 'KeuanganController@saveKasKredit');
-                Route::get('/get-kas-kredit', 'KeuanganController@getKasKredit');
-                Route::delete('/delete-kas-kredit/{id}', 'KeuanganController@deleteKasKredit');
-                Route::get('/get-current-kas-kredit/{id}', 'KeuanganController@getCurrentKasKredit');
-                Route::put('/update-kas-kredit', 'KeuanganController@updateKasKredit');
-                // End Kas
+                Route::get('/get-current-transaction/{id}', 'KeuanganController@getCurrentTransaction');
 
                 // Bank
                 // Debet
                 Route::post('/save-bank-debet', 'KeuanganController@saveBankDebet');
-                Route::get('/get-bank-debet', 'KeuanganController@getBankDebet');
-                Route::delete('/delete-bank-debet/{id}', 'KeuanganController@deleteBankDebet');
-                Route::get('/get-current-bank-debet/{id}', 'KeuanganController@getCurrentBankDebet');
                 Route::put('/update-bank-debet', 'KeuanganController@updateBankDebet');
+                Route::delete('/delete-bank-debet/{id}', 'KeuanganController@deleteBankDebet');
+                
 
                 // Kredit
                 Route::post('/save-bank-kredit', 'KeuanganController@saveBankKredit');
-                Route::get('/get-bank-kredit', 'KeuanganController@getBankKredit');
-                Route::delete('/delete-bank-kredit/{id}', 'KeuanganController@deleteBankKredit');
-                Route::get('/get-current-bank-kredit/{id}', 'KeuanganController@getCurrentBankKredit');
                 Route::put('/update-bank-kredit', 'KeuanganController@updateBankKredit');
+                Route::delete('/delete-bank-kredit/{id}', 'KeuanganController@deleteBankKredit');
                 // End Bank
 
+                // Kas
+                // Debet
+                Route::post('/save-kas-debet', 'KeuanganController@saveKasDebet');
+                Route::put('/update-kas-debet', 'KeuanganController@updateKasDebet');
+                Route::delete('/delete-kas-debet/{id}', 'KeuanganController@deleteKasDebet');
+
+                // Kredit
+                Route::post('/save-kas-kredit', 'KeuanganController@saveKasKredit');
+                Route::put('/update-kas-kredit', 'KeuanganController@updateKasKredit');
+                Route::delete('/delete-kas-kredit/{id}', 'KeuanganController@deleteKasKredit');
+                // End Kas
+
                 // Statistik
-                Route::get('/statistik-bulan', 'LaporanController@statistikBulan');
-                Route::get('/statistik-tahun', 'LaporanController@statistikTahun');
-                Route::get('/statistik-kategori-bulan', 'LaporanController@statistikKategoriBulan');
-                Route::get('/statistik-kategori-tahun', 'LaporanController@statistikKategoriTahun');
+                Route::get('/statistik', 'LaporanController@statistik');
                 Route::get('/cashflow', 'LaporanController@getCashflow');
             });
         });

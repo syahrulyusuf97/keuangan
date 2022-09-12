@@ -14,6 +14,7 @@ use DB;
 use Response;
 use Auth;
 use Helper;
+use Validator;
 
 class KategoriController extends Controller
 {
@@ -31,83 +32,183 @@ class KategoriController extends Controller
     {
         if ($request->isMethod('post')) {
     		# code...
-    		$data       	 = $request->all();
-            $jenis_transaksi = $data['jenis_transaksi'];
-            $nama  			 = $data['nama'];
-            $keterangan  	 = $data['keterangan'];
-            $warna  	 	 = $data['warna'];
+            $rules_of_validator = [
+                'jenis_transaksi' => 'required',
+                'nama_kategori'   => 'required',
+                'warna_label'     => 'required',
+            ];
 
-    		DB::beginTransaction();
-    		try{
-                $cat = new Kategori;
-                $cat->jenis_transaksi = $jenis_transaksi;
-                $cat->nama  		  = $nama;
-                $cat->keterangan 	  = $keterangan;
-                $cat->warna 	 	  = $warna;
-                $cat->iduser     	  = Auth::user()->id;
-                $cat->created_at 	  = Carbon::now('Asia/Jakarta');
-                $cat->updated_at 	  = Carbon::now('Asia/Jakarta');
-                $cat->save();
+            $message_of_validator = [
+                'jenis_transaksi.required' => 'Jenis transaksi tidak boleh kosong',
+                'nama_kategori.required'   => 'Nama tidak boleh kosong',
+                'warna_label.required'     => 'Warna label tidak boleh kosong',
+            ];
 
-                Activity::log(Auth::user()->id, 'Create', 'membuat master kategori', "(".$jenis_transaksi.") ".$nama, null, Carbon::now('Asia/Jakarta'));
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
 
-                DB::commit();
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
                 $response = [
-                    'status'    => "success",
-                    'message'   => "Master kategori berhasil disimpan"
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
                 ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "Master kategori gagal disimpan"
-                ];
+            } else {
+                $data       	 = $request->all();
+                $jenis_transaksi = $data['jenis_transaksi'];
+                $nama  			 = $data['nama_kategori'];
+                $keterangan  	 = $data['keterangan'];
+                $warna  	 	 = $data['warna_label'] ?? null;
+
+                DB::beginTransaction();
+                try{
+                    $cat = new Kategori;
+                    $cat->jenis_transaksi = $jenis_transaksi;
+                    $cat->nama  		  = $nama;
+                    $cat->keterangan 	  = $keterangan;
+                    $cat->warna 	 	  = $warna;
+                    $cat->iduser     	  = Auth::user()->id;
+                    $cat->created_at 	  = Carbon::now('Asia/Jakarta');
+                    $cat->updated_at 	  = Carbon::now('Asia/Jakarta');
+                    $cat->save();
+
+                    Activity::log(Auth::user()->id, 'Create', 'membuat master kategori', "(".$jenis_transaksi.") ".$nama, null, Carbon::now('Asia/Jakarta'));
+
+                    DB::commit();
+                    
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Master kategori berhasil disimpan",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
             }
-            return response()->json($response);
     	} else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function getKategori(Request $request)
     {
         if ($request->isMethod('get')) {
-            try{
-                $data = Kategori::where('iduser', Auth::user()->id)->orderBy('nama','asc');
-                $kategori = [];
+            $limit     = $request->limit ?? 5;
+            $offset    = $request->offset ?? 0;
+            $sort      = $request->sort ?? 'desc';
 
-                if ($data->count() > 0) {
-                    foreach ($data->get() as $key => $value) {
-                        $kategori[] = array(
-                            'id'                => Crypt::encrypt($value->id),
-                            'jenis_transaksi'   => $value->jenis_transaksi,
-                            'nama_kategori'     => $value->nama,
-                            'keterangan'        => $value->keterangan,
-                        );
-                    }
-                }
+            $search_jenis_transaksi = $request->jenis_transaksi;
+            $search_nama            = $request->nama_kategori;
+            $search_keterangan      = $request->keterangan;
+
+            try{
+                $data_kategori_count = Kategori::where('iduser', Auth::user()->id)->count();
+                
+                $data_kategori = Kategori::where('iduser', Auth::user()->id)
+                ->when($search_jenis_transaksi, function($query) use ($search_jenis_transaksi) {
+                    $query->where('jenis_transaksi', 'like', '%'.$search_jenis_transaksi.'%');
+                })
+                ->when($search_nama, function($query) use ($search_nama) {
+                    $query->where('nama', 'like', '%'.$search_nama.'%');
+                })
+                ->when($search_keterangan, function($query) use ($search_keterangan) {
+                    $query->where('keterangan', 'like', '%'.$search_keterangan.'%');
+                });
+
+                $total_filtered = $data_kategori->count();
+
+                $data_kategori_results = $data_kategori
+                    ->limit($limit)
+                    ->offset($offset)
+                    ->orderBy('nama', 'asc')
+                    ->get()
+                    ->map(function ($items, $key) {
+                        $data['id']         = encrypt($items->id);
+                        $data['jenis_transaksi']       = $items->jenis_transaksi;
+                        $data['nama']       = $items->nama;
+                        $data['keterangan'] = $items->keterangan;
+                        $data['warna']      = $items->warna;
+
+                        return $data;
+                    });
+
+                $results = [
+                    'records_total'    => $data_kategori_count,
+                    'records_filtered' => $total_filtered,
+                    'records_limit'    => $limit,
+                    'records_offset'   => $offset,
+                    'records'          => $data_kategori_results
+                ];
 
                 $response = [
-                    'status' => 'success',
-                    'data'   => $kategori
+                    'success'    => true,
+                    'message'    => 'data available',
+                    'error_code' => null,
+                    'data'       => $results
                 ];
             }catch(\Exception $e){
                 $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
+                    'success'    => false,
+                    'message'    => Helper::errorCode(1401),
+                    'error_code' => 1401,
+                    'data'       => []
                 ];
             }
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
+    }
+
+    public function getAllKategori($jenis_transaksi)
+    {
+        $data_kategori = Kategori::where('iduser', Auth::user()->id)
+        ->where('jenis_transaksi', $jenis_transaksi)
+        ->get()
+        ->map(function ($items, $key) {
+            $data['id']                 = $items->id;
+            $data['jenis_transaksi']    = $items->jenis_transaksi;
+            $data['nama']       = $items->nama;
+            $data['keterangan'] = $items->keterangan;
+            $data['warna']      = $items->warna;
+
+            return $data;
+        });
+
+        $response = [
+            'success'    => true,
+            'message'    => 'data available',
+            'error_code' => null,
+            'data'       => $data_kategori
+        ];
+
+        return response()->json($response);
     }
 
     public function deleteKategori(Request $request, $id=null)
@@ -117,103 +218,164 @@ class KategoriController extends Controller
                 $id = Crypt::decrypt($id);
             } catch (DecryptException $e) {
                 $response = [
-                    'status'    => 'error',
-                    'message'   => 'A network error occurred. Please try again!'
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
                 ];
+
                 return response()->json($response);
             }
 
-            DB::beginTransaction();
-            try{
-                $cat = Kategori::where(['id'=> $id])->first();
-                Activity::log(Auth::user()->id, 'Delete', 'menghapus master kategori', "(".$cat->jenis_transaksi .') '. $cat->nama, null, Carbon::now('Asia/Jakarta'));
-                Kategori::where(['id'=> $id])->delete();
-                DB::commit();
+            if ($this->checkCategoriesInCash($id)) {
                 $response = [
-                    'status'    => 'success',
-                    'message'   => 'Berhasil menghapus master kategori'
+                    'success'    => false,
+                    'message'    => "Gagal menghapus master kategori. Kategori tersebut masih terpakai.",
+                    'error_code' => null,
+                    'data'       => []
                 ];
-            }catch(\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => 'failed',
-                    'message'   => 'Gagal menghapus master kategori'
-                ];
+            } else {
+                DB::beginTransaction();
+                try{
+                    $cat = Kategori::where(['id'=> $id])->first();
+                    Activity::log(Auth::user()->id, 'Delete', 'menghapus master kategori', "(".$cat->jenis_transaksi .') '. $cat->nama, null, Carbon::now('Asia/Jakarta'));
+                    Kategori::where(['id'=> $id])->delete();
+                    DB::commit();
+                    
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Berhasil menghapus master kategori",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch(\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function statusKategori(Request $request)
     {
         if ($request->isMethod('put')) {
-            if (is_bool($request->status)) {
-                try {
-                    $id = Crypt::decrypt($request->id);
-                } catch (DecryptException $e) {
-                    $response = [
-                        'status'    => 'error',
-                        'message'   => 'A network error occurred. Please try again!'
-                    ];
-                    return response()->json($response);
-                }
+            $rules_of_validator = [
+                'status'=> 'required',
+            ];
 
-                DB::beginTransaction();
-                try{
-                    if ($request->status) {
-                        $cat = Kategori::where(['id'=> $id])->first();
-                        Activity::log(Auth::user()->id, 'Update', 'mengaktifkan master kategori', "(".$cat->jenis_transaksi .') '. $cat->nama, null, Carbon::now('Asia/Jakarta'));
-                        Kategori::where(['id'=> $id])->update(['enabled'=>1]);
-                        DB::commit();
-                        $response = [
-                            'status'    => 'success',
-                            'message'   => 'Berhasil mengaktifkan master kategori'
-                        ];
-                    } else {
-                        $cat = Kategori::where(['id'=> $id])->first();
-                        Activity::log(Auth::user()->id, 'Update', 'menonaktifkan master kategori', "(".$cat->jenis_transaksi .') '. $cat->nama, null, Carbon::now('Asia/Jakarta'));
-                        Kategori::where(['id'=> $id])->update(['enabled'=>0]);
-                        DB::commit();
-                        $response = [
-                            'status'    => 'success',
-                            'message'   => 'Berhasil menonaktifkan master kategori'
-                        ];
-                    }
-                }catch(\Exception $e){
-                    DB::rollback();
-                    if ($request->status) {
-                        $response = [
-                            'status'    => 'failed',
-                            'message'   => 'Gagal mengaktifkan master kategori'
-                        ];
-                    } else {
-                        $response = [
-                            'status'    => 'failed',
-                            'message'   => 'Gagal menonaktifkan master kategori'
-                        ];
-                    }
+            $message_of_validator = [
+                'status.required' => 'Status tidak boleh kosong',
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
                 }
-                return response()->json($response);
-            } else {
+                
                 $response = [
-                    'status'    => 'error',
-                    'message'   => 'Parameter status harus tipe boolean'
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
                 ];
-                return response()->json($response);
+            } else {
+                if (is_bool($request->status)) {
+                    try {
+                        $id = Crypt::decrypt($request->id);
+                    } catch (DecryptException $e) {
+                        $response = [
+                            'success'    => false,
+                            'message'    => "Data tidak valid",
+                            'error_code' => null,
+                            'data'       => []
+                        ];
+                        return response()->json($response);
+                    }
+
+                    DB::beginTransaction();
+                    try{
+                        if ($request->status) {
+                            $cat = Kategori::where(['id'=> $id])->first();
+                            Activity::log(Auth::user()->id, 'Update', 'mengaktifkan master kategori', "(".$cat->jenis_transaksi .') '. $cat->nama, null, Carbon::now('Asia/Jakarta'));
+                            Kategori::where(['id'=> $id])->update(['enabled'=>1]);
+                            DB::commit();
+                            
+                            $response = [
+                                'success'    => true,
+                                'message'    => "Berhasil mengaktifkan master kategori",
+                                'error_code' => null,
+                                'data'       => []
+                            ];
+                        } else {
+                            $cat = Kategori::where(['id'=> $id])->first();
+                            Activity::log(Auth::user()->id, 'Update', 'menonaktifkan master kategori', "(".$cat->jenis_transaksi .') '. $cat->nama, null, Carbon::now('Asia/Jakarta'));
+                            Kategori::where(['id'=> $id])->update(['enabled'=>0]);
+                            DB::commit();
+                            
+                            $response = [
+                                'success'    => true,
+                                'message'    => "Berhasil menonaktifkan master kategori",
+                                'error_code' => null,
+                                'data'       => []
+                            ];
+                        }
+                    }catch(\Exception $e){
+                        DB::rollback();
+                        // if ($request->status) {
+                        //     $response = [
+                        //         'status'    => 'failed',
+                        //         'message'   => 'Gagal mengaktifkan master kategori'
+                        //     ];
+                        // } else {
+                        //     $response = [
+                        //         'status'    => 'failed',
+                        //         'message'   => 'Gagal menonaktifkan master kategori'
+                        //     ];
+                        // }
+                        $response = [
+                            'success'    => false,
+                            'message'    => Helper::errorCode(1401),
+                            'error_code' => 1401,
+                            'data'       => []
+                        ];
+                    }
+                } else {
+                    $response = [
+                        'success'    => false,
+                        'message'    => 'Parameter status harus tipe boolean',
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }
             }
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function getCurrentKategori(Request $request, $id=null)
@@ -223,9 +385,12 @@ class KategoriController extends Controller
                 $id = Crypt::decrypt($id);
             } catch (DecryptException $e) {
                 $response = [
-                    'status'    => 'error',
-                    'message'   => 'A network error occurred. Please try again!'
+                    'success'    => false,
+                    'message'    => "Data tidak valid",
+                    'error_code' => null,
+                    'data'       => []
                 ];
+
                 return response()->json($response);
             }
 
@@ -233,83 +398,127 @@ class KategoriController extends Controller
 
             if ($data->count() > 0) {
                 $results = array(
-                    'id' => Crypt::encrypt($data->id),
-                    'jenis_transaksi' => $data->jenis_transaksi,
-                    'nama' => $data->nama,
-                    'keterangan' => $data->keterangan,
-                    'warna' => implode('0xff', explode('#', $data->warna))
+                    'id' => Crypt::encrypt($data->first()->id),
+                    'jenis_transaksi' => $data->first()->jenis_transaksi,
+                    'nama_kategori' => $data->first()->nama,
+                    'keterangan' => $data->first()->keterangan,
+                    // 'warna' => implode('0xff', explode('#', $data->first()->warna))
+                    'warna_label' => $data->first()->warna
                 );
 
                 $response = [
-                    'status' => 'success',
-                    'data'   => $results
+                    'success'    => true,
+                    'message'    => "Data available",
+                    'error_code' => null,
+                    'data'       => $results
                 ];
             } else {
                 $response = [
-                    'status'    => 'failed',
-                    'message'   => 'Akun tidak ditemukan'
+                    'success'    => false,
+                    'message'    => "Kategori tidak ditemukan",
+                    'error_code' => null,
+                    'data'       => []
                 ];
             }
-
-            return Response::json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
+
+        return response()->json($response);
     }
 
     public function updateKategori(Request $request)
     {
         if ($request->isMethod('put')) {
-            $nama           = $request->nama;
-            $keterangan     = $request->keterangan;
-            $warna          = $request->warna;
-            $id             = $request->id;
+            $rules_of_validator = [
+                'jenis_transaksi' => 'required',
+                'nama_kategori'   => 'required',
+                'warna_label'     => 'required',
+            ];
 
-            try {
-                $id = Crypt::decrypt($id);
-            } catch (DecryptException $e) {
-                $response = [
-                    'status'    => 'error',
-                    'message'   => 'A network error occurred. Please try again!'
-                ];
-                return response()->json($response);
-            }
+            $message_of_validator = [
+                'jenis_transaksi.required' => 'Jenis transaksi tidak boleh kosong',
+                'nama_kategori.required'   => 'Nama tidak boleh kosong',
+                'warna_label.required'     => 'Warna label tidak boleh kosong',
+            ];
 
-            DB::beginTransaction();
-            try{
-                $cat = Kategori::where(['id'=> $id])->first();
-                Activity::log(Auth::user()->id, 'Update', 'memperbarui master kategori', 'Diperbarui menjadi "' . $nama.'"', 'Nama kategori sebelumnya "' . $cat->nama . '"', Carbon::now('Asia/Jakarta'));
-                Kategori::where(['id'=>$id])->update([
-                    'nama'         => $nama,
-                    'keterangan'   => $keterangan,
-                    'warna'        => $warna,
-                    'updated_at'   => Carbon::now('Asia/Jakarta')
-                ]);
-                DB::commit();
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+
+            if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
                 $response = [
-                    'status'    => 'success',
-                    'message'   => 'Berhasil memperbarui master kategori'
+                    'success' => false,
+                    'message' => $message,
+                    'error_code' => 1207,
+                    'data' => []
                 ];
-            }catch (\Exception $e){
-                DB::rollback();
-                $response = [
-                    'status'    => 'failed',
-                    'message'   => 'Gagal memperbarui master kategori'
-                ];
+            } else {
+                $nama       = $request->nama_kategori;
+                $keterangan = $request->keterangan;
+                $warna      = $request->warna_label;
+                $id         = $request->id;
+
+                try {
+                    $id = Crypt::decrypt($id);
+                } catch (DecryptException $e) {
+                    $response = [
+                        'success'    => false,
+                        'message'    => "Data tidak valid",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+
+                    return response()->json($response);
+                }
+
+                DB::beginTransaction();
+                try{
+                    $cat = Kategori::where(['id'=> $id])->first();
+                    Activity::log(Auth::user()->id, 'Update', 'memperbarui master kategori', 'Diperbarui menjadi "' . $nama.'"', 'Nama kategori sebelumnya "' . $cat->nama . '"', Carbon::now('Asia/Jakarta'));
+                    Kategori::where(['id'=>$id])->update([
+                        'nama'         => $nama,
+                        'keterangan'   => $keterangan,
+                        'warna'        => $warna,
+                        'updated_at'   => Carbon::now('Asia/Jakarta')
+                    ]);
+                    DB::commit();
+                    
+                    $response = [
+                        'success'    => true,
+                        'message'    => "Berhasil memperbarui master kategori",
+                        'error_code' => null,
+                        'data'       => []
+                    ];
+                }catch (\Exception $e){
+                    DB::rollback();
+                    $response = [
+                        'success'    => false,
+                        'message'    => Helper::errorCode(1401),
+                        'error_code' => 1401,
+                        'data'       => []
+                    ];
+                }
             }
-            return response()->json($response);
         } else {
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => false,
+                'message'    => Helper::errorCode(1106),
+                'error_code' => 1106,
+                'data'       => []
             ];
-            return response()->json($response);
         }
 
+        return response()->json($response);
     }
 
 }

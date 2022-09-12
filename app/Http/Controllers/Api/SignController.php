@@ -26,10 +26,10 @@ class SignController extends Controller
         return $result;
     }
 
-    // public function user(Request $request)
-    // {
-    //     return response()->json($request->user());
-    // }
+    public function user(Request $request)
+    {
+        return response()->json($request->user());
+    }
 
     // public function details()
     // {
@@ -41,69 +41,83 @@ class SignController extends Controller
 
     	if ($request->isMethod('post')) {
     		# code...
-            $validator = Validator::make($request->all(), [
-                'username'      => 'required',
-                'password'      => 'required',
-                'remember'      => 'boolean'
-            ]);
+            $rules_of_validator = [
+                'username' => 'required',
+                'password' => 'required',
+                'remember' => 'boolean'
+            ];
 
+            $message_of_validator = [
+                'username.required' => 'Username tidak boleh kosong',
+                'password.required' => 'Password tidak boleh kosong',
+                'remember.boolean'  => 'Remember boolean (True/False)'
+            ];
+
+            $validator = Validator::make($request->all(), $rules_of_validator, $message_of_validator);
+    
             if ($validator->fails()) {
+                if (sizeof($validator->messages()->all()) <= 2) {
+                    $message = implode(' & ', $validator->messages()->all());
+                } elseif (sizeof($validator->messages()->all()) > 2) {
+                    $message = implode(', ', $validator->messages()->all());
+                }
+                
                 $response = [
                     'success' => false,
-                    'message' => $validator->errors(),
+                    'message' => $message,
                     'error_code' => 1207,
                     'data' => []
                 ];
-            }
+            } else {
+                $data = $request->input();
 
-    		$data = $request->input();
+                $user_exists = User::where('username', $data['username'])->exists();
 
-            $user_exists = User::where('username', $data['username'])->exists();
+                if ($user_exists) {
+                    if (Auth::attempt(['username'=>$data['username'], 'password'=>$data['password'], 'is_active'=>1, 'level'=>2])) {
+                        # code...
+                        $user = $request->user();
+                        $tokenResult = $user->createToken('Personal Access Token');
+                        $token = $tokenResult->token;
+                        if ($request->remember) {
+                            $token->expires_at = Carbon::now('Asia/Jakarta')->addWeeks(1);
+                        } else {
+                            $token->expires_at = Carbon::now('Asia/Jakarta')->addDays(1);
+                        }
+                        $token->save();
 
-            if ($user_exists) {
-                if (Auth::attempt(['username'=>$data['username'], 'password'=>$data['password'], 'is_active'=>1, 'level'=>2])) {
-                    # code...
-                    $user = $request->user();
-                    $tokenResult = $user->createToken('Personal Access Token');
-                    $token = $tokenResult->token;
-                    if ($request->remember) {
-                        $token->expires_at = Carbon::now('Asia/Jakarta')->addWeeks(1);
+                        User::where('id', $user->id)->update([
+                            'login_mobile' => Carbon::now('Asia/Jakarta')
+                        ]);
+
+                        Activity::log($user->id, 'Login', 'Login', 'IP Address: '. $request->ip() . ' Device: '. $request->header('User-Agent'), null, Carbon::now('Asia/Jakarta'));
+
+                        $response = [
+                            'success' => true,
+                            'message' => 'User Found',
+                            'error_code' => null,
+                            'data' => [
+                                'token_access'  => $tokenResult->accessToken,
+                                'token_type'    => 'Bearer',
+                                'expires_at'    => Carbon::parse($tokenResult->token->expires_at)->toDateTimeString()
+                            ]                    
+                        ];
                     } else {
-                        $token->expires_at = Carbon::now('Asia/Jakarta')->addDays(1);
+                        $response = [
+                            'success' => false,
+                            'message' => Helper::errorCode(1208),
+                            'error_code' => 1208,
+                            'data' => []
+                        ];
                     }
-                    $token->save();
-
-                    User::where('id', $user->id)->update([
-                        'login_mobile' => Carbon::now('Asia/Jakarta')
-                    ]);
-
-                    Activity::log($user->id, 'Login', 'Login', 'IP Address: '. $request->ip() . ' Device: '. $request->header('User-Agent'), null, Carbon::now('Asia/Jakarta'));
-
-                    $response = [
-                        'success' => true,
-                        'message' => 'User Found',
-                        'error_code' => null,
-                        'data' => [
-                            'token_access'  => $tokenResult->accessToken,
-                            'token_type'    => 'Bearer',
-                            'expires_at'    => Carbon::parse($tokenResult->token->expires_at)->toDateTimeString()
-                        ]                    
-                    ];
                 } else {
                     $response = [
                         'success' => false,
-                        'message' => Helper::errorCode(1208),
-                        'error_code' => 1208,
+                        'message' => Helper::errorCode(1206),
+                        'error_code' => 1206,
                         'data' => []
                     ];
                 }
-            } else {
-                $response = [
-                    'success' => false,
-                    'message' => Helper::errorCode(1206),
-                    'error_code' => 1206,
-                    'data' => []
-                ];
             }
     	} else {
             $response = [

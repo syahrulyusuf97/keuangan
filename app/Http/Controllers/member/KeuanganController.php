@@ -239,7 +239,7 @@ class KeuanganController extends Controller
 
             ->rawColumns(['tanggal', 'jumlah', 'keakun', 'aksi'])
 
-            ->make(true);
+            ->make(true);   
     }
 
     public function deleteDebit($id = null)

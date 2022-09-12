@@ -19,59 +19,85 @@ use App\Exports\CashflowPDF;
 
 class LaporanController extends Controller
 {
-    private function chartKasDebetBulan($bulan=null, $tahun=null)
+    private function getAllDateByMonth($bulan, $tahun)
+    {
+        $list = array();
+        $month = $bulan;
+        $year = $tahun;
+
+        for($d = 1; $d <= 31; $d++)
+        {
+            $time = mktime(12, 0, 0, $month, $d, $year);          
+            if (date('m', $time)==$month)       
+                $list[]= date('d', $time);
+        }
+
+        return $list;
+    }
+
+    private function chartKasDebitBulan($bulan=null, $tahun=null)
     {
         $row    = array();
-        $month  = Helper::month($bulan);
+        $month  = $bulan;
+        $dates  = $this->getAllDateByMonth($bulan, $tahun);
 
-        $kas_debet = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debet'),
-            \DB::raw('DATE_FORMAT(c_tanggal, "%d-%m-%Y") as month'), 'c_jenis')
-            ->where('c_iduser', Auth::user()->id)
-            ->where('c_flagakun', 'Kas')
-            ->where('c_jenis', 'D')
-            ->whereMonth('c_tanggal', $month)
-            ->whereYear('c_tanggal', $tahun)
-            ->groupBy(['c_tanggal', 'c_jenis'])
-            ->orderBy('c_tanggal', 'asc');
+        $kas_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit'),
+        \DB::raw('c_tanggal as date'), 'c_jenis')
+        ->where('c_iduser', Auth::user()->id)
+        ->where('c_flagakun', 'Kas')
+        ->where('c_jenis', 'D')
+        ->whereMonth('c_tanggal', $month)
+        ->whereYear('c_tanggal', $tahun)
+        ->groupBy(['c_tanggal', 'c_jenis'])
+        ->orderBy('c_tanggal', 'asc');
 
-        if ($kas_debet->count() > 0) {
-            foreach ($kas_debet->get() as $key => $debet) {
-                $row[] = array('date' => $debet->month, 'debet' => $debet->jumlah_debet);
+        foreach($dates as $key => $values) {
+            $row[(String)$values] = 0;
+        }
+
+        if ($kas_debit->count() > 0) {
+            foreach ($kas_debit->get() as $key => $debit) {
+                $row[(String)date('d', strtotime($debit->date))] = (float)$debit->jumlah_debit;
             }
         }
 
         $response_data = [
-            'bulan' => $bulan.' '.$tahun,
-            'data'  => $row
+            'bulan' => $tahun.'-'.$bulan,
+            'detail'  => $row
         ];
 
         return $response_data;
     }
 
-    private function chartBankDebetBulan($bulan=null, $tahun=null)
+    private function chartBankDebitBulan($bulan=null, $tahun=null)
     {
         $row    = array();
-        $month  = Helper::month($bulan);
+        $month  = $bulan;
+        $dates  = $this->getAllDateByMonth($bulan, $tahun);
 
-        $bank_debet = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debet'),
-            \DB::raw('DATE_FORMAT(c_tanggal, "%d-%m-%Y") as month'), 'c_jenis')
-            ->where('c_iduser', Auth::user()->id)
-            ->where('c_flagakun', 'Bank')
-            ->where('c_jenis', 'D')
-            ->whereMonth('c_tanggal', $month)
-            ->whereYear('c_tanggal', $tahun)
-            ->groupBy(['c_tanggal', 'c_jenis'])
-            ->orderBy('c_tanggal', 'asc');
+        $bank_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit'),
+        \DB::raw('c_tanggal as date'), 'c_jenis')
+        ->where('c_iduser', Auth::user()->id)
+        ->where('c_flagakun', 'Bank')
+        ->where('c_jenis', 'D')
+        ->whereMonth('c_tanggal', $month)
+        ->whereYear('c_tanggal', $tahun)
+        ->groupBy(['c_tanggal', 'c_jenis'])
+        ->orderBy('c_tanggal', 'asc');
 
-        if ($bank_debet->count() > 0) {
-            foreach ($bank_debet->get() as $key => $debit) {
-                $row[] = array('date' => $debit->month, 'debet' => $debit->jumlah_debet);
+        foreach($dates as $key => $values) {
+            $row[(String)$values] = 0;
+        }
+
+        if ($bank_debit->count() > 0) {
+            foreach ($bank_debit->get() as $key => $debit) {
+                $row[(String)date('d', strtotime($debit->date))] = (float)$debit->jumlah_debit;
             }
         }
 
         $response_data = [
-            'bulan' => $bulan.' '.$tahun,
-            'data'  => $row
+            'bulan' => $tahun.'-'.$bulan,
+            'detail'  => $row
         ];
 
         return $response_data;
@@ -80,27 +106,32 @@ class LaporanController extends Controller
     private function chartKasKreditBulan($bulan=null, $tahun=null)
     {
         $row    = array();
-        $month  = Helper::month($bulan);
+        $month  = $bulan;
+        $dates  = $this->getAllDateByMonth($bulan, $tahun);
 
         $kas_kredit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_kredit'),
-            \DB::raw('DATE_FORMAT(c_tanggal, "%d-%m-%Y") as month'), 'c_jenis')
-            ->where('c_iduser', Auth::user()->id)
-            ->where('c_flagakun', 'Kas')
-            ->where('c_jenis', 'K')
-            ->whereMonth('c_tanggal', $month)
-            ->whereYear('c_tanggal', $tahun)
-            ->groupBy(['c_tanggal', 'c_jenis'])
-            ->orderBy('c_tanggal', 'asc');
+        \DB::raw('c_tanggal as date'), 'c_jenis')
+        ->where('c_iduser', Auth::user()->id)
+        ->where('c_flagakun', 'Kas')
+        ->where('c_jenis', 'K')
+        ->whereMonth('c_tanggal', $month)
+        ->whereYear('c_tanggal', $tahun)
+        ->groupBy(['c_tanggal', 'c_jenis'])
+        ->orderBy('c_tanggal', 'asc');
+
+        foreach($dates as $key => $values) {
+            $row[(String)$values] = 0;
+        }
 
         if ($kas_kredit->count() > 0) {
             foreach ($kas_kredit->get() as $key => $credit) {
-                $row[] = array('date' => $credit->month, 'kredit' => $credit->jumlah_kredit);
+                $row[(String)date('d', strtotime($credit->date))] = (float)$credit->jumlah_kredit;
             }
         }
 
         $response_data = [
-            'bulan' => $bulan.' '.$tahun,
-            'data'  => $row
+            'bulan' => $tahun.'-'.$bulan,
+            'detail'  => $row
         ];
 
         return $response_data;
@@ -109,205 +140,56 @@ class LaporanController extends Controller
     private function chartBankKreditBulan($bulan=null, $tahun=null)
     {
         $row    = array();
-        $month  = Helper::month($bulan);
+        $month  = $bulan;
+        $dates  = $this->getAllDateByMonth($bulan, $tahun);
 
         $bank_kredit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_kredit'),
-            \DB::raw('DATE_FORMAT(c_tanggal, "%d-%m-%Y") as month'), 'c_jenis')
-            ->where('c_iduser', Auth::user()->id)
-            ->where('c_flagakun', 'Bank')
-            ->where('c_jenis', 'K')
-            ->whereMonth('c_tanggal', $month)
-            ->whereYear('c_tanggal', $tahun)
-            ->groupBy(['c_tanggal', 'c_jenis'])
-            ->orderBy('c_tanggal', 'asc');
+        \DB::raw('c_tanggal as date'), 'c_jenis')
+        ->where('c_iduser', Auth::user()->id)
+        ->where('c_flagakun', 'Bank')
+        ->where('c_jenis', 'K')
+        ->whereMonth('c_tanggal', $month)
+        ->whereYear('c_tanggal', $tahun)
+        ->groupBy(['c_tanggal', 'c_jenis'])
+        ->orderBy('c_tanggal', 'asc');
+
+        foreach($dates as $key => $values) {
+            $row[(String)$values] = 0;
+        }
 
         if ($bank_kredit->count() > 0) {
             foreach ($bank_kredit->get() as $key => $credit) {
-                $row[] = array('date' => $credit->month, 'kredit' => $credit->jumlah_kredit);
+                $row[(String)date('d', strtotime($credit->date))] = (float)$credit->jumlah_kredit;
             }
         }
 
         $response_data = [
-            'bulan' => $bulan.' '.$tahun,
-            'data'  => $row
+            'bulan' => $tahun.'-'.$bulan,
+            'detail'  => $row
         ];
 
         return $response_data;
-    }
-
-    public function statistikBulan(Request $request)
-    {
-        if ($request->isMethod('get')) {
-            try{
-                if ($request->jenis_akun == 'Kas') {
-                    $data_response = [
-                        'Kas' => [
-                            'debet'  => $this->chartKasDebetBulan($request->bulan, $request->tahun),
-                            'kredit' => $this->chartKasKreditBulan($request->bulan, $request->tahun)
-                        ]
-                    ];
-                } else if ($request->jenis_akun == 'Bank') {
-                    $data_response = [
-                        'Bank' => [
-                            'debet'  => $this->chartBankDebetBulan($request->bulan, $request->tahun),
-                            'kredit' => $this->chartBankKreditBulan($request->bulan, $request->tahun)
-                        ]
-                    ];
-                } else if (is_null($request->jenis_akun)) {
-                    $data_response = [
-                        'Kas' => [
-                            'debet'  => $this->chartKasDebetBulan($request->bulan, $request->tahun),
-                            'kredit' => $this->chartKasKreditBulan($request->bulan, $request->tahun)
-                        ],
-                        'Bank' => [
-                            'debet'  => $this->chartBankDebetBulan($request->bulan, $request->tahun),
-                            'kredit' => $this->chartBankKreditBulan($request->bulan, $request->tahun)
-                        ]
-                    ];
-                } else {
-                    $data_response = [];
-                }
-
-                $response = [
-                    'status' => "success",
-                    'data'   => $data_response
-                ];
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    private function chartKasTahun($tahun = null)
-    {
-        $row = array();
-        $arr_bulan = [
-            'Januari'   => ['debet'=>0, 'kredit'=>0],
-            'Februari'  => ['debet'=>0, 'kredit'=>0],
-            'Maret'     => ['debet'=>0, 'kredit'=>0],
-            'April'     => ['debet'=>0, 'kredit'=>0],
-            'Mei'       => ['debet'=>0, 'kredit'=>0],
-            'Juni'      => ['debet'=>0, 'kredit'=>0],
-            'Juli'      => ['debet'=>0, 'kredit'=>0],
-            'Agustus'   => ['debet'=>0, 'kredit'=>0],
-            'September' => ['debet'=>0, 'kredit'=>0],
-            'Oktober'   => ['debet'=>0, 'kredit'=>0],
-            'November'  => ['debet'=>0, 'kredit'=>0],
-            'Desember'  => ['debet'=>0, 'kredit'=>0]
-        ];
-
-        $kas_debet = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debet'),
-            \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
-            ->where('c_iduser', Auth::user()->id)
-            ->where('c_flagakun', 'Kas')
-            ->where('c_jenis', 'D')
-            ->whereYear('c_tanggal', $tahun)
-            ->groupBy(['month', 'c_jenis'])
-            ->orderBy('month', 'desc')
-            ->get();
-
-        $kas_kredit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_kredit'),
-            \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
-            ->where('c_iduser', Auth::user()->id)
-            ->where('c_flagakun', 'Kas')
-            ->where('c_jenis', 'K')
-            ->whereYear('c_tanggal', $tahun)
-            ->groupBy(['month', 'c_jenis'])
-            ->orderBy('month', 'desc')
-            ->get();
-
-        if (sizeof($kas_debet) > 0) {
-            foreach ($kas_debet as $key => $value) {
-                if (Helper::monthStrToNumber($value->month) == '01') {
-                    $arr_bulan['Januari']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '02') {
-                    $arr_bulan['Februari']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '03') {
-                    $arr_bulan['Maret']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '04') {
-                    $arr_bulan['April']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '05') {
-                    $arr_bulan['Mei']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '06') {
-                    $arr_bulan['Juni']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '07') {
-                    $arr_bulan['Juli']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '08') {
-                    $arr_bulan['Agustus']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '09') {
-                    $arr_bulan['September']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '10') {
-                    $arr_bulan['Oktober']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '11') {
-                    $arr_bulan['November']['debet'] = $value->jumlah_debet;
-                } else if (Helper::monthStrToNumber($value->month) == '12') {
-                    $arr_bulan['Desember']['debet'] = $value->jumlah_debet;
-                }
-            }
-        }
-
-        if (sizeof($kas_kredit) > 0) {
-            foreach ($kas_kredit as $key => $value) {
-                if (Helper::monthStrToNumber($value->month) == '01') {
-                    $arr_bulan['Januari']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '02') {
-                    $arr_bulan['Februari']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '03') {
-                    $arr_bulan['Maret']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '04') {
-                    $arr_bulan['April']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '05') {
-                    $arr_bulan['Mei']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '06') {
-                    $arr_bulan['Juni']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '07') {
-                    $arr_bulan['Juli']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '08') {
-                    $arr_bulan['Agustus']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '09') {
-                    $arr_bulan['September']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '10') {
-                    $arr_bulan['Oktober']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '11') {
-                    $arr_bulan['November']['kredit'] = $value->jumlah_kredit;
-                } else if (Helper::monthStrToNumber($value->month) == '12') {
-                    $arr_bulan['Desember']['kredit'] = $value->jumlah_kredit;
-                }
-            }
-        }
-
-        return $arr_bulan;
     }
 
     private function chartBankTahun($tahun = null)
     {
         $row = array();
         $arr_bulan = [
-            'Januari'   => ['debet'=>0, 'kredit'=>0],
-            'Februari'  => ['debet'=>0, 'kredit'=>0],
-            'Maret'     => ['debet'=>0, 'kredit'=>0],
-            'April'     => ['debet'=>0, 'kredit'=>0],
-            'Mei'       => ['debet'=>0, 'kredit'=>0],
-            'Juni'      => ['debet'=>0, 'kredit'=>0],
-            'Juli'      => ['debet'=>0, 'kredit'=>0],
-            'Agustus'   => ['debet'=>0, 'kredit'=>0],
-            'September' => ['debet'=>0, 'kredit'=>0],
-            'Oktober'   => ['debet'=>0, 'kredit'=>0],
-            'November'  => ['debet'=>0, 'kredit'=>0],
-            'Desember'  => ['debet'=>0, 'kredit'=>0]
+            'Januari'   => ['debit'=>0, 'kredit'=>0],
+            'Februari'  => ['debit'=>0, 'kredit'=>0],
+            'Maret'     => ['debit'=>0, 'kredit'=>0],
+            'April'     => ['debit'=>0, 'kredit'=>0],
+            'Mei'       => ['debit'=>0, 'kredit'=>0],
+            'Juni'      => ['debit'=>0, 'kredit'=>0],
+            'Juli'      => ['debit'=>0, 'kredit'=>0],
+            'Agustus'   => ['debit'=>0, 'kredit'=>0],
+            'September' => ['debit'=>0, 'kredit'=>0],
+            'Oktober'   => ['debit'=>0, 'kredit'=>0],
+            'November'  => ['debit'=>0, 'kredit'=>0],
+            'Desember'  => ['debit'=>0, 'kredit'=>0]
         ];
 
-        $bank_debet = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debet'),
+        $bank_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit'),
             \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
             ->where('c_iduser', Auth::user()->id)
             ->where('c_flagakun', 'Bank')
@@ -327,32 +209,32 @@ class LaporanController extends Controller
             ->orderBy('month', 'desc')
             ->get();
 
-        if (sizeof($bank_debet) > 0) {
-            foreach ($bank_debet as $key => $value) {
+        if (sizeof($bank_debit) > 0) {
+            foreach ($bank_debit as $key => $value) {
                 if (Helper::monthStrToNumber($value->month) == '01') {
-                    $arr_bulan['Januari']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['Januari']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '02') {
-                    $arr_bulan['Februari']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['Februari']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '03') {
-                    $arr_bulan['Maret']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['Maret']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '04') {
-                    $arr_bulan['April']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['April']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '05') {
-                    $arr_bulan['Mei']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['Mei']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '06') {
-                    $arr_bulan['Juni']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['Juni']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '07') {
-                    $arr_bulan['Juli']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['Juli']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '08') {
-                    $arr_bulan['Agustus']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['Agustus']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '09') {
-                    $arr_bulan['September']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['September']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '10') {
-                    $arr_bulan['Oktober']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['Oktober']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '11') {
-                    $arr_bulan['November']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['November']['debit'] = $value->jumlah_debit;
                 } else if (Helper::monthStrToNumber($value->month) == '12') {
-                    $arr_bulan['Desember']['debet'] = $value->jumlah_debet;
+                    $arr_bulan['Desember']['debit'] = $value->jumlah_debit;
                 }
             }
         }
@@ -390,52 +272,111 @@ class LaporanController extends Controller
         return $arr_bulan;
     }
 
-    public function statistikTahun(Request $request)
+    private function chartKasTahun($tahun = null)
     {
-        if ($request->isMethod('get')) {
-            try{
-                if ($request->jenis_akun == 'Kas') {
-                    $data_response = [
-                        'Kas' => $this->chartKasTahun($request->tahun)
-                    ];
-                } else if ($request->jenis_akun == 'Bank') {
-                    $data_response = [
-                        'Bank' => $this->chartBankTahun($request->tahun)
-                    ];
-                } else if (is_null($request->jenis_akun)) {
-                    $data_response = [
-                        'Kas' => $this->chartKasTahun($request->tahun),
-                        'Bank' => $this->chartBankTahun($request->tahun)
-                    ];
-                } else {
-                    $data_response = [];
-                }
+        $row = array();
+        $arr_bulan = [
+            'Januari'   => ['debit'=>0, 'kredit'=>0],
+            'Februari'  => ['debit'=>0, 'kredit'=>0],
+            'Maret'     => ['debit'=>0, 'kredit'=>0],
+            'April'     => ['debit'=>0, 'kredit'=>0],
+            'Mei'       => ['debit'=>0, 'kredit'=>0],
+            'Juni'      => ['debit'=>0, 'kredit'=>0],
+            'Juli'      => ['debit'=>0, 'kredit'=>0],
+            'Agustus'   => ['debit'=>0, 'kredit'=>0],
+            'September' => ['debit'=>0, 'kredit'=>0],
+            'Oktober'   => ['debit'=>0, 'kredit'=>0],
+            'November'  => ['debit'=>0, 'kredit'=>0],
+            'Desember'  => ['debit'=>0, 'kredit'=>0]
+        ];
 
-                $response = [
-                    'status' => "success",
-                    'data'   => $data_response
-                ];
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!",
-                    'error' => $e
-                ];
+        $kas_debit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_debit'),
+            \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
+            ->where('c_iduser', Auth::user()->id)
+            ->where('c_flagakun', 'Kas')
+            ->where('c_jenis', 'D')
+            ->whereYear('c_tanggal', $tahun)
+            ->groupBy(['month', 'c_jenis'])
+            ->orderBy('month', 'desc')
+            ->get();
+
+        $kas_kredit = Cash::select(\DB::raw('SUM(c_jumlah) as jumlah_kredit'),
+            \DB::raw("DATE_FORMAT(c_tanggal, '%M %Y') as month"), 'c_jenis')
+            ->where('c_iduser', Auth::user()->id)
+            ->where('c_flagakun', 'Kas')
+            ->where('c_jenis', 'K')
+            ->whereYear('c_tanggal', $tahun)
+            ->groupBy(['month', 'c_jenis'])
+            ->orderBy('month', 'desc')
+            ->get();
+
+        if (sizeof($kas_debit) > 0) {
+            foreach ($kas_debit as $key => $value) {
+                if (Helper::monthStrToNumber($value->month) == '01') {
+                    $arr_bulan['Januari']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '02') {
+                    $arr_bulan['Februari']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '03') {
+                    $arr_bulan['Maret']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '04') {
+                    $arr_bulan['April']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '05') {
+                    $arr_bulan['Mei']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '06') {
+                    $arr_bulan['Juni']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '07') {
+                    $arr_bulan['Juli']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '08') {
+                    $arr_bulan['Agustus']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '09') {
+                    $arr_bulan['September']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '10') {
+                    $arr_bulan['Oktober']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '11') {
+                    $arr_bulan['November']['debit'] = $value->jumlah_debit;
+                } else if (Helper::monthStrToNumber($value->month) == '12') {
+                    $arr_bulan['Desember']['debit'] = $value->jumlah_debit;
+                }
             }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
         }
+
+        if (sizeof($kas_kredit) > 0) {
+            foreach ($kas_kredit as $key => $value) {
+                if (Helper::monthStrToNumber($value->month) == '01') {
+                    $arr_bulan['Januari']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '02') {
+                    $arr_bulan['Februari']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '03') {
+                    $arr_bulan['Maret']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '04') {
+                    $arr_bulan['April']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '05') {
+                    $arr_bulan['Mei']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '06') {
+                    $arr_bulan['Juni']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '07') {
+                    $arr_bulan['Juli']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '08') {
+                    $arr_bulan['Agustus']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '09') {
+                    $arr_bulan['September']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '10') {
+                    $arr_bulan['Oktober']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '11') {
+                    $arr_bulan['November']['kredit'] = $value->jumlah_kredit;
+                } else if (Helper::monthStrToNumber($value->month) == '12') {
+                    $arr_bulan['Desember']['kredit'] = $value->jumlah_kredit;
+                }
+            }
+        }
+
+        return $arr_bulan;
     }
 
-    private function chartKategoriKasDebetBulan($bulan=null, $tahun=null)
+    private function chartKategoriKasDebitBulan($bulan=null, $tahun=null)
     {
         $thn = $tahun;
-        $bln = Helper::month($bulan);
+        $bln = $bulan;
 
         $ktg_kas_dbt_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -453,7 +394,8 @@ class LaporanController extends Controller
                 $kategori = DB::table('ms_kategori')->where('id', $kkdl->id_kategori)->first();
                 $dtkkdl[] = array(
                     'kategori'  => $kategori->nama, 
-                    'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                    // 'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                    'warna'     => $kategori->warna, 
                     'jumlah'    => $kkdl->jumlah
                 );
             }
@@ -487,7 +429,7 @@ class LaporanController extends Controller
     private function chartKategoriKasKreditBulan($bulan=null, $tahun=null)
     {
         $thn = $tahun;
-        $bln = Helper::month($bulan);
+        $bln = $bulan;
 
         $ktg_kas_krd_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -505,7 +447,8 @@ class LaporanController extends Controller
                 $kategori = DB::table('ms_kategori')->where('id', $kkkl->id_kategori)->first();
                 $dtkkkl[] = array(
                     'kategori'  => $kategori->nama, 
-                    'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                    // 'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                    'warna'     => $kategori->warna, 
                     'jumlah'    => $kkkl->jumlah
                 );
             }
@@ -535,10 +478,10 @@ class LaporanController extends Controller
         return $dtkkkl_dt;
     }
 
-    private function chartKategoriBankDebetBulan($bulan=null, $tahun=null)
+    private function chartKategoriBankDebitBulan($bulan=null, $tahun=null)
     {
         $thn = $tahun;
-        $bln = Helper::month($bulan);
+        $bln = $bulan;
 
         $ktg_bank_dbt_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -555,7 +498,8 @@ class LaporanController extends Controller
             $kategori = DB::table('ms_kategori')->where('id', $kbdl->id_kategori)->first();
             $dtkbdl[] = array(
                 'kategori'  => $kategori->nama, 
-                'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                // 'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                'warna'     => $kategori->warna, 
                 'jumlah'    => $kbdl->jumlah
             );
         }
@@ -588,7 +532,7 @@ class LaporanController extends Controller
     private function chartKategoriBankKreditBulan($bulan=null, $tahun=null)
     {
         $thn = $tahun;
-        $bln = Helper::month($bulan);
+        $bln = $bulan;
 
         $ktg_bank_krd_lm = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -605,7 +549,8 @@ class LaporanController extends Controller
             $kategori = DB::table('ms_kategori')->where('id', $kbkl->id_kategori)->first();
             $dtkbkl[] = array(
                 'kategori'  => $kategori->nama, 
-                'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                // 'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                'warna'     => $kategori->warna, 
                 'jumlah'    => $kbkl->jumlah
             );
         }
@@ -635,60 +580,7 @@ class LaporanController extends Controller
         return $dtkbkl_dt;
     }
 
-    public function statistikKategoriBulan(Request $request)
-    {
-        if ($request->isMethod('get')) {
-            try{
-                if ($request->jenis_akun == 'Kas') {
-                    $data_response = [
-                        'Kas' => [
-                            'debet' => $this->chartKategoriKasDebetBulan($request->bulan, $request->tahun),
-                            'kredit' => $this->chartKategoriKasKreditBulan($request->bulan, $request->tahun)
-                        ]
-                    ];
-                } else if ($request->jenis_akun == 'Bank') {
-                    $data_response = [
-                        'Bank' => [
-                            'debet' => $this->chartKategoriBankDebetBulan($request->bulan, $request->tahun),
-                            'kredit' => $this->chartKategoriBankKreditBulan($request->bulan, $request->tahun)
-                        ]
-                    ];
-                } else if (is_null($request->jenis_akun)) {
-                    $data_response = [
-                        'Kas' => [
-                            'debet' => $this->chartKategoriKasDebetBulan($request->bulan, $request->tahun),
-                            'kredit' => $this->chartKategoriKasKreditBulan($request->bulan, $request->tahun)
-                        ],
-                        'Bank' => [
-                            'debet' => $this->chartKategoriBankDebetBulan($request->bulan, $request->tahun),
-                            'kredit' => $this->chartKategoriBankKreditBulan($request->bulan, $request->tahun)
-                        ]
-                    ];
-                } else {
-                    $data_response = [];
-                }
-
-                $response = [
-                    'status' => "success",
-                    'data'   => $data_response
-                ];
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
-            }
-            return response()->json($response);
-        } else {
-            $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
-            ];
-            return response()->json($response);
-        }
-    }
-
-    private function chartKategoriKasDebetTahun($tahun = null)
+    private function chartKategoriKasDebitTahun($tahun = null)
     {
         $ktg_kas_dbt_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -704,7 +596,7 @@ class LaporanController extends Controller
             $kategori = DB::table('ms_kategori')->where('id', $kkdl->id_kategori)->first();
             $dtkkdl[] = array(
                 'kategori'  => $kategori->nama, 
-                'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                'warna'     => $kategori->warna, 
                 'jumlah'    => $kkdl->jumlah
             );
         }
@@ -749,7 +641,7 @@ class LaporanController extends Controller
             $kategori = DB::table('ms_kategori')->where('id', $kkkl->id_kategori)->first();
             $dtkkkl[] = array(
                 'kategori'  => $kategori->nama, 
-                'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                'warna'     => $kategori->warna, 
                 'jumlah'    => $kkkl->jumlah
             );
         }
@@ -778,7 +670,7 @@ class LaporanController extends Controller
         return $dtkkkl_dt;
     }
 
-    private function chartKategoriBankDebetTahun($tahun = null)
+    private function chartKategoriBankDebitTahun($tahun = null)
     {
         $ktg_bank_dbt_ly = DB::table('cash as c')
                         ->join('ms_kategori as ktg', 'c.c_kategori', 'ktg.id')
@@ -794,7 +686,7 @@ class LaporanController extends Controller
             $kategori = DB::table('ms_kategori')->where('id', $kbdl->id_kategori)->first();
             $dtkbdl[] = array(
                 'kategori'  => $kategori->nama, 
-                'warna'     => implode('0xff', explode('#', $kategori->warna)), 
+                'warna'     => $kategori->warna, 
                 'jumlah'    => $kbdl->jumlah
             );
         }
@@ -838,7 +730,7 @@ class LaporanController extends Controller
         $dtkbkl = [];
         foreach ($ktg_bank_krd_ly as $key => $kbkl) {
             $kategori = DB::table('ms_kategori')->where('id', $kbkl->id_kategori)->first();
-            $dtkbkl[] = array('kategori'=>$kategori->nama, 'warna'=>implode('0xff', explode('#', $kategori->warna)), 'jumlah'=>$kbkl->jumlah);
+            $dtkbkl[] = array('kategori'=>$kategori->nama, 'warna'=>$kategori->warna, 'jumlah'=>$kbkl->jumlah);
         }
 
         $total = 0;
@@ -866,112 +758,195 @@ class LaporanController extends Controller
         return $dtkbkl_dt;
     }
 
-    public function statistikKategoriTahun(Request $request)
+    public function statistik(Request $request)
     {
-        if ($request->isMethod('get')) {
-            try{
-                if ($request->jenis_akun == 'Kas') {
-                    $data_response = [
-                        'Kas' => [
-                            'debet' => $this->chartKategoriKasDebetTahun($request->tahun),
-                            'kredit' => $this->chartKategoriKasKreditTahun($request->tahun)
-                        ]
-                    ];
-                } else if ($request->jenis_akun == 'Bank') {
-                    $data_response = [
-                        'Bank' => [
-                            'debet' => $this->chartKategoriBankDebetTahun($request->tahun),
-                            'kredit' => $this->chartKategoriBankKreditTahun($request->tahun)
-                        ]
-                    ];
-                } else if (is_null($request->jenis_akun)) {
-                    $data_response = [
-                        'Kas' => [
-                            'debet' => $this->chartKategoriKasDebetTahun($request->tahun),
-                            'kredit' => $this->chartKategoriKasKreditTahun($request->tahun)
-                        ],
-                        'Bank' => [
-                            'debet' => $this->chartKategoriBankDebetTahun($request->tahun),
-                            'kredit' => $this->chartKategoriBankKreditTahun($request->tahun)
-                        ]
-                    ];
-                } else {
-                    $data_response = [];
-                }
+        try {
+            $jenis_periode = $request->jenis_periode;
+            $jenis_akun    = $request->jenis_akun;
+            $periode       = $request->periode;
+            $kategori      = $request->kategori == "" ? false : $request->kategori;
+            
+            if ($kategori) {
+                if ($jenis_periode == "BULAN") {
+                    $bulan = explode('-', $periode)[1];
+                    $tahun = explode('-', $periode)[0];
 
-                $response = [
-                    'status' => "success",
-                    'data'   => $data_response
-                ];
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
-                ];
+                    if ($jenis_akun == 'BANK') {
+                        $data_response = [
+                            'Bank' => [
+                                'debit'  => $this->chartKategoriBankDebitBulan($bulan, $tahun),
+                                'kredit' => $this->chartKategoriBankKreditBulan($bulan, $tahun)
+                            ]
+                        ];
+                    } elseif ($jenis_akun == 'KAS') {
+                        $data_response = [
+                            'Kas' => [
+                                'debit'  => $this->chartKategoriKasDebitBulan($bulan, $tahun),
+                                'kredit' => $this->chartKategoriKasKreditBulan($bulan, $tahun)
+                            ]
+                        ];
+                    } else {
+                        $data_response = [
+                            'Bank' => [
+                                'debit'  => $this->chartKategoriBankDebitBulan($bulan, $tahun),
+                                'kredit' => $this->chartKategoriBankKreditBulan($bulan, $tahun)
+                            ],
+                            'Kas' => [
+                                'debit'  => $this->chartKategoriKasDebitBulan($bulan, $tahun),
+                                'kredit' => $this->chartKategoriKasKreditBulan($bulan, $tahun)
+                            ]
+                        ];
+                    }
+                } else {
+                    if ($jenis_akun == 'BANK') {
+                        $data_response = [
+                            'Bank' => [
+                                'debit'  => $this->chartKategoriBankDebitTahun($periode),
+                                'kredit' => $this->chartKategoriBankKreditTahun($periode)
+                            ]
+                        ];
+                    } elseif ($jenis_akun == 'KAS') {
+                        $data_response = [
+                            'Kas' => [
+                                'debit'  => $this->chartKategoriKasDebitTahun($periode),
+                                'kredit' => $this->chartKategoriKasKreditTahun($periode)
+                            ]
+                        ];
+                    } else {
+                        $data_response = [
+                            'Bank' => [
+                                'debit'  => $this->chartKategoriBankDebitTahun($periode),
+                                'kredit' => $this->chartKategoriBankKreditTahun($periode)
+                            ],
+                            'Kas' => [
+                                'debit'  => $this->chartKategoriKasDebitTahun($periode),
+                                'kredit' => $this->chartKategoriKasKreditTahun($periode)
+                            ]
+                        ];
+                    }
+                }
+            } else {
+                if ($jenis_periode == "BULAN") {
+                    $bulan = explode('-', $periode)[1];
+                    $tahun = explode('-', $periode)[0];
+                    
+                    if ($jenis_akun == 'BANK') {
+                        $data_response = [
+                            'Bank' => [
+                                'debit'  => $this->chartBankDebitBulan($bulan, $tahun),
+                                'kredit' => $this->chartBankKreditBulan($bulan, $tahun)
+                            ]
+                        ];
+                    } elseif ($jenis_akun == 'KAS') {
+                        $data_response = [
+                            'Kas' => [
+                                'debit'  => $this->chartKasDebitBulan($bulan, $tahun),
+                                'kredit' => $this->chartKasKreditBulan($bulan, $tahun)
+                            ]
+                        ];
+                    } else {
+                        $data_response = [
+                            'Bank' => [
+                                'debit'  => $this->chartBankDebitBulan($bulan, $tahun),
+                                'kredit' => $this->chartBankKreditBulan($bulan, $tahun)
+                            ],
+                            'Kas' => [
+                                'debit'  => $this->chartKasDebitBulan($bulan, $tahun),
+                                'kredit' => $this->chartKasKreditBulan($bulan, $tahun)
+                            ]
+                        ];
+                    }
+                } else {
+                    if ($jenis_akun == 'BANK') {
+                        $data_response = [
+                            'Bank' => $this->chartBankTahun($periode)
+                        ];
+                    } elseif ($jenis_akun == 'KAS') {
+                        $data_response = [
+                            'Kas' => $this->chartKasTahun($periode)
+                        ];
+                    } else {
+                        $data_response = [
+                            'Bank' => $this->chartBankTahun($periode),
+                            'Kas' => $this->chartKasTahun($periode)
+                        ];
+                    }
+                }
             }
-            return response()->json($response);
-        } else {
+
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => true,
+                'message'    => "Data tersedia",
+                'error_code' => null,
+                'data'       => $data_response
             ];
-            return response()->json($response);
+        } catch (Exception $e) {
+            $response = [
+                'success'    => false,
+                'message'    => Helper::errorCode(1401),
+                'error_code' => 1401,
+                'data'       => []
+            ];
         }
+
+        return response()->json($response);
     }
 
     private function cashflowBulan($bulan=null, $tahun=null)
     {
         // Kas
-        $debit_kas              = 0;
-        $credit_kas             = 0;
-        $saldo_kas              = 0;
+        $debit_kas   = 0;
+        $credit_kas  = 0;
+        $saldo_kas   = 0;
 
         // Bank
-        $debit_bank              = 0;
-        $credit_bank             = 0;
-        $saldo_bank              = 0;
+        $debit_bank  = 0;
+        $credit_bank = 0;
+        $saldo_bank  = 0;
 
-        $debet_kas  = Cash::where('c_iduser', Auth::user()->id)
+        $date_first  = $tahun.'-'.$bulan.'-01';
+
+        $debit_kas  = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Kas')
                         ->where('c_jenis', 'D')
-                        ->where('c_tanggal', '<', Helper::dateReverse(Helper::dateFromString($bulan.' '.$tahun, true), 'd-m-Y', 'Y-m-d'))
+                        ->where('c_tanggal', '<',$date_first)
                         ->sum('c_jumlah');
         $credit_kas = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Kas')
                         ->where('c_jenis', 'K')
-                        ->where('c_tanggal', '<', Helper::dateReverse(Helper::dateFromString($bulan.' '.$tahun, true), 'd-m-Y', 'Y-m-d'))
+                        ->where('c_tanggal', '<', $date_first)
                         ->sum('c_jumlah');
 
-        $saldo_kas  = $debet_kas - $credit_kas;
+        $saldo_kas  = $debit_kas - $credit_kas;
 
         // Bank
-        $debet_bank  = Cash::where('c_iduser', Auth::user()->id)
+        $debit_bank  = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Bank')
                         ->where('c_jenis', 'D')
-                        ->where('c_tanggal', '<', Helper::dateReverse(Helper::dateFromString($bulan.' '.$tahun, true), 'd-m-Y', 'Y-m-d'))
+                        ->where('c_tanggal', '<', $date_first)
                         ->sum('c_jumlah');
         $credit_bank = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Bank')
                         ->where('c_jenis', 'K')
-                        ->where('c_tanggal', '<', Helper::dateReverse(Helper::dateFromString($bulan.' '.$tahun, true), 'd-m-Y', 'Y-m-d'))
+                        ->where('c_tanggal', '<', $date_first)
                         ->sum('c_jumlah');
-        $saldo_bank  = $debet_bank - $credit_bank;
+        $saldo_bank  = $debit_bank - $credit_bank;
 
         $data['saldo_awal'] = $saldo_bank + $saldo_kas;
 
-        $data_bank_debet     = Cash::where('c_iduser', Auth::user()->id)
+        $data_bank_debit     = Cash::where('c_iduser', Auth::user()->id)
                                     ->where('c_flagakun', 'Bank')
                                     ->where('c_jenis', 'D')
-                                    ->whereMonth('c_tanggal', Helper::month($bulan))
+                                    ->whereMonth('c_tanggal', $bulan)
                                     ->whereYear('c_tanggal', $tahun)
-                                    ->select(DB::raw("DATE_FORMAT(cash.c_tanggal, '%d-%m-%Y') as c_tanggal"), 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
+                                    ->select('cash.c_tanggal', 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
                                     ->with(['akun' => function($akun){
                                         $akun->select('id', 'kode_akun', 'nama_akun');
                                     }])->get();
 
-        if (sizeof($data_bank_debet) > 0) {
-            foreach ($data_bank_debet as $key => $value) {
-                $row_bank_debet[] = [
+        if (sizeof($data_bank_debit) > 0) {
+            foreach ($data_bank_debit as $key => $value) {
+                $row_bank_debit[] = [
                     'tanggal' => $value->c_tanggal,
                     'keterangan' => $value->c_transaksi,
                     'jumlah' => $value->c_jumlah,
@@ -980,17 +955,17 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data['bank_debet'] = $row_bank_debet;
+            $data['BANK']['debit'] = $row_bank_debit;
         } else {
-            $data['bank_debet'] = [];
+            $data['BANK']['debit'] = [];
         }
 
         $data_bank_kredit    = Cash::where('c_iduser', Auth::user()->id)
                                     ->where('c_flagakun', 'Bank')
                                     ->where('c_jenis', 'K')
-                                    ->whereMonth('c_tanggal', Helper::month($bulan))
+                                    ->whereMonth('c_tanggal', $bulan)
                                     ->whereYear('c_tanggal', $tahun)
-                                    ->select(DB::raw("DATE_FORMAT(cash.c_tanggal, '%d-%m-%Y') as c_tanggal"), 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
+                                    ->select('cash.c_tanggal', 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
                                     ->with(['akun' => function($akun){
                                         $akun->select('id', 'kode_akun', 'nama_akun');
                                     }])->get();
@@ -1006,24 +981,24 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data['bank_kredit'] = $row_bank_kredit;
+            $data['BANK']['kredit'] = $row_bank_kredit;
         } else {
-            $data['bank_kredit'] = [];
+            $data['BANK']['kredit'] = [];
         }
 
-        $data_kas_debet      = Cash::where('c_iduser', Auth::user()->id)
+        $data_kas_debit      = Cash::where('c_iduser', Auth::user()->id)
                                     ->where('c_flagakun', 'Kas')
                                     ->where('c_jenis', 'D')
-                                    ->whereMonth('c_tanggal', Helper::month($bulan))
+                                    ->whereMonth('c_tanggal', $bulan)
                                     ->whereYear('c_tanggal', $tahun)
-                                    ->select(DB::raw("DATE_FORMAT(cash.c_tanggal, '%d-%m-%Y') as c_tanggal"), 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
+                                    ->select('cash.c_tanggal', 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
                                     ->with(['akun' => function($akun){
                                         $akun->select('id', 'kode_akun', 'nama_akun');
                                     }])->get();
 
-        if (sizeof($data_kas_debet) > 0) {
-            foreach ($data_kas_debet as $key => $value) {
-                $row_kas_debet[] = [
+        if (sizeof($data_kas_debit) > 0) {
+            foreach ($data_kas_debit as $key => $value) {
+                $row_kas_debit[] = [
                     'tanggal' => $value->c_tanggal,
                     'keterangan' => $value->c_transaksi,
                     'jumlah' => $value->c_jumlah,
@@ -1032,17 +1007,17 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data['kas_debet'] = $row_kas_debet;
+            $data['KAS']['debit'] = $row_kas_debit;
         } else {
-            $data['kas_debet'] = [];
+            $data['KAS']['debit'] = [];
         }
 
         $data_kas_kredit     = Cash::where('c_iduser', Auth::user()->id)
                                     ->where('c_flagakun', 'Kas')
                                     ->where('c_jenis', 'K')
-                                    ->whereMonth('c_tanggal', Helper::month($bulan))
+                                    ->whereMonth('c_tanggal', $bulan)
                                     ->whereYear('c_tanggal', $tahun)
-                                    ->select(DB::raw("DATE_FORMAT(cash.c_tanggal, '%d-%m-%Y') as c_tanggal"), 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
+                                    ->select('cash.c_tanggal', 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
                                     ->with(['akun' => function($akun){
                                         $akun->select('id', 'kode_akun', 'nama_akun');
                                     }])->get();
@@ -1058,12 +1033,12 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data['kas_kredit'] = $row_kas_kredit;
+            $data['KAS']['kredit'] = $row_kas_kredit;
         } else {
-            $data['kas_kredit'] = [];
+            $data['KAS']['kredit'] = [];
         }
 
-        $data['periode']        = $bulan.' '.$tahun;
+        $data['periode']        = $tahun.'-'.$bulan;
 
         return $data;
     }
@@ -1080,7 +1055,7 @@ class LaporanController extends Controller
         $credit_bank             = 0;
         $saldo_bank              = 0;
 
-        $debet_kas  = Cash::where('c_iduser', Auth::user()->id)
+        $debit_kas  = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Kas')
                         ->where('c_jenis', 'D')
                         ->whereYear('c_tanggal', '<', $tahun)
@@ -1091,10 +1066,10 @@ class LaporanController extends Controller
                         ->whereYear('c_tanggal', '<', $tahun)
                         ->sum('c_jumlah');
 
-        $saldo_kas  = $debet_kas - $credit_kas;
+        $saldo_kas  = $debit_kas - $credit_kas;
 
         // Bank
-        $debet_bank  = Cash::where('c_iduser', Auth::user()->id)
+        $debit_bank  = Cash::where('c_iduser', Auth::user()->id)
                         ->where('c_flagakun', 'Bank')
                         ->where('c_jenis', 'D')
                         ->whereYear('c_tanggal', '<', $tahun)
@@ -1104,22 +1079,22 @@ class LaporanController extends Controller
                         ->where('c_jenis', 'K')
                         ->whereYear('c_tanggal', '<', $tahun)
                         ->sum('c_jumlah');
-        $saldo_bank  = $debet_bank - $credit_bank;
+        $saldo_bank  = $debit_bank - $credit_bank;
 
         $data['saldo_awal'] = $saldo_bank + $saldo_kas;
 
-        $data_bank_debet     = Cash::where('c_iduser', Auth::user()->id)
+        $data_bank_debit     = Cash::where('c_iduser', Auth::user()->id)
                                     ->where('c_flagakun', 'Bank')
                                     ->where('c_jenis', 'D')
                                     ->whereYear('c_tanggal', $tahun)
-                                    ->select(DB::raw("DATE_FORMAT(cash.c_tanggal, '%d-%m-%Y') as c_tanggal"), 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
+                                    ->select('cash.c_tanggal', 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
                                     ->with(['akun' => function($akun){
                                         $akun->select('id', 'kode_akun', 'nama_akun');
                                     }])->get();
 
-        if (sizeof($data_bank_debet) > 0) {
-            foreach ($data_bank_debet as $key => $value) {
-                $row_bank_debet[] = [
+        if (sizeof($data_bank_debit) > 0) {
+            foreach ($data_bank_debit as $key => $value) {
+                $row_bank_debit[] = [
                     'tanggal' => $value->c_tanggal,
                     'keterangan' => $value->c_transaksi,
                     'jumlah' => $value->c_jumlah,
@@ -1128,16 +1103,16 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data['bank_debet'] = $row_bank_debet;
+            $data['BANK']['debit'] = $row_bank_debit;
         } else {
-            $data['bank_debet'] = [];
+            $data['BANK']['debit'] = [];
         }
 
         $data_bank_kredit    = Cash::where('c_iduser', Auth::user()->id)
                                     ->where('c_flagakun', 'Bank')
                                     ->where('c_jenis', 'K')
                                     ->whereYear('c_tanggal', $tahun)
-                                    ->select(DB::raw("DATE_FORMAT(cash.c_tanggal, '%d-%m-%Y') as c_tanggal"), 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
+                                    ->select('cash.c_tanggal', 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
                                     ->with(['akun' => function($akun){
                                         $akun->select('id', 'kode_akun', 'nama_akun');
                                     }])->where('c_jenis', 'K')->get();
@@ -1153,23 +1128,23 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data['bank_kredit'] = $row_bank_kredit;
+            $data['BANK']['kredit'] = $row_bank_kredit;
         } else {
-            $data['bank_kredit'] = [];
+            $data['BANK']['kredit'] = [];
         }
 
-        $data_kas_debet      = Cash::where('c_iduser', Auth::user()->id)
+        $data_kas_debit      = Cash::where('c_iduser', Auth::user()->id)
                                     ->where('c_flagakun', 'Kas')
                                     ->where('c_jenis', 'D')
                                     ->whereYear('c_tanggal', $tahun)
-                                    ->select(DB::raw("DATE_FORMAT(cash.c_tanggal, '%d-%m-%Y') as c_tanggal"), 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
+                                    ->select('cash.c_tanggal', 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
                                     ->with(['akun' => function($akun){
                                         $akun->select('id', 'kode_akun', 'nama_akun');
                                     }])->get();
 
-        if (sizeof($data_kas_debet) > 0) {
-            foreach ($data_kas_debet as $key => $value) {
-                $row_kas_debet[] = [
+        if (sizeof($data_kas_debit) > 0) {
+            foreach ($data_kas_debit as $key => $value) {
+                $row_kas_debit[] = [
                     'tanggal' => $value->c_tanggal,
                     'keterangan' => $value->c_transaksi,
                     'jumlah' => $value->c_jumlah,
@@ -1178,16 +1153,16 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data['kas_debet'] = $row_kas_debet;
+            $data['KAS']['debit'] = $row_kas_debit;
         } else {
-            $data['kas_debet'] = [];
+            $data['KAS']['debit'] = [];
         }
 
         $data_kas_kredit     = Cash::where('c_iduser', Auth::user()->id)
                                     ->where('c_flagakun', 'Kas')
                                     ->where('c_jenis', 'K')
                                     ->whereYear('c_tanggal', $tahun)
-                                    ->select(DB::raw("DATE_FORMAT(cash.c_tanggal, '%d-%m-%Y') as c_tanggal"), 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
+                                    ->select('cash.c_tanggal', 'cash.c_transaksi', 'cash.c_jumlah', 'cash.c_jenis', 'cash.c_akun')
                                     ->with(['akun' => function($akun){
                                         $akun->select('id', 'kode_akun', 'nama_akun');
                                     }])->get();
@@ -1203,49 +1178,50 @@ class LaporanController extends Controller
                 ];
             }
 
-            $data['kas_kredit'] = $row_kas_kredit;
+            $data['KAS']['kredit'] = $row_kas_kredit;
         } else {
-            $data['kas_kredit'] = [];
+            $data['KAS']['kredit'] = [];
         }
 
-        $data['periode']        = $tahun;
+        $data['periode'] = $tahun;
 
         return $data;
     }
 
     public function getCashflow(Request $request)
     {
-        if ($request->isMethod('get')) {
-            try{
-                if ($request->jenis_periode == "Bulan") {
-                    $data_response = [
-                        'cashflow' => $this->cashflowBulan($request->bulan, $request->tahun)
-                    ];
-                } else if ($request->jenis_periode == "Tahun") {
-                    $data_response = [
-                        'cashflow' => $this->cashflowTahun($request->tahun)
-                    ];
-                } else {
-                    $data_response = ['cashflow'=>null];
-                }
+        try{
+            $jenis_periode = $request->jenis_periode;
+            $periode       = $request->periode;
 
-                $response = [
-                    'status' => "success",
-                    'data'   => $data_response
+            if ($jenis_periode == "BULAN") {
+                $bulan = explode('-', $periode)[1];
+                $tahun = explode('-', $periode)[0];
+
+                $data_response = [
+                    'cashflow' => $this->cashflowBulan($bulan, $tahun)
                 ];
-            }catch(\Exception $e){
-                $response = [
-                    'status'    => "failed",
-                    'message'   => "A network error occurred. Please try again!"
+            } else{
+                $data_response = [
+                    'cashflow' => $this->cashflowTahun($periode)
                 ];
             }
-            return response()->json($response);
-        } else {
+
             $response = [
-                'status'    => 'error',
-                'message'   => 'Method Not Allowed'
+                'success'    => true,
+                'message'    => "Data tersedia",
+                'error_code' => null,
+                'data'       => $data_response
             ];
-            return response()->json($response);
+        }catch(\Exception $e){
+            $response = [
+                'success'    => false,
+                'message'    => Helper::errorCode(1401),
+                'error_code' => 1401,
+                'data'       => []
+            ];
         }
+
+        return response()->json($response);
     }
 }

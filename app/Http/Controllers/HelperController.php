@@ -367,7 +367,8 @@ class HelperController extends Controller
             '1322' => 'Your account was blocked by Admin. Please contact admin',
             '1323' => 'Logout error',
             // 14XX : error get data
-            '1401' => 'Failed to get data. System error occurred'
+            '1401' => 'System error occurred',
+            '1402' => 'Invalid data',
         ];
 
         if (!is_null($code)) {
@@ -375,5 +376,31 @@ class HelperController extends Controller
         } else {
             return $errors;
         }
+    }
+
+    static function tryDecrypt($encryption)
+    {
+      try {
+        $data = Crypt::decrypt($encryption);
+      } catch (DecryptException $e) {
+        return null;
+      }
+      return $data;
+    }
+
+    static function getAllDateByMonth($bulan, $tahun)
+    {
+        $list = array();
+        $month = $bulan;
+        $year = $tahun;
+
+        for($d = 1; $d <= 31; $d++)
+        {
+            $time = mktime(12, 0, 0, $month, $d, $year);          
+            if (date('m', $time)==$month)       
+                $list[]= date('d', $time);
+        }
+
+        return $list;
     }
 }
